@@ -48,8 +48,33 @@ int mainInit(void)
 void mainExit(void)
 {
 	printk(KERN_INFO "%s unloading ...\n", D_DEV_NAME);
+
+	group_data *cursor;
+	int id_cursor;
+
+	idr_for_each_entry(&main_device->group_map, cursor, id_cursor){
+		//unregisterGroupDevice(cursor);	TODO:Test if this is enough
+		device_destroy(group_class, cursor->deviceID);
+	}
+
+	if(group_class != NULL)
+		class_destroy(group_class);
+
+	idr_for_each_entry(&main_device->group_map, cursor, id_cursor){
+		cdev_del(&cursor->cdev);
+		unregister_chrdev_region(cursor->deviceID, 1);
+
+		//idr_remove(&main_device->group_map, id_cursor);
+	}
+
+
+
+
+
 	/* unregister devices */
 	sUnregisterMainDev();
+
+	printk(KERN_INFO "Unloading completed");
 }
 
 
@@ -93,10 +118,13 @@ static int mainOpen(struct inode *inode, struct file *filep)
 		/* allocate main device data */
 		main_device = (T_MAIN_SYNC *) kmalloc(sizeof(T_MAIN_SYNC), GFP_KERNEL);
 
+		if(!main_device)
+			return -1;
+
 		initializeMainDevice();
 
 		//Store data into 'device_info' (kept per device)
-		filep->device_info = main_device;
+		//filep->device_info = main_device;
 
 		//Dev should only answare to ioctl request so no private data is needed
 		//Possible improvement: store into 'private_data' the creator of a group
@@ -233,7 +261,7 @@ static int sRegisterMainDev(void)
 			continue;
 		}
 		/* create device node */
-		device_create(g_class, NULL, dev_tmp, NULL, D_DEV_NAME "%u", g_dev_minor + i);
+		main_dev = device_create(g_class, NULL, dev_tmp, NULL, D_DEV_NAME "%u", g_dev_minor + i);
 	}
 
 	return 0;
@@ -291,6 +319,8 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
 
 		//Allocate the new structure
 		new_group = kmalloc(sizeof(group_t), GFP_KERNEL);
+		if(!new_group)
+			return -1;
 		printk(KERN_DEBUG "New 'group_t' structure allocated");
 
 		//Copy parameter from user space
@@ -307,7 +337,6 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
 			printk(KERN_INFO "Unable to install a group, exiting");
 
 			kfree(new_group);
-
 			return -1;
 		}
 
@@ -334,8 +363,13 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
 int installGroup(group_t *new_group_descriptor){
 
 	group_data *new_group;
+	int group_id;
 
 	new_group = kmalloc(sizeof(group_data), GFP_KERNEL);
+
+	if(!new_group)
+		return -1;
+
 
 	new_group->descriptor = new_group_descriptor;
 
@@ -345,41 +379,35 @@ int installGroup(group_t *new_group_descriptor){
 
 		//Allocate ID
 		printk(KERN_DEBUG "Allocating IDR");
-		int group_id = idr_alloc(&main_device->group_map, new_group, GRP_MIN_ID, GRP_MAX_ID, GFP_KERNEL);
+		new_group->group_id  = idr_alloc(&main_device->group_map, new_group, GRP_MIN_ID, GRP_MAX_ID, GFP_KERNEL);
 
 	up(&main_device->sem);
 
-	if(group_id == -ENOSPC){
+	if(new_group->group_id  == -ENOSPC){
 		printk(KERN_INFO "Unable to allocate ID for the new group");
-
-		//Free memory
-		kfree(new_group);
-		down(&main_device->sem);
-		idr_remove(&main_device->group_map, group_id);
-		up(&main_device->sem);
-
-		return -1;
+		goto cleanup;
 	}
 
 
 	printk(KERN_DEBUG "Registering Group device...");
-	int err = registerGroupDevice(group_id, new_group);
+	int err = registerGroupDevice(new_group, main_dev);
 
 	if(err != 0){
 		printk(KERN_ERR "Error: %d", err);
-
-		//Free memory
-		kfree(new_group);
-		down(&main_device->sem);
-			idr_remove(&main_device->group_map, group_id);
-		up(&main_device->sem);
-
-		return -1;
+		goto cleanup;
 	}
 
 
 	return 0;
 
+
+	cleanup:
+		//Free memory
+		kfree(new_group);
+		down(&main_device->sem);
+			idr_remove(&main_device->group_map, group_id);
+		up(&main_device->sem);
+		return -1;
 }
 
 

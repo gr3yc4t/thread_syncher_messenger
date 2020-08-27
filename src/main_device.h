@@ -94,6 +94,8 @@ static int g_dev_major = D_DEV_MAJOR;		/**< major# */
 static int g_dev_minor = D_DEV_MINOR;		/**< minor# */
 static int g_buf[D_DEV_NUM][D_BUF_SIZE];	/**< buffer (for sample-code) */
 
+//TODO: change to a more meaningful name
+static struct device *main_dev;				//Used for "parent" field in device_create; 
 
 //Main device global pointer 
 static T_MAIN_SYNC *main_device;		

@@ -35,10 +35,13 @@ typedef struct group_t {
 
 typedef struct group_data {
     struct cdev cdev;           //Characted Device definition  
-    dev_t deviceID;
+    dev_t deviceID;             //TODO: remove as already present in "cdev"
+
+    int group_id;               //Returned by the IDR
 
     int message_variable;
 
+    struct device* dev;
     group_t *descriptor;
 } group_data;
 
@@ -60,11 +63,16 @@ static struct file_operations group_operation = {
 };
 
 
+// Global Variables
+
+static struct class *group_class;
 
 
 
-int registerGroupDevice(unsigned int group_device, group_data *grp_data);
 
+int registerGroupDevice(group_data *grp_data, struct device* parent);
+
+void unregisterGroupDevice(group_data *grp_data);
 
 
 
