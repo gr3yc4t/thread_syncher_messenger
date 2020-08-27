@@ -1,0 +1,1 @@
+KERNEL=="group[0-255]*",NAME="synch/group%n", SYMLINK+="group_synch%n", GROUP="synch"
