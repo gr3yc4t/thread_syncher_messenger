@@ -15,7 +15,7 @@ typedef struct group_t {
 } group_t;
 
 
-int installGroup(char *main_device_path){
+int installGroup(const char *main_device_path){
 
     FILE *fd;
 
@@ -47,18 +47,48 @@ int installGroup(char *main_device_path){
 
 
 
+int readGroup(const char *group_path){
+
+    FILE *fd;
+
+    fd = fopen(group_path, "r"); 
+
+    if(fd == NULL){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    int numeric_descriptor = fileno(fd);
+
+    char buffer[256];
+
+
+    int ret = fread(buffer, sizeof(char), sizeof(char)*256, fd);
+
+
+    printf("Buffer content: %s", buffer);
+
+    return 0;
+
+}
+
+
+
 
 int main(int argc, char *argv[]){
 
     if(argc < 2){
         printf("Usage: %s install main_device\n", argv[0]);
-        printf("Usage: %s open group_device\n", argv[0]);
+        printf("Usage: %s read group_device\n", argv[0]);
         return -1;
     }
 
 
     if(strcmp(argv[1], "install") == 0){
         installGroup(argv[2]);
+    }else if(strcmp(argv[1], "read") == 0){
+        readGroup(argv[2]);
     }else{
         printf("Unimplemented\n\n");
     }
