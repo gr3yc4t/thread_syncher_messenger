@@ -49,26 +49,35 @@ void mainExit(void)
 {
 	printk(KERN_INFO "%s unloading ...\n", D_DEV_NAME);
 
-	group_data *cursor;
-	int id_cursor;
+	group_data *cursor1, *cursor2;
+	int id_cursor1, id_cursor2;
 
-	idr_for_each_entry(&main_device->group_map, cursor, id_cursor){
-		//unregisterGroupDevice(cursor);	TODO:Test if this is enough
-		device_destroy(group_class, cursor->deviceID);
-	}
+	if(main_device == NULL)
+		return;
 
-	if(group_class != NULL)
+	if(group_class != NULL){
+
+		idr_for_each_entry(&main_device->group_map, cursor1, id_cursor1){
+			//unregisterGroupDevice(cursor);	//TODO:Test if this is enough
+			device_destroy(group_class, cursor1->deviceID);
+			printk(KERN_DEBUG "Device %s destroyed", cursor1->descriptor->group_name);
+		}
+
+
 		class_destroy(group_class);
+		printk(KERN_DEBUG "Class destroyed");
 
-	idr_for_each_entry(&main_device->group_map, cursor, id_cursor){
-		cdev_del(&cursor->cdev);
-		unregister_chrdev_region(cursor->deviceID, 1);
+		
+		idr_for_each_entry(&main_device->group_map, cursor2, id_cursor2){
+			cdev_del(&cursor2->cdev);
+			printk(KERN_DEBUG "Character device %s destroyed", cursor1->descriptor->group_name);
+			unregister_chrdev_region(cursor2->deviceID, 1);
+			printk(KERN_DEBUG "Region %s deallocated", cursor1->descriptor->group_name);
 
-		idr_remove(&main_device->group_map, id_cursor);
+			//idr_remove(&main_device->group_map, id_cursor);
+		}
+	
 	}
-
-
-
 
 
 	/* unregister devices */
