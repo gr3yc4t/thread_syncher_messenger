@@ -69,7 +69,7 @@ int mainInit(void);
 void mainExit(void);
 
 void initializeMainDevice(void);
-int installGroup(group_t *new_group);
+int installGroup(const group_t *new_group);
 
 static int mainOpen(struct inode *inode, struct file *filep);
 static int mainRelease(struct inode *inode, struct file *filep);

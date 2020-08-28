@@ -47,8 +47,8 @@ typedef struct group_data {
 
 
 static int openGroup(struct inode *inode, struct file *file);
-static int readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
-
+static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
+static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
 
 
 
@@ -56,8 +56,8 @@ static int readGroupMessage(struct file *file, char __user *user_buffer, size_t 
 static struct file_operations group_operation = {
     .owner = THIS_MODULE,
     .open = openGroup,
-    //.read = readGroupMessage,
-    //.write = my_write,
+    .read = readGroupMessage,
+    .write = writeGroupMessage,
     //.release = my_release,
     //.unlocked_ioctl = my_ioctl
 };
@@ -70,7 +70,7 @@ static struct class *group_class;
 
 
 
-int registerGroupDevice(group_data *grp_data, struct device* parent);
+int registerGroupDevice(group_data *grp_data, const struct device* parent);
 
 void unregisterGroupDevice(group_data *grp_data);
 

@@ -64,7 +64,7 @@ void mainExit(void)
 		cdev_del(&cursor->cdev);
 		unregister_chrdev_region(cursor->deviceID, 1);
 
-		//idr_remove(&main_device->group_map, id_cursor);
+		idr_remove(&main_device->group_map, id_cursor);
 	}
 
 
@@ -360,7 +360,7 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
  * @param [in]	new_group_descriptor	The group descriptor
  */
 
-int installGroup(group_t *new_group_descriptor){
+int installGroup(const group_t *new_group_descriptor){
 
 	group_data *new_group;
 	int group_id;
