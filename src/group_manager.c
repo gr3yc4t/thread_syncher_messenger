@@ -1,6 +1,16 @@
 #include "group_manager.h"
 
 
+
+
+inline void initParticipants(group_data *grp_data){
+    INIT_LIST_HEAD(&grp_data->active_members->list);
+}
+
+
+
+
+
 /**
  *  @brief register a group device 
  *  @param [in] grp_data    The group data descriptor
@@ -60,7 +70,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         }
     }
     
-
+    //TODO: test parent behaviour
     grp_data->dev = device_create(group_class, NULL, grp_data->deviceID, NULL, device_name);
 
     if(IS_ERR(grp_data->dev)){
@@ -70,6 +80,9 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     printk(KERN_INFO "Device correctly added");
 
+    //Initialize linked-list
+    initParticipants(grp_data);     
+    grp_data->msg_manager = createMessageManager(256, 256);
 
     return 0;
 
@@ -106,16 +119,35 @@ void unregisterGroupDevice(group_data *grp_data){
 static int openGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
 
-    printk(KERN_DEBUG "Group opened");
-
     grp_data = container_of(inode->i_cdev, group_data, cdev);
 
     file->private_data = grp_data;
 
+    printk(KERN_DEBUG "Group %d opened", grp_data->group_id);
 
+    //TODO: integrate in a function
+    {
+        struct participants *newMember = (struct participants*)kmalloc(sizeof(struct participants), GFP_KERNEL);
+        if(!participants){
+            printk(KERN_ERR "Unable to allocate new member");
+            return -1;
+        }
 
-
+        newMember->pid = current->pid;
+        list_add(&newMember->list, &grp_data->active_members->list);
+        printk("New member (%d) of group %d added", current->pid, grp_data->group_id);
+    }
+    
     return 0;
+}
+
+
+static int releaseGroup(struct inode *inode, struct file *file){
+
+    group_data *grp_data = file->private_data;
+
+    printk(KERN_INFO "Group %d released", grp_data->group_id);
+
 }
 
 
@@ -126,9 +158,19 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
     const char *standard_response = "STANDARD_RESPONSE\0";
 
-    /* read data from standard_response to user buffer */
-    if (copy_to_user(user_buffer, standard_response /*+ *offset*/, size))
-        return -EFAULT;
+    int response_size = strlen(standard_response);
+    int error_count = 0;
+    // copy_to_user has the format ( * to, *from, size) and returns 0 on success
+    error_count = copy_to_user(user_buffer, standard_response, sizeof(char)*response_size);
+
+    if (error_count == 0){            // if true then have success
+        printk(KERN_INFO "EBBChar: Sent %d characters to the user\n", response_size);
+        return (response_size=0);  // clear the position to the start and return 0
+    }
+    else {
+        printk(KERN_INFO "EBBChar: Failed to send %d characters to the user\n", error_count);
+        return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
+    }
 
 
     return 0;
@@ -138,14 +180,17 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos){
 
-    char message[256];
+    char* msgTemp = (char*)kmalloc(sizeof(char)*count ,GFP_KERNEL);
+
 
     // read data from user buffer to my_data->buffer 
-    if (copy_from_user(&message + *f_pos, buf, count))
+    if (copy_from_user(&msgTemp + *f_pos, buf, count))
         return -EFAULT;
 
 
-    printk(KERN_INFO "Received message: %s", message);
+    printk(KERN_INFO "Received message: %s", msgTemp);
+
+
 
 
     return 0;
