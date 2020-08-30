@@ -60,19 +60,19 @@ void mainExit(void)
 		idr_for_each_entry(&main_device->group_map, cursor1, id_cursor1){
 			//unregisterGroupDevice(cursor);	//TODO:Test if this is enough
 			device_destroy(group_class, cursor1->deviceID);
-			printk(KERN_DEBUG "Device %s destroyed", cursor1->descriptor->group_name);
+			pr_debug("Device %s destroyed", cursor1->descriptor->group_name);
 		}
 
 
 		class_destroy(group_class);
-		printk(KERN_DEBUG "Class destroyed");
+		pr_debug("Class destroyed");
 
 		
 		idr_for_each_entry(&main_device->group_map, cursor2, id_cursor2){
 			cdev_del(&cursor2->cdev);
-			printk(KERN_DEBUG "Character device %s destroyed", cursor1->descriptor->group_name);
+			pr_debug("Character device %s destroyed", cursor1->descriptor->group_name);
 			unregister_chrdev_region(cursor2->deviceID, 1);
-			printk(KERN_DEBUG "Region %s deallocated", cursor1->descriptor->group_name);
+			pr_debug("Region %s deallocated", cursor1->descriptor->group_name);
 
 			//idr_remove(&main_device->group_map, id_cursor);
 		}
@@ -330,7 +330,7 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
 		new_group = kmalloc(sizeof(group_t), GFP_KERNEL);
 		if(!new_group)
 			return -1;
-		printk(KERN_DEBUG "New 'group_t' structure allocated");
+		pr_debug("New 'group_t' structure allocated");
 
 		//Copy parameter from user space
 		if(ret = copy_from_user(new_group, tmp, sizeof(group_t))){	//Fetch the group_t structure from userspace
@@ -346,7 +346,6 @@ long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned lon
 			printk(KERN_INFO "Unable to install a group, exiting");
 
 			kfree(new_group);
-			return -1;
 		}
 
 
@@ -387,7 +386,7 @@ int installGroup(const group_t *new_group_descriptor){
 		BUG_ON(main_device == NULL);
 
 		//Allocate ID
-		printk(KERN_DEBUG "Allocating IDR");
+		pr_debug("Allocating IDR");
 		new_group->group_id  = idr_alloc(&main_device->group_map, new_group, GRP_MIN_ID, GRP_MAX_ID, GFP_KERNEL);
 
 	up(&main_device->sem);
@@ -398,7 +397,7 @@ int installGroup(const group_t *new_group_descriptor){
 	}
 
 
-	printk(KERN_DEBUG "Registering Group device...");
+	pr_debug("Registering Group device...");
 	int err = registerGroupDevice(new_group, main_dev);
 
 	if(err != 0){

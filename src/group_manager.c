@@ -16,7 +16,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     dev_t deviceID;
 
     snprintf(device_name, DEVICE_NAME_SIZE, "group%d", grp_data->group_id);
-    printk(KERN_DEBUG "Device name: %s", device_name);
+    pr_debug("Device name: %s", device_name);
 
 
     err = alloc_chrdev_region(&grp_data->deviceID, 1, GROUP_MAX_MINORS, device_name);
@@ -26,7 +26,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         return err;
     }
 
-    printk(KERN_DEBUG "Device Major/Minor correctly allocated");
+    pr_debug("Device Major/Minor correctly allocated");
 
     cdev_init(&grp_data->cdev, &group_operation);
 
@@ -106,7 +106,7 @@ void unregisterGroupDevice(group_data *grp_data){
 static int openGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
 
-    printk(KERN_DEBUG "Group opened");
+    pr_debug("Group opened");
 
     grp_data = container_of(inode->i_cdev, group_data, cdev);
 
@@ -122,7 +122,7 @@ static int openGroup(struct inode *inode, struct file *file){
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset){
     //group_t *group_data;
 
-    printk(KERN_DEBUG "Reading messages from group");
+    pr_debug("Reading messages from group");
 
     const char *standard_response = "STANDARD_RESPONSE\0";
 
