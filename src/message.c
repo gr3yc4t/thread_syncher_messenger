@@ -1,14 +1,20 @@
 #include "message.h"
 
 
-
+/**
+ * @brief copy the list of participants into a new list
+ * 
+ * 
+ * 
+ */
 void copy_current_participants(struct list_head *dest, struct list_head *source){
     struct list_head *cursor;
 
-    int count = 0;  //TODO: Remove after finished debugging
+    int count = 0;  //TODO: Remove after finished debugging or use @ifdef
 
     list_for_each(cursor, source){
 
+        group_members_t *dest_elem;
         group_members_t *src_elem = NULL;
 
         src_elem = list_entry(cursor, group_members_t, list);
@@ -18,8 +24,7 @@ void copy_current_participants(struct list_head *dest, struct list_head *source)
         if(!src_elem)
             return;
 
-
-        group_members_t *dest_elem = (group_members_t*)kmalloc(sizeof(group_members_t), GFP_KERNEL);
+        dest_elem = (group_members_t*)kmalloc(sizeof(group_members_t), GFP_KERNEL);
 
         if(!dest_elem)
             return;
@@ -32,7 +37,7 @@ void copy_current_participants(struct list_head *dest, struct list_head *source)
     }
 
 
-    printk(KERN_INFO "Copied %d participants as message recipient", count);
+    pr_debug("Copied %d participants as message recipient", count);
 
 }
 
@@ -59,18 +64,84 @@ bool checkRecepit(struct list_head *recipients, const pid_t my_pid){
     }
 
     return false;
+}
 
+
+void setDelivered(struct list_head *recipients, const pid_t my_pid){
+
+    struct list_head *cursor, temp;
+
+    list_for_each_safe(cursor, temp, recipients){
+
+        group_members_t *member = NULL;
+
+        member = list_entry(cursor, group_members_t, list);
+
+        if(member->pid == my_pid){
+
+            list_del(pos);
+            kfree(member);
+
+            return;
+        }
+    }
+
+    return;
 }
 
 
 
 
-int copy_msg_to_user(msg_t *kmsg, msg_t *umsg){
 
+/**
+ *  @brief copy a msg_t structure from kernel-space to user-space 
+ *  @param kmsg Kernel-space msg_t
+ *  @param umsg User-space msg_t 
+ *
+ *  @return 0 on success, EFAULT if copy fails
+ * 
+ *  @note   The umsg structure must be allocated
+ */
+int copy_msg_to_user(const msg_t *kmsg, msg_t *umsg){
+
+    if(kmsg == NULL || umsg == NULL)
+        return -EFAULT;
+
+
+    if(copy_to_user(umsg, kmsg, sizeof(msg_t)))
+        return -EFAULT;
+
+    ssize_t buffer_size = kmsg->size;
+    ssize_t buffer_elem = kmsg->count;
+    ssize_t total_size = buffer_size * buffer_elem;    
+
+    pr_debug("Buffer size: %ld", total_size);
+
+    void *ubuffer = kmalloc( buffer_size * buffer_elem,  GFP_USER);
+
+    if (copy_to_user(ubuffer, kmsg->buffer, total_size))
+        return -EFAULT;
+
+    umsg->buffer = ubuffer;  //Switch pointers
+
+    return 0;
 }
 
-int copy_msg_from_user(msg_t *kmsg, msg_t *umsg){
+
+/**
+ *  @brief copy a msg_t structure from user-space to kernel-space
+ *  @param kmsg Kernel-space msg_t
+ *  @param umsg User-space msg_t 
+ *
+ *  @return 0 on success, EFAULT if copy fails
+ * 
+ *  @note The kmsg structure must be allocated
+ */
+int copy_msg_from_user(msg_t *kmsg, const msg_t *umsg){
     
+    if(kmsg == NULL || umsg == NULL)
+        return -EFAULT;
+
     // read data from user buffer to my_data->buffer 
     if (copy_from_user(kmsg, umsg, sizeof(msg_t)))
         return -EFAULT;
@@ -81,7 +152,7 @@ int copy_msg_from_user(msg_t *kmsg, msg_t *umsg){
     ssize_t buffer_elem = kmsg->count;
     ssize_t total_size = buffer_size * buffer_elem;
 
-    printk(KERN_DEBUG "Buffer size: %ld", total_size);
+    pr_debug("Buffer size: %ld", total_size);
 
     void *kbuffer = kmalloc( buffer_size * buffer_elem,  GFP_KERNEL);
 
@@ -105,6 +176,8 @@ msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_
     manager->max_message_size = _max_message_size;
 
     INIT_LIST_HEAD(&manager->queue);
+
+    init_rwsem(&manager->queue_lock);
 
     return manager;
 }
@@ -137,15 +210,21 @@ int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recip
 
     newMessageDeliver->message = *message;
 
+    init_rwsem(&newMessageDeliver->recipient_lock);
     //Set message's recipients
+
     INIT_LIST_HEAD(&newMessageDeliver->recipient);
     copy_current_participants(&newMessageDeliver->recipient, recipients);
 
     //TODO: remove the sender from the recipient list
 
     //Add to the msg_manager message queue
-    list_add_tail(&newMessageDeliver->fifo_list, &manager->queue);
 
+    down_write(&manager->queue_lock);
+        //Queue Critical Section
+        list_add_tail(&newMessageDeliver->fifo_list, &manager->queue);
+    
+    up_write(&manager->queue_lock);
 }
 
 /**
@@ -160,21 +239,31 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
     struct list_head *cursor;
 
-    list_for_each(cursor, &manager->queue){
+    down_read(&manager->queue_lock);
 
-        struct t_message_deliver *p = NULL;
+        //Read queue critical section
 
-        p = list_entry(cursor, struct t_message_deliver, fifo_list);
+        list_for_each(cursor, &manager->queue){
 
-        if(checkRecepit(&p->recipient, pid)){
-            printk(KERN_INFO "Message found for PID: %d", (int)pid);
-            //Copy the message to the destination buffer
-            memcpy(dest_buffer, &p->message, sizeof(msg_t));
-            return 0;
+            struct t_message_deliver *p = NULL;
+
+            p = list_entry(cursor, struct t_message_deliver, fifo_list);
+
+            if(checkRecepit(&p->recipient, pid)){
+                printk(KERN_INFO "Message found for PID: %d", (int)pid);
+                //Copy the message to the destination buffer
+                memcpy(dest_buffer, &p->message, sizeof(msg_t));
+                return 0;
+            }
+
+            //Otherwise, continue with the next message
         }
 
-        //Otherwise, continue with the next message
-    }
+    up_read(&manager->queue_lock);
+
+
+    //Procedure to remove the current recipient from the recipient's list
+    //setDelivered()
 
 
     printk(KERN_INFO "No message present for PID: %d", pid);
