@@ -22,15 +22,15 @@ typedef struct t_message{
 
 
 /** @brief Threads that are recipient the group device */
-struct participants{
+typedef struct t_group_members{
     pid_t pid;
     struct list_head list;
-}
+} group_members_t;
 
 
 struct t_message_deliver{
     msg_t message;
-    struct participants recipient; //PIDs of threads that should read 'message'
+    struct list_head recipient; //PIDs of threads that should read 'message'
 
     struct list_head fifo_list;
 };
@@ -43,25 +43,20 @@ typedef struct t_message_manager{
     u_int max_message_size;
     u_int max_storage_size;
 
-    struct t_message_deliver queue;
-
+    struct list_head queue;
 } msg_manager_t;
 
 
 
 
-
-
-inline pid_t getPID(){
-    return current->pid;
-}
-
-
 msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size);
 
 
-int writeMessage(msg_t *message, ssize_t size, ssize_t count, group_data *grp_data);
-int readMessage(msg_t *dest_buffer, ssize_t size, ssize_t count, group_data *grp_data);
+int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recipients);
+int readMessage(msg_t *dest_buffer, msg_manager_t *manager);
+
+int copy_msg_from_user(msg_t *kmsg, msg_t *umsg);
+int copy_msg_to_user(msg_t *kmsg, msg_t *umsg);
 
 
 #endif //MSG_H

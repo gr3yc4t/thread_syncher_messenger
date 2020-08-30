@@ -46,7 +46,7 @@ typedef struct group_data {
     dev_t deviceID;             //TODO: remove as already present in "cdev"
     int group_id;               //Returned by the IDR
 
-    struct participants active_members;
+    struct list_head active_members;
 
     msg_manager_t *msg_manager;
     

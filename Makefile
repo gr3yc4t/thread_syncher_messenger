@@ -1,6 +1,6 @@
 # Makefile for LKM
 obj-m := final.o
-final-objs := ./src/main.o ./src/main_device.o ./src/group_manager.o
+final-objs := ./src/main.o ./src/main_device.o ./src/group_manager.o ./src/message.o
 
 KDIR=/lib/modules/$(shell uname -r)/build
 

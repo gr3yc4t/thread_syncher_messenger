@@ -2,11 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include <sys/types.h>
 #include <sys/ioctl.h>
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
 
+
+typedef struct t_message{
+    pid_t author;   //Author thread
+
+    void *buffer;
+
+    ssize_t size;
+    ssize_t count;
+} msg_t;
 
 
 typedef struct group_t {
@@ -74,6 +83,41 @@ int readGroup(const char *group_path){
 }
 
 
+int writeGroup(const char *group_path){
+
+    char buffer[256];
+
+    strcpy(buffer, "PIPPO\0");
+
+    int len = strlen(buffer);
+
+    msg_t my_msg = {
+        .author = getppid(),
+        .size = sizeof(char),
+        .count = len,
+        .buffer = &buffer
+    };
+
+
+
+    FILE *fd;
+
+    fd = fopen(group_path, "w"); 
+
+    if(fd == NULL){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    int ret = fwrite(&my_msg, sizeof(msg_t), 1, fd);
+
+
+    printf("Bytes written: %ld", ret);
+    printf("\nsizeof(msg_t) = %ld", sizeof(msg_t));
+
+    return;
+}
 
 
 int main(int argc, char *argv[]){
@@ -88,6 +132,13 @@ int main(int argc, char *argv[]){
     if(strcmp(argv[1], "install") == 0){
         installGroup(argv[2]);
     }else if(strcmp(argv[1], "read") == 0){
+        readGroup(argv[2]);
+    }else if(strcmp(argv[1], "write") == 0){
+        writeGroup(argv[2]);
+    }else if(strcmp(argv[1], "wr") == 0){
+        writeGroup(argv[2]);
+        printf("\nGroup written, waiting for a char to continue...\n");
+        int c = getchar();
         readGroup(argv[2]);
     }else{
         printf("Unimplemented\n\n");
