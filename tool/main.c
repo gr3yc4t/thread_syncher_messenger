@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
+
+#define THREAD_NUM 64
 
 
 typedef struct t_message{
@@ -23,6 +26,38 @@ typedef struct group_t {
 	char *group_name;
 } group_t;
 
+
+
+pthread_t tid[THREAD_NUM];
+
+
+void concurrentRead(void *args){
+
+    pthread_t id = pthread_self();
+    printf("\n[R] Thread N. %ld\n", id);
+
+    FILE *fd;
+    fd = fopen((char*)args, "r"); 
+
+    if(fd == NULL){
+        printf("[T-%ld] Error while opening the group file\n", id);
+        return -1;
+    }
+
+    char buffer[256];
+    int ret = fread(buffer, sizeof(char), sizeof(char)*256, fd);
+
+
+
+}
+
+
+void concurrentWrite(void *args){
+
+    pthread_t id = pthread_self();
+    printf("\n[w] Thread N. %ld\n", id);
+
+}
 
 int installGroup(const char *main_device_path){
 
@@ -67,16 +102,16 @@ int readGroup(const char *group_path){
         return -1;
     }
 
-
     int numeric_descriptor = fileno(fd);
+    msg_t msg;
 
-    char buffer[256];
+    int ret = fread(&msg, sizeof(msg_t), 1, fd);
 
+    if(ret <= 0){
+        printf("[ ] No message is present\n");
+    }
 
-    int ret = fread(buffer, sizeof(char), sizeof(char)*256, fd);
-
-
-    printf("Buffer content: %s", buffer);
+    printf("Buffer content: %s\n", msg.buffer);
 
     return 0;
 
@@ -90,6 +125,8 @@ int writeGroup(const char *group_path){
     strcpy(buffer, "PIPPO\0");
 
     int len = strlen(buffer);
+
+    printf("\nLen = %d\n", len);
 
     msg_t my_msg = {
         .author = getppid(),
@@ -113,11 +150,15 @@ int writeGroup(const char *group_path){
     int ret = fwrite(&my_msg, sizeof(msg_t), 1, fd);
 
 
-    printf("Bytes written: %ld", ret);
+    printf("Totel element written: %ld", ret);
     printf("\nsizeof(msg_t) = %ld", sizeof(msg_t));
+
+    fclose(fd);
 
     return;
 }
+
+
 
 
 int main(int argc, char *argv[]){
@@ -140,6 +181,27 @@ int main(int argc, char *argv[]){
         printf("\nGroup written, waiting for a char to continue...\n");
         int c = getchar();
         readGroup(argv[2]);
+    }else if(strcmp(argv[1], "cwr") == 0){
+        int i, err;
+
+        for(i=0; i<THREAD_NUM; i++){
+            
+            if(i%2 == 0)
+                err = pthread_create(&(tid[i]), NULL, &concurrentRead, (void*)argv[2]);
+            else
+                err = pthread_create(&(tid[i]), NULL, &concurrentWrite, (void*)argv[2]);
+
+
+
+            if(err < 0){
+                printf("\n[%d] Errror while creating the thread", i);
+            }
+       
+        }
+
+
+
+
     }else{
         printf("Unimplemented\n\n");
     }

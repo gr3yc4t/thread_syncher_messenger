@@ -68,7 +68,7 @@ static struct file_operations group_operation = {
     .open = openGroup,
     .read = readGroupMessage,
     .write = writeGroupMessage,
-    //.release = my_release,
+    .release = releaseGroup,
     //.unlocked_ioctl = my_ioctl
 };
 

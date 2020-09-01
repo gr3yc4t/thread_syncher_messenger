@@ -1,6 +1,56 @@
 #include "message.h"
 
 
+void debugMsg(msg_t msg){
+
+    printk(KERN_INFO "MESSAGE DATA");
+    printk(KERN_INFO "Message type size %d", msg.size);
+    printk(KERN_INFO "Message count size %d", msg.count);
+    printk(KERN_INFO "Message author pid %d", msg.author);
+
+    if(msg.size == sizeof(char) && msg.buffer != NULL){
+        printk(KERN_INFO "Message string %s", (char*)msg.buffer);
+    }
+
+}
+
+
+/**
+ * @brief Check if the delivery of msg will exceed max sizes
+ * @param msg The message to test for
+ * @return true if the size limits are respected, false otherwise
+ * 
+ * @note This function is thread-safe
+ */
+bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
+
+        down_read(&manager->config_lock);
+            u_int msg_size = msg->size * msg->count;
+
+            pr_debug("Message size: %d", msg_size);
+
+            if(msg_size > manager->max_message_size){
+                pr_debug("Max msg. size invalidated!!!");
+                goto invalid;
+            }
+
+            if(manager->curr_storage_size + msg_size > manager->max_storage_size){
+                pr_debug("Max msg. storage size invalidated!!!");
+                goto invalid;
+            }
+
+        up_read(&manager->config_lock);
+
+        return true;
+
+    invalid:
+        up_read(&manager->config_lock);
+        return false;
+}
+
+
+
+
 /**
  * @brief copy the list of participants into a new list
  * 
@@ -69,7 +119,7 @@ bool checkRecepit(struct list_head *recipients, const pid_t my_pid){
 
 void setDelivered(struct list_head *recipients, const pid_t my_pid){
 
-    struct list_head *cursor, temp;
+    struct list_head *cursor, *temp;
 
     list_for_each_safe(cursor, temp, recipients){
 
@@ -79,7 +129,7 @@ void setDelivered(struct list_head *recipients, const pid_t my_pid){
 
         if(member->pid == my_pid){
 
-            list_del(pos);
+            list_del(cursor);
             kfree(member);
 
             return;
@@ -99,7 +149,7 @@ void setDelivered(struct list_head *recipients, const pid_t my_pid){
  *  @param umsg User-space msg_t 
  *
  *  @return 0 on success, EFAULT if copy fails
- * 
+ *  @todo Check thread-safety of the function 
  *  @note   The umsg structure must be allocated
  */
 int copy_msg_to_user(const msg_t *kmsg, msg_t *umsg){
@@ -134,7 +184,7 @@ int copy_msg_to_user(const msg_t *kmsg, msg_t *umsg){
  *  @param umsg User-space msg_t 
  *
  *  @return 0 on success, EFAULT if copy fails
- * 
+ *  @todo Check thread-safety of the function
  *  @note The kmsg structure must be allocated
  */
 int copy_msg_from_user(msg_t *kmsg, const msg_t *umsg){
@@ -174,10 +224,12 @@ msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_
 
     manager->max_storage_size = _max_storage_size;
     manager->max_message_size = _max_message_size;
+    manager->curr_storage_size = 0;
 
     INIT_LIST_HEAD(&manager->queue);
 
     init_rwsem(&manager->queue_lock);
+    init_rwsem(&manager->config_lock);
 
     return manager;
 }
@@ -199,8 +251,16 @@ msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_
 int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recipients){
 
     pid_t pid = current->pid;
-
     struct t_message_deliver *newMessageDeliver;
+
+    debugMsg(*message);
+
+    if(!isValidSizeLimits(message, manager)){
+        printk(KERN_ERR "Message size is invalid");
+        return -1;
+    }
+
+
 
     newMessageDeliver = (struct t_message_deliver*)kmalloc(sizeof(struct t_message_deliver), GFP_KERNEL);
     if(!newMessageDeliver)
@@ -225,6 +285,8 @@ int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recip
         list_add_tail(&newMessageDeliver->fifo_list, &manager->queue);
     
     up_write(&manager->queue_lock);
+
+    return 0;
 }
 
 /**

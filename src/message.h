@@ -48,6 +48,12 @@ typedef struct t_message_manager{
     u_int max_message_size;
     u_int max_storage_size;
 
+    u_int curr_storage_size;
+
+
+    struct rw_semaphore config_lock;
+
+
     struct list_head queue;
     struct rw_semaphore queue_lock;
 } msg_manager_t;

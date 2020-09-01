@@ -143,7 +143,7 @@ static int releaseGroup(struct inode *inode, struct file *file){
 
     group_data *grp_data = file->private_data;
 
-    printk(KERN_INFO "Group %d released", grp_data->group_id);
+    printk(KERN_INFO " - Group %d released by %ld - ", grp_data->group_id, current->pid);
 
 }
 
@@ -158,36 +158,29 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
     printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
 
+    if(size < sizeof(msg_t)){
+        pr_debug("Size must be at least %d", sizeof(msg_t));
+        return -1;
+    }
 
     msg_t message;
 
-    if(!readMessage(&message, grp_data->msg_manager)){
+    if(readMessage(&message, grp_data->msg_manager)){
         printk(KERN_INFO "No message available");
-        return 0;
+        return -1;  //TODO: differentiate from normal error
     }
 
 
     printk(KERN_INFO "A message was available!!");
 
-/*
-    const char *standard_response = "STANDARD_RESPONSE\0";
+    //Parse the message
 
-    int response_size;
-    response_size = strlen(standard_response);
-
-    int error_count = 0;
-    // copy_to_user has the format ( * to, *from, size) and returns 0 on success
-    error_count = copy_to_user(user_buffer, standard_response, sizeof(char)*response_size);
-
-    if (error_count == 0){            // if true then have success
-        printk(KERN_INFO "EBBChar: Sent %d characters to the user\n", response_size);
-        return (response_size=0);  // clear the position to the start and return 0
+    if(!copy_msg_to_user(&message, (msg_t*)user_buffer)){
+        printk(KERN_ERR "Unable to copy the message to user-space");
+        return -1;
     }
-    else {
-        printk(KERN_INFO "EBBChar: Failed to send %d characters to the user\n", error_count);
-        return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
-    }
-*/
+
+    printk(KERN_INFO "Message copied to user-space");
 
     return 0;
 }
@@ -209,32 +202,12 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
     copy_msg_from_user(msgTemp, (msg_t*)buf); 
 
-    /*
-    // read data from user buffer to my_data->buffer 
-    if (copy_from_user(msgTemp, buf, sizeof(msg_t)))
-        return -EFAULT;
-
-
-    printk(KERN_INFO "Message for group%d queued", grp_data->group_id);
-
-
-    //Copy the 'buffer' filed of 'msg_t' into kernel space
-    ssize_t buffer_size = msgTemp->size;
-    ssize_t buffer_elem = msgTemp->count;
-    ssize_t total_size = buffer_size * buffer_elem;
-
-    printk(KERN_DEBUG "Buffer size: %d", total_size);
-
-    void *kbuffer = kmalloc( buffer_size * buffer_elem,  GFP_KERNEL);
-
-    if (copy_from_user(kbuffer, msgTemp->buffer, total_size))
-        return -EFAULT;
-
-    msgTemp->buffer = kbuffer;  //Swith pointers
-    */
-
     int ret = writeMessage(msgTemp, grp_data->msg_manager, &grp_data->active_members);
 
+    if(ret < 0){
+        printk(KERN_ERR "Unable to write the message");
+        return -1;
+    }
 
     printk(KERN_INFO "Message for group%d queued", grp_data->group_id);
 
