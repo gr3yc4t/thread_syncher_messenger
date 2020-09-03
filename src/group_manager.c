@@ -5,6 +5,45 @@
 
 inline void initParticipants(group_data *grp_data){
     INIT_LIST_HEAD(&grp_data->active_members);
+    atomic_set(&grp_data->members_count, 0);
+    init_rwsem(&grp_data->member_lock);
+}
+
+/**
+ * @brief Remove an element from the list of participant thread
+ * @param [in] participants  Pointer to the list_head of participants
+ * @param [in] _pid The element to remove
+ * 
+ * @return 0 on success EMPTY_LIST if the list is empty, NODE_NOT_FOUND if the 
+ *      element is not present on the list 
+ * 
+ * @note This functions is not thread-safe, and should be procected with a lock
+ */
+int removeParticipant(struct list_head *participants, pid_t _pid){
+
+    struct list_head *cursor;
+    struct list_head *temp;
+    group_members_t *entry;
+
+
+    BUG_ON(participants == NULL);
+
+    if(list_empty(participants)){
+        return EMPTY_LIST;
+    }
+
+
+    list_for_each_safe(cursor, temp, participants){    //TODO: check if the unsafe version is enough
+
+        entry = list_entry(cursor, group_members_t, list);
+
+        if(entry->pid == _pid){
+            list_del_init(cursor);
+            return 0;
+        }
+    }
+
+    return NODE_NOT_FOUND;
 }
 
 
@@ -19,8 +58,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     int err;
     char device_name[DEVICE_NAME_SIZE];    //Device name buffer
-
-    dev_t deviceID;
 
     snprintf(device_name, DEVICE_NAME_SIZE, "group%d", grp_data->group_id);
     printk(KERN_DEBUG "Device name: %s", device_name);
@@ -79,7 +116,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     //Initialize linked-list
     initParticipants(grp_data);     
-    grp_data->msg_manager = createMessageManager(256, 256);
+    grp_data->msg_manager = createMessageManager(256, 256, &grp_data->garbage_collector_work);
 
     return 0;
 
@@ -112,7 +149,12 @@ void unregisterGroupDevice(group_data *grp_data){
 
 
 
-
+/**
+ * @brief Called when an application opens the device file
+ * 
+ * Add the process that opened the device to the 'active_members' list
+ * 
+ */
 static int openGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
 
@@ -131,76 +173,119 @@ static int openGroup(struct inode *inode, struct file *file){
         }
 
         newMember->pid = current->pid;
-        list_add(&newMember->list, &grp_data->active_members);
+        
+        down_write(&grp_data->member_lock);
+            list_add(&newMember->list, &grp_data->active_members);
+        up_write(&grp_data->member_lock);
+
+        atomic_inc(&grp_data->members_count);
         printk("New member (%d) of group %d added", current->pid, grp_data->group_id);
     }
     
     return 0;
 }
 
-
+/**
+ * @brief Called when an application closes the device file
+ * 
+ * Remove the process that closed the device from the 'active_members' list
+ *  and start the garbage collector
+ * 
+ */
 static int releaseGroup(struct inode *inode, struct file *file){
 
-    group_data *grp_data = file->private_data;
+    group_data *grp_data = (group_data*)file->private_data;
 
-    printk(KERN_INFO " - Group %d released by %ld - ", grp_data->group_id, current->pid);
+    printk(KERN_INFO " - Group %d released by %d - ", grp_data->group_id, current->pid);
+
+    down_write(&grp_data->member_lock);
+        int ret = removeParticipant(&grp_data->active_members, current->pid);
+    up_write(&grp_data->member_lock);
+
+    if(ret == EMPTY_LIST){
+        printk(KERN_ERR "Releasig group, strange error: EMPTY_LIST");
+        return 0;
+    }
+    if(ret == NODE_NOT_FOUND){
+        printk(KERN_ERR "Releasig group, strange error: NODE_NOT_FOUND");
+        return 0;
+    }
+
+    atomic_dec(&grp_data->members_count);
+
+    pr_debug("Removed participant %d from active members", current->pid);
+
+
+    //Start a workqueue for cleaning up message that are completely delivered
+    schedule_work(&grp_data->garbage_collector_work);
+
+    return 0;
 
 }
 
 /**
- * @brief Consult the message-manager and fetch msg_t structure 
+ * @brief Consult the message-manager and fetch incoming structure 
  * 
- * 
- * @todo  Conversion from kernel address to user address
+ * @note 'offset' is ignored since messages are independent data unit
+ * @note If more byte than the available is requested, the function only copies the 
+ *          available bytes.
+ * @return The number of bytes readed
  */
-static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset){
+static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t _size, loff_t *offset){
     group_data *grp_data = (group_data*) file->private_data;
 
     printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
 
-    if(size < sizeof(msg_t)){
-        pr_debug("Size must be at least %d", sizeof(msg_t));
-        return -1;
-    }
 
     msg_t message;
+    ssize_t available_size;
 
     if(readMessage(&message, grp_data->msg_manager)){
         printk(KERN_INFO "No message available");
-        return -1;  //TODO: differentiate from normal error
+        return NO_MSG_PRESENT;
     }
 
 
     printk(KERN_INFO "A message was available!!");
 
-    //Parse the message
+    //If the user-space application request more byte than available, return only available bytes
+    if(message.size < _size){
+        available_size = message.size;
+    }else{
+        available_size = _size;
+    }
 
-    if(!copy_msg_to_user(&message, (msg_t*)user_buffer)){
+
+    //Parse the message
+    if(copy_msg_to_user(&message, (int8_t*)user_buffer, available_size) == -EFAULT){
         printk(KERN_ERR "Unable to copy the message to user-space");
-        return -1;
+        return MEMORY_ERROR;
     }
 
     printk(KERN_INFO "Message copied to user-space");
 
-    return 0;
+    pr_debug("Scheduling garbage collector");
+    //Start a workqueue for cleaning up message that are completely delivered
+    schedule_work(&grp_data->garbage_collector_work);
+
+    return available_size;
 }
 
+/**
+ * @brief Routine called when a 'write()' is issued on the group char device
+ * 
+ * @return 0 on success, MSG_SIZE_ERROR if the size of message is wrong, 
+ */
 
-
-static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos){
+static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t _size, loff_t *f_pos){
 
     group_data *grp_data = (group_data*) filep->private_data;
 
-
-    if(count < sizeof(msg_t)){
-        printk(KERN_INFO "Message could be delivered only in 'msg_t' format");
-        return 0;
-    }
-
-
     msg_t* msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
 
-    copy_msg_from_user(msgTemp, (msg_t*)buf); 
+    copy_msg_from_user(msgTemp, (int8_t*)buf, _size); 
+
+    msgTemp->author = current->pid;
 
     int ret = writeMessage(msgTemp, grp_data->msg_manager, &grp_data->active_members);
 

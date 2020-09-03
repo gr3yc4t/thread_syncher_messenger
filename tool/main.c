@@ -3,7 +3,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h> //For sleep()/nanosleep()
-
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
@@ -17,16 +18,6 @@
 #define MEMORY_ERROR -13
 
 
-typedef struct t_message{
-    pid_t author;   //Author thread
-
-    void *buffer;
-
-    ssize_t size;
-    ssize_t count;
-} msg_t;
-
-
 typedef struct group_t {
 	unsigned int group_id;		//Thread group ID
 	char *group_name;
@@ -35,6 +26,13 @@ typedef struct group_t {
 
 
 pthread_t tid[THREAD_NUM];
+
+
+void pause_char(){
+    printf("\n\nWaiting...\n");
+    char temp = getchar();
+}
+
 
 
 void t_nanosleep(long _nanoseconds){
@@ -57,13 +55,14 @@ void concurrentRead(void *args){
     pthread_t id = pthread_self();
     printf("\n[R] Thread N. %ld\n", id);
 
-    FILE *fd;
-    fd = fopen((char*)args, "r"); 
+    int *fd;
+    fd = open((char*)args, O_RDONLY); 
 
-    if(fd == NULL){
+    if(fd < 0){
         printf("[T-%ld] Error while opening the group file\n", id);
         return -1;
     }
+
 
     //Random Sleep 1
     long sleep_time1 = rand()%10000;
@@ -71,8 +70,9 @@ void concurrentRead(void *args){
 
 
 
-    msg_t msg;
-    int ret = fread(&msg, sizeof(msg_t), 1, fd);
+    char buffer[256];
+    const unsigned int len = 50;
+    int ret = read(fd, &buffer, sizeof(char)*len);
 
     if(!ret){
         switch (ret)
@@ -93,10 +93,9 @@ void concurrentRead(void *args){
     long sleep_time2 = rand()%10000;
     usleep(sleep_time2);
 
-    fclose(fd);
+    close(fd);
 
 }
-
 
 void concurrentWrite(void *args){
 
@@ -104,34 +103,25 @@ void concurrentWrite(void *args){
     printf("\n[w] Thread N. %ld\n", id);
 
     char buffer[256];
-    FILE *fd;
 
 
     strcpy(buffer, "PIPPO\0");
     int len = strlen(buffer);
-
     printf("\nLen = %d\n", len);
 
-    msg_t my_msg = {
-        .author = getppid(),
-        .size = sizeof(char),
-        .count = len,
-        .buffer = &buffer
-    };
 
+    int *fd;
+    fd = open((char*)args, O_WRONLY); 
 
-    fd = fopen((char*)args, "w"); 
-
-    if(fd == NULL){
+    if(fd < 0){
         printf("Error while opening the group file\n");
         return -1;
     }
 
 
-    int ret = fwrite(&my_msg, sizeof(msg_t), 1, fd);
+    int ret = write(fd, &buffer, sizeof(char)*len);
 
     printf("Totel element written: %ld", ret);
-    printf("\nsizeof(msg_t) = %ld", sizeof(msg_t));
 
 
     //Random Sleep
@@ -139,7 +129,7 @@ void concurrentWrite(void *args){
     usleep(sleep_time);
 
 
-    fclose(fd);
+    close(fd);
 
     return;
 
@@ -176,28 +166,40 @@ int installGroup(const char *main_device_path){
 }
 
 
-
 int readGroup(const char *group_path){
 
-    FILE *fd;
+    int *fd;
+    fd = open(group_path, O_RDONLY); 
 
-    fd = fopen(group_path, "r"); 
-
-    if(fd == NULL){
+    if(fd < 0){
         printf("Error while opening the group file\n");
         return -1;
     }
 
-    int numeric_descriptor = fileno(fd);
-    msg_t msg;
+    char buffer[256];
+    char string_buffer[256];
+    unsigned int len = 60;
 
-    int ret = fread(&msg, sizeof(msg_t), 1, fd);
+    int ret = read(fd, &buffer, sizeof(char)*len);
 
-    if(ret <= 0){
+    printf("Read return value %d\n", ret);
+
+    if(ret == 0){
         printf("[ ] No message is present\n");
+    }else if(ret == MEMORY_ERROR){
+        printf("[X] Memory Error\n");
+    }else if(ret > 0){
+
+        strncpy(string_buffer, buffer, ret);
+
+        printf("Buffer content: %s\n", string_buffer);
     }
 
-    printf("Buffer content: %s\n", msg.buffer);
+
+    pause_char();
+
+
+    close(fd);
 
     return 0;
 
@@ -212,34 +214,22 @@ int writeGroup(const char *group_path){
 
     int len = strlen(buffer);
 
-    printf("\nLen = %d\n", len);
 
-    msg_t my_msg = {
-        .author = getppid(),
-        .size = sizeof(char),
-        .count = len,
-        .buffer = &buffer
-    };
+    int *fd;
+    fd = open(group_path, O_WRONLY); 
 
-
-
-    FILE *fd;
-
-    fd = fopen(group_path, "w"); 
-
-    if(fd == NULL){
+    if(fd < 0){
         printf("Error while opening the group file\n");
         return -1;
     }
 
-
-    int ret = fwrite(&my_msg, sizeof(msg_t), 1, fd);
-
+    int ret = write(fd, &buffer, sizeof(char)*len);
 
     printf("Totel element written: %ld", ret);
-    printf("\nsizeof(msg_t) = %ld", sizeof(msg_t));
 
-    fclose(fd);
+    pause_char();
+
+    close(fd);
 
     return;
 }

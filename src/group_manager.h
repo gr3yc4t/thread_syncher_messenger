@@ -23,36 +23,15 @@
 
 
 
+#define EMPTY_LIST -20
+#define NODE_NOT_FOUND -21
+
+
 #define GROUP_MAX_MINORS    255
 #define DEVICE_NAME_SIZE    64
 
 
-/**
- * @brief system-wide descriptor of a group
- */
-typedef struct group_t {
-	unsigned int group_id;		//Thread group ID
-	char *group_name;
-} group_t;
 
-
-
-
-
-
-
-typedef struct group_data {
-    struct cdev cdev;           //Characted Device definition  
-    dev_t deviceID;             //TODO: remove as already present in "cdev"
-    int group_id;               //Returned by the IDR
-
-    struct list_head active_members;
-
-    msg_manager_t *msg_manager;
-    
-    struct device* dev;
-    group_t *descriptor;        /** @brief system-wide descriptor*/
-} group_data;
 
 
 static int openGroup(struct inode *inode, struct file *file);
