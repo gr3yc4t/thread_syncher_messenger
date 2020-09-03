@@ -1,12 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
+#include <pthread.h>
+#include <unistd.h> //For sleep()/nanosleep()
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/types.h>
 #include <sys/ioctl.h>
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
 
+#define THREAD_NUM 64
+
+#define NO_MSG_PRESENT -10
+#define MSG_INVALID_FORMAT -11
+#define MSG_SIZE_ERROR  -12
+#define MEMORY_ERROR -13
 
 
 typedef struct group_t {
@@ -14,6 +23,117 @@ typedef struct group_t {
 	char *group_name;
 } group_t;
 
+
+
+pthread_t tid[THREAD_NUM];
+
+
+void pause_char(){
+    printf("\n\nWaiting...\n");
+    char temp = getchar();
+}
+
+
+
+void t_nanosleep(long _nanoseconds){
+
+    struct timespec interval = {
+        .tv_sec = 0,
+        .tv_nsec = _nanoseconds
+    };
+
+    struct timespec interval2;
+
+    nanosleep(&interval, &interval2);
+
+}
+
+
+
+void concurrentRead(void *args){
+
+    pthread_t id = pthread_self();
+    printf("\n[R] Thread N. %ld\n", id);
+
+    int *fd;
+    fd = open((char*)args, O_RDONLY); 
+
+    if(fd < 0){
+        printf("[T-%ld] Error while opening the group file\n", id);
+        return -1;
+    }
+
+
+    //Random Sleep 1
+    long sleep_time1 = rand()%10000;
+    usleep(sleep_time1);
+
+
+
+    char buffer[256];
+    const unsigned int len = 50;
+    int ret = read(fd, &buffer, sizeof(char)*len);
+
+    if(!ret){
+        switch (ret)
+        {
+        case NO_MSG_PRESENT:
+            printf("[T-%ld/R] No msg. present\n", id);
+            break;
+        case MSG_SIZE_ERROR:
+            printf("[T-%ld/R] Message too large for current limits\n", id);
+            break;        
+        default:
+            printf("[T-%ld/R] Unknow error\n", id);
+            break;
+        }
+    }
+
+    //Random Sleep 2
+    long sleep_time2 = rand()%10000;
+    usleep(sleep_time2);
+
+    close(fd);
+
+}
+
+void concurrentWrite(void *args){
+
+    pthread_t id = pthread_self();
+    printf("\n[w] Thread N. %ld\n", id);
+
+    char buffer[256];
+
+
+    strcpy(buffer, "PIPPO\0");
+    int len = strlen(buffer);
+    printf("\nLen = %d\n", len);
+
+
+    int *fd;
+    fd = open((char*)args, O_WRONLY); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    int ret = write(fd, &buffer, sizeof(char)*len);
+
+    printf("Totel element written: %ld", ret);
+
+
+    //Random Sleep
+    long sleep_time = rand()%10000;
+    usleep(sleep_time);
+
+
+    close(fd);
+
+    return;
+
+}
 
 int installGroup(const char *main_device_path){
 
@@ -46,31 +166,72 @@ int installGroup(const char *main_device_path){
 }
 
 
-
 int readGroup(const char *group_path){
 
-    FILE *fd;
+    int *fd;
+    fd = open(group_path, O_RDONLY); 
 
-    fd = fopen(group_path, "r"); 
-
-    if(fd == NULL){
+    if(fd < 0){
         printf("Error while opening the group file\n");
         return -1;
     }
 
-
-    int numeric_descriptor = fileno(fd);
-
     char buffer[256];
+    char string_buffer[256];
+    unsigned int len = 60;
+
+    int ret = read(fd, &buffer, sizeof(char)*len);
+
+    printf("Read return value %d\n", ret);
+
+    if(ret == 0){
+        printf("[ ] No message is present\n");
+    }else if(ret == MEMORY_ERROR){
+        printf("[X] Memory Error\n");
+    }else if(ret > 0){
+
+        strncpy(string_buffer, buffer, ret);
+
+        printf("Buffer content: %s\n", string_buffer);
+    }
 
 
-    int ret = fread(buffer, sizeof(char), sizeof(char)*256, fd);
+    pause_char();
 
 
-    printf("Buffer content: %s", buffer);
+    close(fd);
 
     return 0;
 
+}
+
+
+int writeGroup(const char *group_path){
+
+    char buffer[256];
+
+    strcpy(buffer, "PIPPO\0");
+
+    int len = strlen(buffer);
+
+
+    int *fd;
+    fd = open(group_path, O_WRONLY); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    int ret = write(fd, &buffer, sizeof(char)*len);
+
+    printf("Totel element written: %ld", ret);
+
+    pause_char();
+
+    close(fd);
+
+    return;
 }
 
 
@@ -89,6 +250,41 @@ int main(int argc, char *argv[]){
         installGroup(argv[2]);
     }else if(strcmp(argv[1], "read") == 0){
         readGroup(argv[2]);
+    }else if(strcmp(argv[1], "write") == 0){
+        writeGroup(argv[2]);
+    }else if(strcmp(argv[1], "wr") == 0){
+        writeGroup(argv[2]);
+        printf("\nGroup written, waiting for a char to continue...\n");
+        int c = getchar();
+        readGroup(argv[2]);
+    }else if(strcmp(argv[1], "cwr") == 0){
+        int i, err;
+
+        for(i=0; i<THREAD_NUM; i++){
+            
+            if(i%2 == 0)
+                err = pthread_create(&(tid[i]), NULL, &concurrentRead, (void*)argv[2]);
+            else
+                err = pthread_create(&(tid[i]), NULL, &concurrentWrite, (void*)argv[2]);
+
+            if(err < 0){
+                printf("\n[%d] Errror while creating the thread", i);
+            }
+        }
+
+
+        for(i=0; i<THREAD_NUM; i++){
+            long t_sleep = rand()%10000;
+            t_nanosleep(t_sleep);
+
+            err = pthread_join(tid[i], NULL);
+            if(err < 0){
+                printf("\n[%d] Errror while joining the thread", i);
+            }
+        }
+        
+        printf("\n\nTerminated\n\n");
+
     }else{
         printf("Unimplemented\n\n");
     }

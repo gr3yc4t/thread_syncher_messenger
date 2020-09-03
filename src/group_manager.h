@@ -15,41 +15,30 @@
 #include <linux/string.h>       //For snprintf
 
 #include <linux/idr.h>
-
-
 #include <linux/errno.h>
+
+
+
+#include "message.h"
+
+
+
+#define EMPTY_LIST -20
+#define NODE_NOT_FOUND -21
+
 
 #define GROUP_MAX_MINORS    255
 #define DEVICE_NAME_SIZE    64
 
 
-/**
- * @brief system-wide descriptor of a group
- */
-typedef struct group_t {
-	unsigned int group_id;		//Thread group ID
-	char *group_name;
-} group_t;
 
-
-
-typedef struct group_data {
-    struct cdev cdev;           //Characted Device definition  
-    dev_t deviceID;             //TODO: remove as already present in "cdev"
-
-    int group_id;               //Returned by the IDR
-
-    int message_variable;
-
-    struct device* dev;
-    group_t *descriptor;
-} group_data;
 
 
 static int openGroup(struct inode *inode, struct file *file);
+static int releaseGroup(struct inode *inode, struct file *file);
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
-
+inline void initParticipants(group_data *grp_data);
 
 
 
@@ -58,7 +47,7 @@ static struct file_operations group_operation = {
     .open = openGroup,
     .read = readGroupMessage,
     .write = writeGroupMessage,
-    //.release = my_release,
+    .release = releaseGroup,
     //.unlocked_ioctl = my_ioctl
 };
 
