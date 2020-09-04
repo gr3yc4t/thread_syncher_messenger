@@ -4,8 +4,6 @@
  *
  */
 
-
-
 #include <linux/module.h>	/* MODULE_*, module_* */
 #include <linux/fs.h>		/* file_operations, alloc_chrdev_region, unregister_chrdev_region */
 #include <linux/cdev.h>		/* cdev, dev_init(), cdev_add(), cdev_del() */

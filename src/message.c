@@ -1,6 +1,17 @@
+/**
+ * @file		message.c
+ * @brief		Handles all procedures releated to messages releated to a group device
+ *
+ */
+
+
 #include "message.h"
 
-
+/**
+ *  @brief Print a [msg_t] (\ref msg_t) structure
+ *  @param[in] msg The 'msg_t' to print
+ *  @return nothign
+ */
 void debugMsg(msg_t msg){
 
     printk(KERN_DEBUG "MESSAGE DATA");
@@ -234,7 +245,7 @@ int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
  * @brief Allocate and initialize all the members of a 'msg_manager_t' struct
  * @param[in] _max_message_size    Configurable param
  * @param[in] _max_storage_size    Configurable param
- * @param[in] garbageCollectorFunction Pointer to a function responsible for garbage collection 
+ * @param[in] garbageCollectorFunction Pointer to the work_struct responsible for garbage collection 
  * 
  * @return msg_manager_t    A pointer to an allocated an initialized 'msg_manager_t' struct
  */
@@ -425,7 +436,12 @@ void queueGarbageCollector(struct work_struct *work){
 
                     if(isDeliveryCompleted(&entry->recipient, current_member)){
                         printk(KERN_DEBUG "Garbage Collector: deleting entry from queue");
+
+                        kfree(entry->message->buffer);  //Message Buffer
+
                         list_del_init(cursor);
+
+                        kfree(entry);   //t_message_deliver 
                     }
 
                 up_read(&entry->recipient_lock);                

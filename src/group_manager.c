@@ -1,9 +1,24 @@
+/**
+ * @file		group_manager.c
+ * @brief		Handles all procedures releated to file operation issued on a group device
+ *
+ */
+
 #include "group_manager.h"
 
 
 
-
+/**
+ * @brief Initialize group_data participants' structures
+ * 
+ * @param[in] grp_data Pointer to the device's group_data structure
+ * 
+ * @return nothing
+ */
 inline void initParticipants(group_data *grp_data){
+
+    BUG_ON(grp_data == NULL);
+
     INIT_LIST_HEAD(&grp_data->active_members);
     atomic_set(&grp_data->members_count, 0);
     init_rwsem(&grp_data->member_lock);
