@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo ./tool write /dev/group0

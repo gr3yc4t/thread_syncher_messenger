@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo ./tool install /dev/main_sync0
+

@@ -309,7 +309,7 @@ static void sUnregisterMainDev(void)
 
 
 
-long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param){
+static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param){
 
 	int ret;
 

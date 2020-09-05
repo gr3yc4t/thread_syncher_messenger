@@ -3,9 +3,12 @@
  * @brief		Handles all procedures releated to messages releated to a group device
  *
  */
-
-
 #include "message.h"
+
+//Internal Prototypes
+bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager);
+
+
 
 /**
  *  @brief Print a [msg_t] (\ref msg_t) structure
@@ -25,6 +28,219 @@ void debugMsg(msg_t msg){
 }
 
 
+#ifndef DISABLE_DELAYED_MSG
+bool isDelaySet(const msg_manager_t *manager){
+    printk(KERN_DEBUG "Reading message delay data");
+    if(atomic_long_read(&manager->message_delay) != 0)
+        return true;
+    else
+        return false;
+    
+}
+
+/**
+ * @brief Called when a timer for a delayed message expires
+ * 
+ * The function simply take the existing 't_message_delayed_deliver' structure,
+ * extract the 'msg_t' field and write it into the FIFO queue via the 'writeMessage'
+ * function.
+ * 
+ */
+void delayedMessageCallback(struct timer_list *timer){
+
+    struct t_message_delayed_deliver *delayed_msg;  //Elasped msg
+    msg_t *msg_deliver;          //Message to add to the queue
+
+    printk(KERN_INFO "delayedMessageCallback: timer elasped");
+
+
+    delayed_msg = from_timer(delayed_msg, timer, delayed_timer);
+
+    msg_deliver = &delayed_msg->message;
+
+
+    if(delayed_msg->manager == NULL){
+        printk(KERN_ERR "Message manager is not allocated, exiting");
+        return;
+    }
+
+    printk(KERN_INFO "delayedMessageCallback: Writing message into the FIFO queue");
+
+    if(!writeMessage(msg_deliver, delayed_msg->manager)){
+        printk(KERN_ERR "Unable to deliver delayed message");
+        return;
+    }
+
+    //Deallocate structures
+    printk(KERN_DEBUG "delayedMessageCallback: start deallocating structures");
+
+    if(del_timer(timer)){
+        printk(KERN_DEBUG "Strange behaviour: timer callback called but timer not elasped...");
+    }
+
+    printk(KERN_INFO "delayedMessageCallback: locking delayed list");
+    down(&delayed_msg->manager->delayed_lock);
+        list_del(&delayed_msg->delayed_list);
+        kfree(delayed_msg);
+    up(&delayed_msg->manager->delayed_lock);
+    printk(KERN_INFO "delayedMessageCallback: unlocking delayed list");
+
+
+    return;
+}
+
+/**
+ * @brief Insert a delayed message into the pending queue
+ * 
+ * @param[in] message The message to insert into the queue
+ * @param[in] manager A pointer to the current msg_manager_t of the group
+ * 
+ * 
+ * @return 0 on success, -1 on error
+ */
+int queueDelayedMessage(msg_t *message, const msg_manager_t *manager){
+    struct t_message_delayed_deliver *newMessageDeliver;
+    group_members_t *sender;
+
+
+    if(!message || !manager){
+        printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
+        BUG();
+    }
+
+
+    printk(KERN_DEBUG "queueDelayedMessage: Queuing a delayed message...");
+
+    pid_t pid = current->pid;
+
+    debugMsg(*message);
+
+    printk(KERN_DEBUG "queueDelayedMessage: Checking size limits...");
+
+    if(!isValidSizeLimits(message, manager)){
+        printk(KERN_ERR "Message size is invalid");
+        return -1;
+    }
+
+    newMessageDeliver = (struct t_message_delayed_deliver*)kmalloc(sizeof(struct t_message_delayed_deliver), GFP_KERNEL);
+    if(!newMessageDeliver)
+        return -1;
+
+    newMessageDeliver->message = *message;
+    newMessageDeliver->manager = manager;
+
+    printk(KERN_DEBUG "queueDelayedMessage: reading delay...");
+
+
+    long delay = atomic_long_read(&manager->message_delay);
+
+    printk(KERN_DEBUG "queueDelayedMessage: Delay value %ld", delay);
+
+    printk(KERN_DEBUG "queueDelayedMessage: Setting up delayed timer...");
+    timer_setup(&newMessageDeliver->delayed_timer, delayedMessageCallback, 0);
+
+    printk(KERN_DEBUG "queueDelayedMessage: Trying to acquire delayed_lock ");
+
+    //Add to the msg_manager message queue
+    down(&manager->delayed_lock);
+    printk(KERN_DEBUG "queueDelayedMessage: delayed_lock acquired");
+        //Queue Critical Section
+        list_add(&newMessageDeliver->delayed_list, &manager->delayed_queue);
+    up(&manager->delayed_lock);
+    printk(KERN_DEBUG "queueDelayedMessage: delayed_lock released");
+
+    //Set delay and start the timer
+    newMessageDeliver->delayed_timer.expires = jiffies + delay * HZ;
+    add_timer(&newMessageDeliver->delayed_timer);
+    printk(KERN_DEBUG "queueDelayedMessage: Timer started");
+
+    return 0;    
+
+}
+
+
+/**
+ * 
+ * @return The number of delayed messages which revoked 
+ * 
+ */
+int revokeDelayedMessage(msg_manager_t *manager){
+
+    printk(KERN_DEBUG "Revoking delayed messages...");
+
+    struct list_head *cursor, *temp;
+    struct t_message_delayed_deliver *msgDeliver;
+    int count = 0;
+
+    down(&manager->delayed_lock);
+
+        list_for_each_safe(cursor, temp, &manager->delayed_queue){
+
+            msgDeliver = list_entry(cursor, struct t_message_delayed_deliver, delayed_list);
+            
+            if(msgDeliver != NULL){
+                //Stop the timer
+                //TODO: check thread safety with the callback function
+                del_timer(&msgDeliver->delayed_timer);
+            }
+
+            list_del_init(cursor);
+
+            count++;
+        }
+
+    up(&manager->delayed_lock);
+
+    return count;
+}
+
+
+/**
+ * 
+ * @return The number of messages which delay was cancelled
+ * 
+ * @note At the moment the function locks the delayed queue, set all timers to zero and 
+ *      unlock the queue. This means that while the function loops through the queue,
+ *      timer's callback will wait since the queue is locked.
+ */
+int cancelDelay(msg_manager_t *manager){
+
+    printk(KERN_DEBUG "cancelDelay: Cancelling delay on messages...");
+
+    struct list_head *cursor, *temp;
+    struct t_message_delayed_deliver *msgDeliver;
+    int count = 0;
+
+    printk(KERN_DEBUG "cancelDelay: trying to acquire delayed_lock");
+    down(&manager->delayed_lock);
+        printk(KERN_DEBUG "cancelDelay: delayed_lock acquired");
+
+        list_for_each_safe(cursor, temp, &manager->delayed_queue){
+
+            msgDeliver = list_entry(cursor, struct t_message_delayed_deliver, delayed_list);
+            
+            if(msgDeliver != NULL){
+                //Stop the timer
+                //TODO: See notes. Possibly substitute with del_timer_synch
+                printk(KERN_DEBUG "cancelDelay: timer stopped");
+
+                mod_timer(&msgDeliver->delayed_timer, 0);
+                count++;
+            }
+        }
+
+    up(&manager->delayed_lock);
+    printk(KERN_DEBUG "cancelDelay: delayed_lock released");
+
+    return count;
+
+}
+
+
+
+#endif
+
+
 /**
  * @brief Check if the delivery of msg will exceed max sizes
  * @param[in] msg The message to test for
@@ -35,6 +251,12 @@ void debugMsg(msg_t msg){
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
         u_int msg_size;
 
+        if(!msg || !manager){
+            printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
+            BUG();
+        }
+
+        printk(KERN_DEBUG "READ-LOCK: config_lock");
         down_read(&manager->config_lock);
             msg_size = msg->size;
 
@@ -51,6 +273,7 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
             }
 
         up_read(&manager->config_lock);
+        printk(KERN_DEBUG "READ-UNLOCK: config_lock");
 
         return true;
 
@@ -58,8 +281,6 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
         up_read(&manager->config_lock);
         return false;
 }
-
-
 
 
 /**
@@ -264,8 +485,13 @@ msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_
     init_rwsem(&manager->queue_lock);
     init_rwsem(&manager->config_lock);
 
-
     INIT_WORK(garbageCollector, queueGarbageCollector);
+
+    #ifndef DISABLE_DELAYED_MSG
+        sema_init( &manager->delayed_lock, 1);
+        atomic_long_set(&manager->message_delay, 0);
+        INIT_LIST_HEAD(&manager->delayed_queue);
+    #endif
 
     return manager;
 }
@@ -284,7 +510,7 @@ msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_
  * 
  * @todo Define clear error code
  */
-int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recipients){
+int writeMessage(msg_t *message, msg_manager_t *manager){
 
     struct t_message_deliver *newMessageDeliver;
     group_members_t *sender;
@@ -296,7 +522,8 @@ int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recip
     if(!isValidSizeLimits(message, manager)){
         printk(KERN_ERR "Message size is invalid");
         return -1;
-    }
+    }    //Set message's recipients
+
 
 
     newMessageDeliver = (struct t_message_deliver*)kmalloc(sizeof(struct t_message_deliver), GFP_KERNEL);
@@ -308,10 +535,9 @@ int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recip
     newMessageDeliver->message = *message;
 
     init_rwsem(&newMessageDeliver->recipient_lock);
-    //Set message's recipients
 
+    //Set message's recipients
     INIT_LIST_HEAD(&newMessageDeliver->recipient);
-    //copy_current_participants(&newMessageDeliver->recipient, recipients);
 
     //Add the sender to the list of recipients
     sender = (group_members_t*)kmalloc(sizeof(group_members_t), GFP_KERNEL);
@@ -326,7 +552,6 @@ int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recip
     //Add to the msg_manager message queue
     down_write(&manager->queue_lock);
     printk(KERN_DEBUG "writeMessage: queue_lock acquired");
-
         //Queue Critical Section
         list_add_tail(&newMessageDeliver->fifo_list, &manager->queue);
     up_write(&manager->queue_lock);
@@ -408,7 +633,7 @@ void queueGarbageCollector(struct work_struct *work){
 
     down_read(&grp_data->member_lock);
     
-        printk(KERN_DEBUG "Garbage Collector: active members read locked");
+        //printk(KERN_DEBUG "Garbage Collector: active members read locked");
 
 
         struct list_head *current_member = &grp_data->active_members;
@@ -423,7 +648,7 @@ void queueGarbageCollector(struct work_struct *work){
         }
         //Queue Critical Section
 
-            printk(KERN_DEBUG "Garbage Collector: msg_queue write locked");
+            //printk(KERN_DEBUG "Garbage Collector: msg_queue write locked");
 
             list_for_each_safe(cursor, temp, &grp_data->msg_manager->queue){
 
@@ -432,12 +657,12 @@ void queueGarbageCollector(struct work_struct *work){
                 down_read(&entry->recipient_lock);
                 //Recipient critical section
 
-                    printk(KERN_DEBUG "Garbage Collector: recipient read locked");
+                    //printk(KERN_DEBUG "Garbage Collector: recipient read locked");
 
                     if(isDeliveryCompleted(&entry->recipient, current_member)){
                         printk(KERN_DEBUG "Garbage Collector: deleting entry from queue");
 
-                        kfree(entry->message->buffer);  //Message Buffer
+                        kfree(entry->message.buffer);  //Message Buffer
 
                         list_del_init(cursor);
 
@@ -446,14 +671,14 @@ void queueGarbageCollector(struct work_struct *work){
 
                 up_read(&entry->recipient_lock);                
                 
-                printk(KERN_DEBUG "Garbage Collector: recipient read unlocked");
+                //printk(KERN_DEBUG "Garbage Collector: recipient read unlocked");
             }
 
         up_write(&grp_data->msg_manager->queue_lock);
 
-        printk(KERN_DEBUG "Garbage Collector: msg_queue write unlocked");
+        //printk(KERN_DEBUG "Garbage Collector: msg_queue write unlocked");
 
     up_read(&grp_data->member_lock);
 
-    printk(KERN_DEBUG "Garbage Collector: active members read unlocked");
+    //printk(KERN_DEBUG "Garbage Collector: active members read unlocked");
 }

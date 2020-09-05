@@ -8,6 +8,13 @@
 #include <linux/cdev.h>
 
 
+#ifndef DISABLE_DELAYED_MSG
+#include <linux/timer.h>
+#endif
+
+typedef struct t_message_manager msg_manager_t;
+typedef struct t_message msg_t;
+
 #define DEBUG   //TODO: to remove
 
 /**
@@ -41,6 +48,19 @@ struct t_message_deliver{
     struct list_head fifo_list;
 };
 
+#ifndef DISABLE_DELAYED_MSG
+
+struct t_message_delayed_deliver{
+    msg_t message;
+
+    msg_manager_t *manager;         //TODO: Rebase the code to remove this
+
+    struct timer_list delayed_timer;
+    struct list_head delayed_list;  
+};
+
+#endif
+
 /**
  * @brief Manage the message sub-system
  * 
@@ -57,6 +77,12 @@ typedef struct t_message_manager{
 
     struct list_head queue;
     struct rw_semaphore queue_lock;
+
+    #ifndef DISABLE_DELAYED_MSG
+    atomic_long_t message_delay;
+    struct list_head delayed_queue;
+    struct semaphore delayed_lock;
+    #endif
 
 } msg_manager_t;
 

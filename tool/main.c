@@ -9,6 +9,9 @@
 #include <sys/ioctl.h>
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
+#define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
+#define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+
 
 #define THREAD_NUM 64
 
@@ -46,6 +49,62 @@ void t_nanosleep(long _nanoseconds){
 
     nanosleep(&interval, &interval2);
 
+}
+
+
+int setDelay(const char *group_path, const long delay){
+
+    int *fd;
+    fd = open(group_path, O_RDWR); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    int ret = ioctl(fd, IOCTL_SET_SEND_DELAY, delay);
+
+    printf("\n\nReturn code : %d\n\n", ret);
+
+    return ret;
+}
+
+int revokeDelay(const char *group_path){
+
+    int *fd;
+    fd = open(group_path, O_RDWR); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    int ret = ioctl(fd, IOCTL_REVOKE_DELAYED_MESSAGES);
+
+    printf("\n\nReturn code : %d\n\n", ret);
+
+    return ret;
+}
+
+
+int flushMessages(const char *group_path){
+
+    FILE *fd;
+
+    fd = fopen(group_path, "rw"); 
+
+    if(fd == NULL){
+        printf("Error while opening the main_device file\n");
+        return -1;
+    }
+
+
+    int ret = fflush(fd);
+
+    printf("\n\nReturn code : %d\n\n", ret);
+
+
+    fclose(fd);
 }
 
 
@@ -176,6 +235,8 @@ int readGroup(const char *group_path){
         return -1;
     }
 
+    pause_char();
+
     char buffer[256];
     char string_buffer[256];
     unsigned int len = 60;
@@ -223,6 +284,9 @@ int writeGroup(const char *group_path){
         return -1;
     }
 
+    pause_char();
+
+
     int ret = write(fd, &buffer, sizeof(char)*len);
 
     printf("Totel element written: %ld", ret);
@@ -242,6 +306,12 @@ int main(int argc, char *argv[]){
     if(argc < 2){
         printf("Usage: %s install main_device\n", argv[0]);
         printf("Usage: %s read group_device\n", argv[0]);
+        printf("Usage: %s wr group_device\n", argv[0]);
+        printf("Usage: %s cwr group_device\n", argv[0]);
+        printf("Usage: %s delay group_device seconds\n", argv[0]);
+        printf("Usage: %s flush group_device\n", argv[0]);
+        printf("Usage: %s revoke group_device\n", argv[0]);
+
         return -1;
     }
 
@@ -285,6 +355,15 @@ int main(int argc, char *argv[]){
         
         printf("\n\nTerminated\n\n");
 
+    }else if(strcmp(argv[1], "delay") == 0){
+
+        long _delay = strtol(argv[3], NULL, 10);
+
+        setDelay(argv[2], _delay);
+    }else if(strcmp(argv[1], "flush") == 0){
+        flushMessages(argv[2]);
+    }else if(strcmp(argv[1], "revoke") == 0){
+        revokeDelay(argv[2]);
     }else{
         printf("Unimplemented\n\n");
     }

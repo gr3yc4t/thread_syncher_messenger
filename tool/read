@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo ./tool read /dev/group0

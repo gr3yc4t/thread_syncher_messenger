@@ -10,6 +10,8 @@
 #include <linux/proc_fs.h>
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
+#include <linux/atomic.h>
+
 
 #include "types.h"
 
@@ -22,16 +24,25 @@
 
 
 
-
-
-
 msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector);
 
-int writeMessage(msg_t *message, msg_manager_t *manager, struct list_head *recipients);
+int writeMessage(msg_t *message, msg_manager_t *manager);
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager);
 
 int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size);
 int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _size);
 
 void queueGarbageCollector(struct work_struct *work);
+
+
+#ifndef DISABLE_DELAYED_MSG
+
+bool isDelaySet(const msg_manager_t *manager);
+void delayedMessageCallback(struct timer_list *timer);
+int queueDelayedMessage(msg_t *message, const msg_manager_t *manager);
+int revokeDelayedMessage(msg_manager_t *manager);
+int cancelDelay(msg_manager_t *manager);
+#endif
+
+
 #endif //MSG_H

@@ -293,16 +293,29 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
  */
 
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t _size, loff_t *f_pos){
-
+    int ret;
     group_data *grp_data = (group_data*) filep->private_data;
 
     msg_t* msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
 
+    if(!msgTemp)
+        return 0;
+
     copy_msg_from_user(msgTemp, (int8_t*)buf, _size); 
 
     msgTemp->author = current->pid;
+    msgTemp->size = _size;
 
-    int ret = writeMessage(msgTemp, grp_data->msg_manager, &grp_data->active_members);
+    #ifndef DISABLE_DELAYED_MSG
+
+        if(isDelaySet(grp_data->msg_manager)){
+            ret = queueDelayedMessage(msgTemp, grp_data->msg_manager);
+        }else
+            ret = writeMessage(msgTemp, grp_data->msg_manager);
+        
+    #else
+        ret = writeMessage(msgTemp, grp_data->msg_manager);
+    #endif
 
     if(ret < 0){
         printk(KERN_ERR "Unable to write the message");
@@ -312,4 +325,58 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
     printk(KERN_INFO "Message for group%d queued", grp_data->group_id);
 
     return ret;
+}
+
+
+
+static int flushGroupMessage(struct file *filep, fl_owner_t id){
+    group_data *grp_data;
+    int ret;
+
+    ret = cancelDelay(grp_data->msg_manager);
+
+    printk(KERN_INFO "flush: %d elements flushed from the delayed queue", ret);
+
+    return ret;
+}
+
+
+
+long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param){
+
+	int ret;
+    long delay = 0;
+    group_data *grp_data;
+
+
+	switch (ioctl_num){
+	case IOCTL_SET_SEND_DELAY:
+        delay = (long) ioctl_param;
+
+        if(delay < 0)   //Fix conversion issue
+            delay = 0;
+
+        grp_data = (group_data*) filep->private_data;
+
+        atomic_long_set(&grp_data->msg_manager->message_delay, delay);
+
+        printk(KERN_INFO "Message delay set to: %ld", delay);
+        ret = 0;
+		break;
+	case IOCTL_REVOKE_DELAYED_MESSAGES:
+
+        grp_data = (group_data*) filep->private_data;
+
+        ret = revokeDelayedMessage(grp_data->msg_manager);
+
+        printk(KERN_INFO "Revoke Message: %d message revoked from queue", ret);
+
+        break;
+	default:
+		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
+		ret = -1;
+		break;
+	}
+
+	return ret;
 }

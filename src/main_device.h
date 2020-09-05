@@ -76,7 +76,7 @@ static int mainRelease(struct inode *inode, struct file *filep);
 static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
 static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff_t *f_pos);
 
-long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param);
+static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param);
 
 
 static int sRegisterMainDev(void);

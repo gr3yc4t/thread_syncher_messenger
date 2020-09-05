@@ -31,6 +31,16 @@
 #define DEVICE_NAME_SIZE    64
 
 
+#ifndef DISABLE_DELAYED_MSG
+
+//IOCTLS
+#define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
+#define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+
+#endif
+
+
+
 
 
 
@@ -38,6 +48,8 @@ static int openGroup(struct inode *inode, struct file *file);
 static int releaseGroup(struct inode *inode, struct file *file);
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
+static long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param);
+
 inline void initParticipants(group_data *grp_data);
 
 
@@ -48,7 +60,7 @@ static struct file_operations group_operation = {
     .read = readGroupMessage,
     .write = writeGroupMessage,
     .release = releaseGroup,
-    //.unlocked_ioctl = my_ioctl
+    .unlocked_ioctl = groupIoctl
 };
 
 
