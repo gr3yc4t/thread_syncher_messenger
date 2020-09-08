@@ -8,13 +8,18 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+
+//IOCTL List
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
 #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
 #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+#define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
+#define IOCTL_AWAKE_BARRIER _IO('Z', 1)
 
-
+//Configurations
 #define THREAD_NUM 64
 
+//Error Codes
 #define NO_MSG_PRESENT -10
 #define MSG_INVALID_FORMAT -11
 #define MSG_SIZE_ERROR  -12
@@ -27,7 +32,7 @@ typedef struct group_t {
 } group_t;
 
 
-
+//Global var describing threads
 pthread_t tid[THREAD_NUM];
 
 
@@ -35,7 +40,6 @@ void pause_char(){
     printf("\n\nWaiting...\n");
     char temp = getchar();
 }
-
 
 
 void t_nanosleep(long _nanoseconds){
@@ -51,6 +55,41 @@ void t_nanosleep(long _nanoseconds){
 
 }
 
+
+
+int sleepOnBarrier(const char *group_path){
+
+    int *fd;
+    fd = open(group_path, O_RDWR); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    int ret = ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
+
+    printf("\n\nReturn code : %d\n\n", ret);
+
+    return ret;
+}
+
+int awakeBarrier(const char *group_path){
+
+    int *fd;
+    fd = open(group_path, O_RDWR); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    int ret = ioctl(fd, IOCTL_AWAKE_BARRIER);
+
+    printf("\n\nReturn code : %d\n\n", ret);
+
+    return ret;
+}
 
 int setDelay(const char *group_path, const long delay){
 
@@ -106,7 +145,6 @@ int flushMessages(const char *group_path){
 
     fclose(fd);
 }
-
 
 
 void concurrentRead(void *args){
@@ -224,7 +262,6 @@ int installGroup(const char *main_device_path){
     fclose(fd);
 }
 
-
 int readGroup(const char *group_path){
 
     int *fd;
@@ -256,6 +293,7 @@ int readGroup(const char *group_path){
         printf("Buffer content: %s\n", string_buffer);
     }
 
+    fflush(stdin);
 
     pause_char();
 
@@ -265,7 +303,6 @@ int readGroup(const char *group_path){
     return 0;
 
 }
-
 
 int writeGroup(const char *group_path){
 
@@ -291,6 +328,8 @@ int writeGroup(const char *group_path){
 
     printf("Totel element written: %ld", ret);
 
+    fflush(stdin);
+
     pause_char();
 
     close(fd);
@@ -311,7 +350,8 @@ int main(int argc, char *argv[]){
         printf("Usage: %s delay group_device seconds\n", argv[0]);
         printf("Usage: %s flush group_device\n", argv[0]);
         printf("Usage: %s revoke group_device\n", argv[0]);
-
+        printf("Usage: %s sleep group_device\n", argv[0]);
+        printf("Usage: %s awake group_device\n", argv[0]);
         return -1;
     }
 
@@ -364,6 +404,10 @@ int main(int argc, char *argv[]){
         flushMessages(argv[2]);
     }else if(strcmp(argv[1], "revoke") == 0){
         revokeDelay(argv[2]);
+    }else if(strcmp(argv[1], "sleep") == 0){
+        sleepOnBarrier(argv[2]);
+    }else if(strcmp(argv[1], "awake") == 0){
+        awakeBarrier(argv[2]);
     }else{
         printf("Unimplemented\n\n");
     }

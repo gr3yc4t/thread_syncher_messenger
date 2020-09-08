@@ -18,7 +18,6 @@
 #include <linux/errno.h>
 
 
-
 #include "message.h"
 
 
@@ -30,16 +29,25 @@
 #define GROUP_MAX_MINORS    255
 #define DEVICE_NAME_SIZE    64
 
+#define DEFAULT_MSG_SIZE 256
+#define DEFAULT_STORAGE_SIZE 256
+
+
 
 #ifndef DISABLE_DELAYED_MSG
 
-//IOCTLS
-#define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
-#define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+    //IOCTLS
+    #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
+    #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
 
 #endif
 
+#ifndef DISABLE_THREAD_BARRIER
 
+    #define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
+    #define IOCTL_AWAKE_BARRIER _IO('Z', 1)
+
+#endif
 
 
 
@@ -49,9 +57,9 @@ static int releaseGroup(struct inode *inode, struct file *file);
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
 static long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param);
+static int flushGroupMessage(struct file *filep, fl_owner_t id);
 
 inline void initParticipants(group_data *grp_data);
-
 
 
 static struct file_operations group_operation = {
@@ -60,6 +68,7 @@ static struct file_operations group_operation = {
     .read = readGroupMessage,
     .write = writeGroupMessage,
     .release = releaseGroup,
+    .flush = flushGroupMessage,
     .unlocked_ioctl = groupIoctl
 };
 
@@ -72,7 +81,6 @@ static struct class *group_class;
 
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);
-
 void unregisterGroupDevice(group_data *grp_data);
 
 

@@ -9,8 +9,15 @@
 
 
 #ifndef DISABLE_DELAYED_MSG
-#include <linux/timer.h>
+    #include <linux/timer.h>
 #endif
+
+#ifndef DISABLE_THREAD_BARRIER
+    #include <linux/wait.h>     //For wait-queue
+    #include <linux/sched.h>
+#endif
+
+
 
 typedef struct t_message_manager msg_manager_t;
 typedef struct t_message msg_t;
@@ -79,9 +86,9 @@ typedef struct t_message_manager{
     struct rw_semaphore queue_lock;
 
     #ifndef DISABLE_DELAYED_MSG
-    atomic_long_t message_delay;
-    struct list_head delayed_queue;
-    struct semaphore delayed_lock;
+        atomic_long_t message_delay;
+        struct list_head delayed_queue;
+        struct semaphore delayed_lock;
     #endif
 
 } msg_manager_t;
@@ -109,13 +116,20 @@ typedef struct group_data {
     dev_t deviceID;             /**< TODO: remove as already present in "cdev" */
     int group_id;               /**< Unique identifier of a group. Provided by IDR */
 
+    //Members
     struct list_head active_members;    
     atomic_t members_count;
     struct rw_semaphore member_lock;
 
+    //Message-Subsystem
     msg_manager_t *msg_manager;
-    
     struct work_struct garbage_collector_work;
+
+    #ifndef DISABLE_THREAD_BARRIER
+        //Thread-barrier
+        wait_queue_head_t barrier_queue;
+        bool wake_up_flag;
+    #endif
 
     struct device* dev;
     group_t *descriptor;        /** @brief system-wide   descriptor*/

@@ -130,8 +130,16 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     printk(KERN_INFO "Device correctly added");
 
     //Initialize linked-list
-    initParticipants(grp_data);     
-    grp_data->msg_manager = createMessageManager(256, 256, &grp_data->garbage_collector_work);
+    initParticipants(grp_data);   
+    //Initialize Message Manager  
+    grp_data->msg_manager = createMessageManager(DEFAULT_MSG_SIZE, DEFAULT_STORAGE_SIZE, &grp_data->garbage_collector_work);
+    
+    #ifndef DISABLE_THREAD_BARRIER
+        //Initialize Wait Queue
+        init_waitqueue_head(&grp_data->barrier_queue);
+        grp_data->wake_up_flag = false;
+    #endif
+
 
     return 0;
 
@@ -160,6 +168,11 @@ void unregisterGroupDevice(group_data *grp_data){
     
     unregister_chrdev_region(grp_data->deviceID, 1);    //TODO: check the 1
 
+    #ifndef DISABLE_THREAD_BARRIER
+        //Waking up all the sleeped thread
+        printk(KERN_INFO "Waking up all the sleeped thread 'group%d'", grp_data->group_id);
+        grp_data->wake_up_flag = true;
+    #endif
 }
 
 
@@ -208,8 +221,10 @@ static int openGroup(struct inode *inode, struct file *file){
  * 
  */
 static int releaseGroup(struct inode *inode, struct file *file){
-
-    group_data *grp_data = (group_data*)file->private_data;
+    group_data *grp_data;
+    
+    
+    grp_data =  (group_data*)file->private_data;
 
     printk(KERN_INFO " - Group %d released by %d - ", grp_data->group_id, current->pid);
 
@@ -247,13 +262,14 @@ static int releaseGroup(struct inode *inode, struct file *file){
  * @return The number of bytes readed
  */
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t _size, loff_t *offset){
-    group_data *grp_data = (group_data*) file->private_data;
-
-    printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
-
-
+    group_data *grp_data;
     msg_t message;
     ssize_t available_size;
+
+
+    grp_data = (group_data*) file->private_data;
+
+    printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
 
     if(readMessage(&message, grp_data->msg_manager)){
         printk(KERN_INFO "No message available");
@@ -294,7 +310,9 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t _size, loff_t *f_pos){
     int ret;
-    group_data *grp_data = (group_data*) filep->private_data;
+    group_data *grp_data;
+    
+    grp_data = (group_data*) filep->private_data;
 
     msg_t* msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
 
@@ -331,17 +349,98 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
 static int flushGroupMessage(struct file *filep, fl_owner_t id){
     group_data *grp_data;
+    msg_manager_t *manager;
     int ret;
 
-    ret = cancelDelay(grp_data->msg_manager);
+    grp_data = (group_data*) filep->private_data;
+    manager = grp_data->msg_manager;
+
+    if(atomic_long_read(&manager->message_delay) == 0)
+        return 0;
+
+    ret = cancelDelay(manager);
 
     printk(KERN_INFO "flush: %d elements flushed from the delayed queue", ret);
-
     return ret;
 }
 
 
+#ifndef DISABLE_THREAD_BARRIER
+/**
+ * @brief Resets the flag used to wake up threds
+ * @param[in] grp_data Pointer to the main structure group
+ * 
+ * @return true if the flag was resetted, false otherwise
+ */
+bool resetSleepFlag(group_data *grp_data){
+    bool ret_flag = false;
 
+    spin_lock(&grp_data->barrier_queue.lock);
+        if(!waitqueue_active(&grp_data->barrier_queue)){
+            printk(KERN_INFO "resetSleepFlag: wake_up_flag resetted");
+            grp_data->wake_up_flag = false;
+            ret_flag = true;
+        }
+    spin_unlock(&grp_data->barrier_queue.lock);
+
+    return ret_flag;
+}
+
+
+/**
+ * @brief Put the thread which calles this function on sleep
+ * 
+ * @param[in] grp_data Pointer to the main structure of a group
+ * 
+ * @return nothing
+ */
+void sleepOnBarrier(group_data *grp_data){
+    
+    if(resetSleepFlag(grp_data)){
+        printk(KERN_INFO "First thread inserted into the queue");
+    }else{
+        printk(KERN_INFO "Sleep flag already set to 'false'");
+    }
+
+    printk(KERN_INFO "Putting thread %d to sleep...", current->pid);
+    wait_event(grp_data->barrier_queue, grp_data->wake_up_flag == true);
+
+    printk(KERN_INFO "Thread %d woken up!!", current->pid);
+    schedule();
+
+}
+
+/**
+ * @brief Wake up all threads that was put on sleep by the module
+ * @param[in] grp_data Pointer to the main structure of a group
+ * 
+ * @return nothing
+ */
+void awakeBarrier(group_data *grp_data){
+
+    printk(KERN_INFO "Waking up threads in the barrier_queue");
+
+    grp_data->wake_up_flag = true;
+    wake_up_all(&grp_data->barrier_queue);
+
+    //resetSleepFlag(grp_data);
+
+    printk(KERN_INFO "Queue waked up");
+
+    return;
+}
+
+#endif
+
+
+/**
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
 long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param){
 
 	int ret;
@@ -350,28 +449,44 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
 
 	switch (ioctl_num){
-	case IOCTL_SET_SEND_DELAY:
-        delay = (long) ioctl_param;
+        #ifndef DISABLE_DELAYED_MSG
+            case IOCTL_SET_SEND_DELAY:
+                delay = (long) ioctl_param;
 
-        if(delay < 0)   //Fix conversion issue
-            delay = 0;
+                if(delay < 0)   //Fix conversion issue
+                    delay = 0;
 
-        grp_data = (group_data*) filep->private_data;
+                grp_data = (group_data*) filep->private_data;
 
-        atomic_long_set(&grp_data->msg_manager->message_delay, delay);
+                atomic_long_set(&grp_data->msg_manager->message_delay, delay);
 
-        printk(KERN_INFO "Message delay set to: %ld", delay);
-        ret = 0;
-		break;
-	case IOCTL_REVOKE_DELAYED_MESSAGES:
+                printk(KERN_INFO "Message delay set to: %ld", delay);
+                ret = 0;
+                break;
+            case IOCTL_REVOKE_DELAYED_MESSAGES:
 
-        grp_data = (group_data*) filep->private_data;
+                grp_data = (group_data*) filep->private_data;
 
-        ret = revokeDelayedMessage(grp_data->msg_manager);
+                ret = revokeDelayedMessage(grp_data->msg_manager);
 
-        printk(KERN_INFO "Revoke Message: %d message revoked from queue", ret);
+                printk(KERN_INFO "Revoke Message: %d message revoked from queue", ret);
 
-        break;
+                break;
+        #endif
+        #ifndef DISABLE_THREAD_BARRIER
+            case IOCTL_SLEEP_ON_BARRIER:
+                grp_data = (group_data*) filep->private_data;
+                printk(KERN_INFO "Sleeping call issued");
+                sleepOnBarrier(grp_data);
+                ret = 0;
+                break;
+            case IOCTL_AWAKE_BARRIER:
+                grp_data = (group_data*) filep->private_data;
+                printk(KERN_INFO "Awaking call issued");
+                awakeBarrier(grp_data);
+                ret = 0;
+                break;
+        #endif
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
 		ret = -1;
