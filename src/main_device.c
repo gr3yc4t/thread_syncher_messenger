@@ -44,6 +44,8 @@ int mainInit(void)
  * @brief Kernel Module Exit
  * @param nothing
  * @retval nothing
+ * 
+ * @bug Classes are not deallocated correctly so a reboot is necessary to reaload the module
  */
 void mainExit(void)
 {
@@ -73,6 +75,12 @@ void mainExit(void)
 			pr_debug("Character device %s destroyed", cursor1->descriptor->group_name);
 			unregister_chrdev_region(cursor2->deviceID, 1);
 			pr_debug("Region %s deallocated", cursor1->descriptor->group_name);
+
+
+			#ifndef DISABLE_SYSFS
+				printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor2);
+				releaseSysFs(&cursor2->group_sysfs);
+			#endif
 
 			//idr_remove(&main_device->group_map, id_cursor);
 		}
@@ -373,11 +381,10 @@ int installGroup(const group_t *new_group_descriptor){
 	group_data *new_group;
 	int group_id;
 
-	new_group = kmalloc(sizeof(group_data), GFP_KERNEL);
+	new_group = (group_data*)kmalloc(sizeof(group_data), GFP_KERNEL);
 
 	if(!new_group)
 		return -1;
-
 
 	new_group->descriptor = new_group_descriptor;
 
@@ -406,6 +413,13 @@ int installGroup(const group_t *new_group_descriptor){
 	}
 
 
+	#ifndef DISABLE_SYSFS
+		new_group->group_sysfs.manager = new_group->msg_manager;
+		initSysFs(new_group);
+	#endif
+
+
+
 	return 0;
 
 
@@ -428,8 +442,6 @@ bool groupExists(group_t *group){
 		//group_t *elem = container_of();
 
 	//}
-
-
 }
 
 

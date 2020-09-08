@@ -111,7 +111,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
             if(group_class == -EEXIST){
                 printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
-                //group_class = class_find("group_sync");
             }else{
                 printk(KERN_ERR "Unable to create 'group_sync' class");
                 goto cleanup;

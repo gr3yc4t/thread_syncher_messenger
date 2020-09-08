@@ -19,6 +19,11 @@
 #include "group_manager.h"
 
 
+#ifndef DISABLE_SYSFS
+	#include "sysfs.h"
+#endif
+
+
 
 /*------------------------------------------------------------------------------
 	IOCTL

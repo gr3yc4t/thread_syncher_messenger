@@ -1,6 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/rwsem.h>
@@ -9,8 +10,9 @@
 
 
 #ifndef DISABLE_DELAYED_MSG
-#include <linux/timer.h>
+    #include <linux/timer.h>
 #endif
+
 
 typedef struct t_message_manager msg_manager_t;
 typedef struct t_message msg_t;
@@ -50,16 +52,33 @@ struct t_message_deliver{
 
 #ifndef DISABLE_DELAYED_MSG
 
-struct t_message_delayed_deliver{
-    msg_t message;
+    struct t_message_delayed_deliver{
+        msg_t message;
 
-    msg_manager_t *manager;         //TODO: Rebase the code to remove this
+        msg_manager_t *manager;         //TODO: Rebase the code to remove this
 
-    struct timer_list delayed_timer;
-    struct list_head delayed_list;  
-};
+        struct timer_list delayed_timer;
+        struct list_head delayed_list;  
+    };
 
 #endif
+
+#ifndef DISABLE_SYSFS
+
+    typedef struct t_group_sysfs {
+        struct kobject *group_kobject;
+        struct kobj_attribute attr_max_message_size;
+        struct kobj_attribute attr_max_storage_size;
+        struct kobj_attribute attr_current_storage_size;
+
+
+        msg_manager_t *manager;
+
+    }group_sysfs_t;
+
+#endif
+
+
 
 /**
  * @brief Manage the message sub-system
@@ -79,9 +98,9 @@ typedef struct t_message_manager{
     struct rw_semaphore queue_lock;
 
     #ifndef DISABLE_DELAYED_MSG
-    atomic_long_t message_delay;
-    struct list_head delayed_queue;
-    struct semaphore delayed_lock;
+        atomic_long_t message_delay;
+        struct list_head delayed_queue;
+        struct semaphore delayed_lock;
     #endif
 
 } msg_manager_t;
@@ -119,6 +138,11 @@ typedef struct group_data {
 
     struct device* dev;
     group_t *descriptor;        /** @brief system-wide   descriptor*/
+
+
+    #ifndef DISABLE_SYSFS
+        group_sysfs_t group_sysfs;
+    #endif
 } group_data;
 
 #endif //TYPES_H
