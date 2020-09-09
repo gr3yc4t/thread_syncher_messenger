@@ -18,6 +18,8 @@
 
 //Configurations
 #define THREAD_NUM 64
+#define BUFF_SIZE 256
+
 
 //Error Codes
 #define NO_MSG_PRESENT -10
@@ -41,6 +43,15 @@ void pause_char(){
     char temp = getchar();
 }
 
+void clear(){
+    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+        system("clear");
+    #endif
+
+    #if defined(_WIN32) || defined(_WIN64)
+        system("cls");
+    #endif
+}
 
 void t_nanosleep(long _nanoseconds){
 
@@ -56,9 +67,7 @@ void t_nanosleep(long _nanoseconds){
 }
 
 
-
-int sleepOnBarrier(const char *group_path){
-
+int openGroup(const char *group_path){
     int *fd;
     fd = open(group_path, O_RDWR); 
 
@@ -66,6 +75,59 @@ int sleepOnBarrier(const char *group_path){
         printf("Error while opening the group file\n");
         return -1;
     }
+
+    return fd;
+}
+
+int _readGroup(int fd){
+    char buffer[256];
+    char string_buffer[256];
+    unsigned int len = 60;
+
+    int ret = read(fd, &buffer, sizeof(char)*len);
+
+    printf("Read return value %d\n", ret);
+
+    if(ret == 0){
+        printf("[ ] No message is present\n");
+        return 0;
+    }else if(ret == MEMORY_ERROR){
+        printf("[X] Memory Error\n");
+        return -1;
+    }else if(ret > 0){
+
+        strncpy(string_buffer, buffer, ret);
+
+        printf("Buffer content: %s\n", string_buffer);
+        return 1;
+    }
+
+    return -1;
+}
+
+int _writeGroup(int fd, char *buffer, ssize_t len){
+    return write(fd, buffer, sizeof(char)*len);
+}
+
+int _setDelay(int fd, const long delay){
+    return ioctl(fd, IOCTL_SET_SEND_DELAY, delay);
+}
+
+int _revokeDelay(int fd){
+    return ioctl(fd, IOCTL_REVOKE_DELAYED_MESSAGES);
+}
+
+int _sleepOnBarrier(int fd){
+    return ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
+}
+
+int _awakeBarrier(int fd){
+    return ioctl(fd, IOCTL_AWAKE_BARRIER);
+}
+
+int sleepOnBarrier(const char *group_path){
+
+    int fd = openGroup(group_path);
 
     int ret = ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
 
@@ -101,7 +163,7 @@ int setDelay(const char *group_path, const long delay){
         return -1;
     }
 
-    int ret = ioctl(fd, IOCTL_SET_SEND_DELAY, delay);
+    int ret = _setDelay(fd, delay);
 
     printf("\n\nReturn code : %d\n\n", ret);
 
@@ -118,13 +180,12 @@ int revokeDelay(const char *group_path){
         return -1;
     }
 
-    int ret = ioctl(fd, IOCTL_REVOKE_DELAYED_MESSAGES);
+    int ret = _revokeDelay(fd);
 
     printf("\n\nReturn code : %d\n\n", ret);
 
     return ret;
 }
-
 
 int flushMessages(const char *group_path){
 
@@ -145,7 +206,6 @@ int flushMessages(const char *group_path){
 
     fclose(fd);
 }
-
 
 void concurrentRead(void *args){
 
@@ -274,29 +334,11 @@ int readGroup(const char *group_path){
 
     pause_char();
 
-    char buffer[256];
-    char string_buffer[256];
-    unsigned int len = 60;
-
-    int ret = read(fd, &buffer, sizeof(char)*len);
-
-    printf("Read return value %d\n", ret);
-
-    if(ret == 0){
-        printf("[ ] No message is present\n");
-    }else if(ret == MEMORY_ERROR){
-        printf("[X] Memory Error\n");
-    }else if(ret > 0){
-
-        strncpy(string_buffer, buffer, ret);
-
-        printf("Buffer content: %s\n", string_buffer);
-    }
+    _readGroup(fd);
 
     fflush(stdin);
 
     pause_char();
-
 
     close(fd);
 
@@ -323,8 +365,7 @@ int writeGroup(const char *group_path){
 
     pause_char();
 
-
-    int ret = write(fd, &buffer, sizeof(char)*len);
+    int ret = _writeGroup(fd, &buffer, sizeof(char)*len);
 
     printf("Totel element written: %ld", ret);
 
@@ -338,11 +379,90 @@ int writeGroup(const char *group_path){
 }
 
 
+int interactiveSession(const char *group_path){
+
+    int choice;
+    int exit_flag = 0;
+    char *buffer;
+    int ret = 99;
+    long delay;
+
+
+    int fd = openGroup(group_path);
+
+    if(fd == -1){
+        printf("\n[X] Unable to open group, exiting...");
+        return -1;
+    }
+
+    do{
+    printf("\n[Group Management]\n");
+    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier\n\t99 - Exit\n:");
+
+    scanf(" %d", &choice);
+
+    clear();
+
+
+        switch (choice){
+        case 1:     //Read
+            _readGroup(fd);
+            break;
+        case 2:     //Write
+
+            buffer = (char*)malloc(sizeof(BUFF_SIZE));
+            if(!buffer)
+                return;
+
+            printf("\nContent: ");
+            if(scanf(" %s", buffer) > BUFF_SIZE)
+                return;
+            
+            int len = strlen(buffer);
+            
+            ret = _writeGroup(fd, buffer, (ssize_t)len);
+            break;
+        case 3: //Set Delay
+            printf("\nDelay Value: ");
+            scanf("% ul", &delay);
+            ret = _setDelay(fd, delay);
+            break;
+        case 4: //Set Delay
+            ret = _revokeDelay(fd);
+            printf("\nDelayed message revoked");
+            break;
+        case 5: //Flush
+            printf("\nUnimplemented");
+            break;
+        case 6: //Sleep on barrier
+            printf("\nThread is going to sleep...");
+            ret = _sleepOnBarrier(fd);
+            printf("\nThread awaken!!!");
+            break;
+        case 7: //Awake barrier
+            ret = _awakeBarrier(fd);
+            printf("\nBarrier Awaked!");
+            break;
+        case 99:
+            printf("\n\nExiting...\n");
+            exit_flag = 1;
+            break;
+        default:
+            printf("\n\nInvalid command\n\n");
+            break;
+        }
+
+        printf("\nReturn Value: %d\n", ret);
+
+    }while(exit_flag == 0);
+}
 
 
 int main(int argc, char *argv[]){
 
     if(argc < 2){
+        printf("Usage: %s interactive group_device\n", argv[0]);
+
         printf("Usage: %s install main_device\n", argv[0]);
         printf("Usage: %s read group_device\n", argv[0]);
         printf("Usage: %s wr group_device\n", argv[0]);
@@ -408,6 +528,8 @@ int main(int argc, char *argv[]){
         sleepOnBarrier(argv[2]);
     }else if(strcmp(argv[1], "awake") == 0){
         awakeBarrier(argv[2]);
+    }else if(strcmp(argv[1], "interactive") == 0){
+        interactiveSession(argv[2]);
     }else{
         printf("Unimplemented\n\n");
     }
