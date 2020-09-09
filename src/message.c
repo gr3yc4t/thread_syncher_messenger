@@ -98,10 +98,8 @@ void delayedMessageCallback(struct timer_list *timer){
  * 
  * @return 0 on success, -1 on error
  */
-int queueDelayedMessage(msg_t *message, const msg_manager_t *manager){
+int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_delayed_deliver *newMessageDeliver;
-    group_members_t *sender;
-
 
     if(!message || !manager){
         printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
@@ -110,8 +108,6 @@ int queueDelayedMessage(msg_t *message, const msg_manager_t *manager){
 
 
     printk(KERN_DEBUG "queueDelayedMessage: Queuing a delayed message...");
-
-    pid_t pid = current->pid;
 
     debugMsg(*message);
 
@@ -515,8 +511,6 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_deliver *newMessageDeliver;
     group_members_t *sender;
 
-    pid_t pid = current->pid;
-
     debugMsg(*message);
 
     if(!isValidSizeLimits(message, manager)){
@@ -562,16 +556,16 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
 /**
  * @brief Read a message from the corresponding queue
- * @return 0 on success, -1 if no message is present
+ * @return 0 on success, 1 if no message is present, -1 on critical error
  */
 
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
-    pid_t pid = current->pid;
-
     struct list_head *cursor;
     struct t_message_deliver *msg_deliver;
-    
+    pid_t pid = current->pid;
+
+
     down_read(&manager->queue_lock);
     printk(KERN_DEBUG "readMessage: queue_lock acquired");
 
@@ -580,8 +574,10 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
         list_for_each(cursor, &manager->queue){
 
             msg_deliver = NULL;
-
             msg_deliver = list_entry(cursor, struct t_message_deliver, fifo_list);
+
+            if(!msg_deliver)
+                goto cleanup;
 
             if(!wasDelivered(&msg_deliver->recipient, pid)){
                 printk(KERN_INFO "Message found for PID: %d", (int)pid);
@@ -608,6 +604,12 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
     printk(KERN_INFO "No message present for PID: %d", pid);
     return 1;
+
+
+    cleanup:
+        up_read(&manager->queue_lock);
+        printk(KERN_ERR "readMessage: 'list_entry' returned a NULL pointer");
+        return -1;
 }
 
 

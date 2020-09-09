@@ -47,20 +47,18 @@
 typedef struct t_groups {
 	group_t group;
 	struct list_head list;
-} T_GROUPS_LST;
+} group_list_t;
 
 
 /** @brief Main device data */
 typedef struct t_main_sync {
 	int minor;								/**< minor# */
 
-	char buffer[256];						//TODO: adjust
-
-	T_GROUPS_LST groups_lst;
+	struct list_head groups_lst;
 	struct idr group_map;
 
 	struct semaphore sem;
-} T_MAIN_SYNC;
+} main_sync_t;
 
 /*------------------------------------------------------------------------------
 	Prototype Declaration
@@ -88,20 +86,18 @@ static void sUnregisterMainDev(void);
 /*------------------------------------------------------------------------------
 	Global Variables
 ------------------------------------------------------------------------------*/
-static struct class *g_class;				/**< device class */
-static struct cdev *g_cdev_array;			/**< charactor devices */
-static int g_dev_major = D_DEV_MAJOR;		/**< major# */
-static int g_dev_minor = D_DEV_MINOR;		/**< minor# */
-static int g_buf[D_DEV_NUM][D_BUF_SIZE];	/**< buffer (for sample-code) */
+static struct class *main_class;				/**< device class */
+static struct cdev *main_cdev;			/**< charactor devices */
+static int main_dev_major = D_DEV_MAJOR;		/**< major# */
+static int main_dev_minor = D_DEV_MINOR;		/**< minor# */
 
 //TODO: change to a more meaningful name
 static struct device *main_dev;				//Used for "parent" field in device_create; 
 
 //Main device global pointer 
-static T_MAIN_SYNC *main_device;		
+static main_sync_t *main_device;		
 
-
-static struct file_operations g_fops;
+static struct file_operations main_fops;
 
 
 #endif //MAIN_DEV_H

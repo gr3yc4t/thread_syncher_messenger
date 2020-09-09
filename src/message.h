@@ -39,7 +39,7 @@ void queueGarbageCollector(struct work_struct *work);
 
 bool isDelaySet(const msg_manager_t *manager);
 void delayedMessageCallback(struct timer_list *timer);
-int queueDelayedMessage(msg_t *message, const msg_manager_t *manager);
+int queueDelayedMessage(msg_t *message, msg_manager_t *manager);
 int revokeDelayedMessage(msg_manager_t *manager);
 int cancelDelay(msg_manager_t *manager);
 #endif

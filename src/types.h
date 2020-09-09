@@ -100,7 +100,7 @@ typedef struct t_message_manager{
  */
 typedef struct group_t {
 	unsigned int group_id;		//Thread group ID
-	char *group_name;
+	char *group_name;           //TODO: add name len.
 } group_t;
 
 

@@ -24,7 +24,7 @@
 
 #define EMPTY_LIST -20
 #define NODE_NOT_FOUND -21
-
+#define INVALID_IOCTL_COMMAND -1
 
 #define GROUP_MAX_MINORS    255
 #define DEVICE_NAME_SIZE    64
@@ -32,11 +32,10 @@
 #define DEFAULT_MSG_SIZE 256
 #define DEFAULT_STORAGE_SIZE 256
 
-
+//IOCTLS
 
 #ifndef DISABLE_DELAYED_MSG
 
-    //IOCTLS
     #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
     #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
 
@@ -74,17 +73,11 @@ static struct file_operations group_operation = {
 
 
 // Global Variables
-
 static struct class *group_class;
-
-
 
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);
 void unregisterGroupDevice(group_data *grp_data);
-
-
-
 
 
 #endif //GRP_MAN_H

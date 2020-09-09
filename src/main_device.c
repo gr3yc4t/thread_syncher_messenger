@@ -2,7 +2,7 @@
 
 
 /** file operations */
-static struct file_operations g_fops = {
+static struct file_operations main_fops = {
 	.open    = mainOpen,
 	.release = mainRelease,
 	.write   = mainWrite,
@@ -42,6 +42,7 @@ int mainInit(void)
 
 /**
  * @brief Kernel Module Exit
+ * @todo Check that every structure is correctly deallocated
  * @param nothing
  * @retval nothing
  */
@@ -52,8 +53,11 @@ void mainExit(void)
 	group_data *cursor1, *cursor2;
 	int id_cursor1, id_cursor2;
 
-	if(main_device == NULL)
+	if(main_device == NULL){
+		class_destroy(group_class);
+		printk(KERN_INFO "Class destroyed");
 		return;
+	}
 
 	if(group_class != NULL){
 
@@ -65,14 +69,14 @@ void mainExit(void)
 
 
 		class_destroy(group_class);
-		pr_debug("Class destroyed");
+		printk(KERN_INFO "Class destroyed");
 
 		
 		idr_for_each_entry(&main_device->group_map, cursor2, id_cursor2){
 			cdev_del(&cursor2->cdev);
-			pr_debug("Character device %s destroyed", cursor1->descriptor->group_name);
+			printk(KERN_DEBUG "Character device %s destroyed", cursor1->descriptor->group_name);
 			unregister_chrdev_region(cursor2->deviceID, 1);
-			pr_debug("Region %s deallocated", cursor1->descriptor->group_name);
+			printk(KERN_DEBUG "Region %s deallocated", cursor1->descriptor->group_name);
 
 			//idr_remove(&main_device->group_map, id_cursor);
 		}
@@ -99,7 +103,7 @@ void mainExit(void)
 void initializeMainDevice(void){
 	printk(KERN_INFO "Initializing groups list...");
 
-	INIT_LIST_HEAD(&main_device->groups_lst.list);
+	INIT_LIST_HEAD(&main_device->groups_lst);
 
 	idr_init(&main_device->group_map);	//Init group IDR
 
@@ -125,7 +129,7 @@ static int mainOpen(struct inode *inode, struct file *filep)
 	if(main_device == NULL){	
 
 		/* allocate main device data */
-		main_device = (T_MAIN_SYNC *) kmalloc(sizeof(T_MAIN_SYNC), GFP_KERNEL);
+		main_device = (main_sync_t *) kmalloc(sizeof(main_sync_t), GFP_KERNEL);
 
 		if(!main_device)
 			return -1;
@@ -175,22 +179,7 @@ static int mainRelease(struct inode *inode, struct file *filep)
  */
 static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos)
 {
-	/*
-	int minor = ((T_PRIVATE_DATA *)(filep->private_data))->minor;
-
-	printk(KERN_INFO "%s writing ...\n", D_DEV_NAME);
-
-	if (count > D_BUF_SIZE) {
-		printk(KERN_INFO "%s write data overflow\n", D_DEV_NAME);
-		count = D_BUF_SIZE;
-	}
-
-	if (copy_from_user(g_buf[minor], buf, count)) {
-		return -EFAULT;
-	}
-
-	return count;
-	*/
+	//Unimplemented
 	return 0;
 }
 
@@ -206,22 +195,7 @@ static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t coun
  */
 static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff_t *f_pos)
 {
-	/*
-	int minor = ((T_PRIVATE_DATA *)(filep->private_data))->minor;
-
-	printk(KERN_INFO "%s reading ...\n", D_DEV_NAME);
-
-	if (count > D_BUF_SIZE) {
-		printk(KERN_INFO "%s read data overflow\n", D_DEV_NAME);
-		count = D_BUF_SIZE;
-	}
-
-	if (copy_to_user(buf, g_buf[minor], count)) {
-		return -EFAULT;
-	}
-
-	return count;
-	*/
+	//Unimplemented
 	return 0;
 }
 
@@ -236,8 +210,7 @@ static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff
  * @retval 0		success
  * @retval others	failure
  */
-static int sRegisterMainDev(void)
-{
+static int sRegisterMainDev(void){
 	dev_t dev, dev_tmp;
 	int ret, i;
 
@@ -247,30 +220,30 @@ static int sRegisterMainDev(void)
 		return ret;
 	}
 
-	g_dev_major = MAJOR(dev);
-	g_dev_minor = MINOR(dev);
+	main_dev_major = MAJOR(dev);
+	main_dev_minor = MINOR(dev);
 
 	/* create device class */
-	g_class = class_create(THIS_MODULE, D_DEV_NAME);
-	if (IS_ERR(g_class)) {
-		return PTR_ERR(g_class);
+	main_class = class_create(THIS_MODULE, D_DEV_NAME);
+	if (IS_ERR(main_class)) {
+		return PTR_ERR(main_class);
 	}
 
 	/* allocate charactor devices */
-	g_cdev_array = (struct cdev *)kmalloc(sizeof(struct cdev) * D_DEV_NUM, GFP_KERNEL);
+	main_cdev = (struct cdev *)kmalloc(sizeof(struct cdev), GFP_KERNEL);
 
 	for (i = 0; i < D_DEV_NUM; i++) {
-		dev_tmp = MKDEV(g_dev_major, g_dev_minor + i);
+		dev_tmp = MKDEV(main_dev_major, main_dev_minor);
 		/* initialize charactor devices */
-		cdev_init(&g_cdev_array[i], &g_fops);
-		g_cdev_array[i].owner = THIS_MODULE;
+		cdev_init(main_cdev, &main_fops);
+		main_cdev->owner = THIS_MODULE;
 		/* register charactor devices */
-		if (cdev_add(&g_cdev_array[i], dev_tmp, 1) < 0) {
-			printk(KERN_ERR "cdev_add() failed: minor# = %d\n", g_dev_minor + i);
+		if (cdev_add(main_cdev, dev_tmp, 1) < 0) {
+			printk(KERN_ERR "cdev_add() failed: minor# = %d\n", main_dev_minor);
 			continue;
 		}
 		/* create device node */
-		main_dev = device_create(g_class, NULL, dev_tmp, NULL, D_DEV_NAME "%u", g_dev_minor + i);
+		main_dev = device_create(main_class, NULL, dev_tmp, NULL, D_DEV_NAME "%u", main_dev_minor);
 	}
 
 	return 0;
@@ -283,28 +256,25 @@ static int sRegisterMainDev(void)
  *
  * @return nothing
  */
-static void sUnregisterMainDev(void)
-{
+static void sUnregisterMainDev(void){
 	dev_t dev_tmp;
-	int i;
 
-	for (i = 0; i < D_DEV_NUM; i++) {
-		dev_tmp = MKDEV(g_dev_major, g_dev_minor + i);
-		/* delete charactor devices */
-		cdev_del(&g_cdev_array[i]);
-		/* destroy device node */
-		device_destroy(g_class, dev_tmp);
-	}
+	dev_tmp = MKDEV(main_dev_major, main_dev_minor);
+	/* delete charactor devices */
+	cdev_del(main_cdev);
+	/* destroy device node */
+	device_destroy(main_class, dev_tmp);
+
 
 	/* release major#, minor# */
-	dev_tmp = MKDEV(g_dev_major, g_dev_minor);
+	dev_tmp = MKDEV(main_dev_major, main_dev_minor);
 	unregister_chrdev_region(dev_tmp, D_DEV_NUM);
 
 	/* destroy device class */
-	class_destroy(g_class);
+	class_destroy(main_class);
 
 	/* deallocate charactor device */
-	kfree(g_cdev_array);
+	kfree(main_cdev);
 }
 
 
@@ -313,18 +283,16 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 	int ret;
 
-	switch (ioctl_num)
-	{
+	switch (ioctl_num){
 	case IOCTL_INSTALL_GROUP:
 
 		printk(KERN_INFO "INSTALL GROUP ioctl issued");
 
-		group_t *tmp;
+		group_t *user_buffer;
 		group_t *new_group;
 
 
-
-		tmp = (group_t*) ioctl_param;
+		user_buffer = (group_t*) ioctl_param;
 
 		//Allocate the new structure
 		new_group = kmalloc(sizeof(group_t), GFP_KERNEL);
@@ -333,7 +301,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 		pr_debug("New 'group_t' structure allocated");
 
 		//Copy parameter from user space
-		if(ret = copy_from_user(new_group, tmp, sizeof(group_t))){	//Fetch the group_t structure from userspace
+		if(ret = copy_from_user(new_group, user_buffer, sizeof(group_t))){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return -1;
 		}
@@ -344,7 +312,6 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 		if(ret < 0){
 			printk(KERN_INFO "Unable to install a group, exiting");
-
 			kfree(new_group);
 		}
 
@@ -381,9 +348,9 @@ int installGroup(const group_t *new_group_descriptor){
 
 	new_group->descriptor = new_group_descriptor;
 
-	down(&main_device->sem);
+	BUG_ON(main_device == NULL);
 
-		BUG_ON(main_device == NULL);
+	down(&main_device->sem);
 
 		//Allocate ID
 		pr_debug("Allocating IDR");
@@ -395,7 +362,6 @@ int installGroup(const group_t *new_group_descriptor){
 		printk(KERN_INFO "Unable to allocate ID for the new group");
 		goto cleanup;
 	}
-
 
 	pr_debug("Registering Group device...");
 	int err = registerGroupDevice(new_group, main_dev);
@@ -418,18 +384,32 @@ int installGroup(const group_t *new_group_descriptor){
 		return -1;
 }
 
-
+/**
+ * @brief Check if a given group already exists
+ * 
+ * @param[in] group A pointer to a 'group_t' strucuture to check
+ * @return true if the group exists, false otherwise
+ * 
+ * @note Only the 'group_id' field is used in the check, 'group_name' is ignored
+ */
 bool groupExists(group_t *group){
 
-	struct list_head *cur = NULL;	//Cursor
+	struct list_head *cursor = NULL;	//Cursor
+	struct list_head *temp;
+	group_t curr_group;
 
-	//list_for_each_entry(cur, &main_device->groups_lst.list){
+	list_for_each_safe(cursor, temp, &main_device->groups_lst){
 
-		//group_t *elem = container_of();
+		group_list_t *elem = list_entry(cursor, group_list_t, list);
 
-	//}
+		curr_group = elem->group;
 
+		if(curr_group.group_id == group->group_id)
+			return true; 
 
+	}
+
+	return false;
 }
 
 

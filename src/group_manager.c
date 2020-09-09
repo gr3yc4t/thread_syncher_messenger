@@ -33,6 +33,7 @@ inline void initParticipants(group_data *grp_data){
  *      element is not present on the list 
  * 
  * @note This functions is not thread-safe, and should be procected with a lock
+ *      on the list
  */
 int removeParticipant(struct list_head *participants, pid_t _pid){
 
@@ -46,7 +47,6 @@ int removeParticipant(struct list_head *participants, pid_t _pid){
     if(list_empty(participants)){
         return EMPTY_LIST;
     }
-
 
     list_for_each_safe(cursor, temp, participants){    //TODO: check if the unsafe version is enough
 
@@ -222,14 +222,14 @@ static int openGroup(struct inode *inode, struct file *file){
  */
 static int releaseGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
-    
-    
+    int ret;
+
     grp_data =  (group_data*)file->private_data;
 
     printk(KERN_INFO " - Group %d released by %d - ", grp_data->group_id, current->pid);
 
     down_write(&grp_data->member_lock);
-        int ret = removeParticipant(&grp_data->active_members, current->pid);
+        ret = removeParticipant(&grp_data->active_members, current->pid);
     up_write(&grp_data->member_lock);
 
     if(ret == EMPTY_LIST){
@@ -256,6 +256,11 @@ static int releaseGroup(struct inode *inode, struct file *file){
 /**
  * @brief Consult the message-manager and fetch incoming structure 
  * 
+ * @param [in]		file	file structure
+ * @param [out]		user_buffer		buffer address (user)
+ * @param [in]		_size	read data size
+ * @param [in,out]	offset	file position (Currently Unused)
+ * 
  * @note 'offset' is ignored since messages are independent data unit
  * @note If more byte than the available is requested, the function only copies the 
  *          available bytes.
@@ -265,15 +270,17 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
     group_data *grp_data;
     msg_t message;
     ssize_t available_size;
-
+    int ret;
 
     grp_data = (group_data*) file->private_data;
 
     printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
-
-    if(readMessage(&message, grp_data->msg_manager)){
+    ret = readMessage(&message, grp_data->msg_manager);
+    if(ret == 1){
         printk(KERN_INFO "No message available");
         return NO_MSG_PRESENT;
+    }else if(ret == -1){    //Critical Error
+        return 0;   
     }
 
 
@@ -304,6 +311,11 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 /**
  * @brief Routine called when a 'write()' is issued on the group char device
+ * 
+ * @param [in]		filep	file structure
+ * @param [in]		buf		buffer address (user)
+ * @param [in]		_size	write data size
+ * @param [in,out]	f_pos	file position (Currently Unused)
  * 
  * @return 0 on success, MSG_SIZE_ERROR if the size of message is wrong, 
  */
@@ -434,12 +446,16 @@ void awakeBarrier(group_data *grp_data){
 
 
 /**
+ * @brief Handler of group's ioctls requests
  * 
+ * Depending on the compile arguments, four ioctl commands are available:
  * 
+ *  -IOCTL_SET_SEND_DELAY: set the message delayed
+ *  -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
+ *  -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
+ *  -IOCTL_AWAKE_BARRIER: Awake the sleep queue
  * 
- * 
- * 
- * 
+ * @return 0 on success, -1 otherwise
  */
 long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param){
 
@@ -460,7 +476,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
                 atomic_long_set(&grp_data->msg_manager->message_delay, delay);
 
-                printk(KERN_INFO "Message delay set to: %ld", delay);
+                printk(KERN_INFO "Message Delay: delay set to: %ld", delay);
                 ret = 0;
                 break;
             case IOCTL_REVOKE_DELAYED_MESSAGES:
@@ -469,7 +485,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
                 ret = revokeDelayedMessage(grp_data->msg_manager);
 
-                printk(KERN_INFO "Revoke Message: %d message revoked from queue", ret);
+                printk(KERN_INFO "Revoke Message: %d messages revoked from queue", ret);
 
                 break;
         #endif
@@ -489,7 +505,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
         #endif
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
-		ret = -1;
+		ret = INVALID_IOCTL_COMMAND;
 		break;
 	}
 
