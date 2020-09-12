@@ -7,6 +7,37 @@
 #include "group_manager.h"
 
 
+/**
+ * @brief Install the global 'group_class' 
+ * 
+ * @return 0 if the class already exists, -1 on error
+ * 
+ */
+int installGroupClass(){
+
+    group_class;
+
+	//Create "group_sync" on the first device creation
+    if(group_class == NULL){
+        group_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
+
+        if(IS_ERR(group_class)){
+
+            if(PTR_ERR(group_class) == -EEXIST){
+                printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
+                return 0;
+            }else{
+                printk(KERN_ERR "Unable to create 'group_sync' class");
+                return CLASS_ERR;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+
 
 /**
  * @brief Initialize group_data participants' structures
@@ -73,67 +104,70 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     int err;
     char device_name[DEVICE_NAME_SIZE];    //Device name buffer
+    int ret = 0;    //Return value
+
 
     snprintf(device_name, DEVICE_NAME_SIZE, "group%d", grp_data->group_id);
-    pr_debug("Device name: %s", device_name);
+    printk(KERN_DEBUG "Device name: %s", device_name);
 
 
+    //Allocate Device Major/Minor
     err = alloc_chrdev_region(&grp_data->deviceID, 1, GROUP_MAX_MINORS, device_name);
 
-    if (err != 0) {
+    if (err < 0) {
         printk(KERN_INFO "Unable to register 'group%d' device file", grp_data->group_id);
-        return err;
+        ret = CHDEV_ALLOC_ERR;
+        goto cleanup_region;
     }
 
     pr_debug("Device Major/Minor correctly allocated");
-
-    cdev_init(&grp_data->cdev, &group_operation);
-
-    err = cdev_add(&grp_data->cdev, grp_data->deviceID, 1);
-    if(err < 0){
-        printk(KERN_ERR "Unable to add char dev. Error %d", err);
-        return err;
-    }
 
 
     //Group ID is stored both on the group_t descriptor and on the generic structure
     grp_data->descriptor->group_id = grp_data->group_id;
 
     grp_data->descriptor->group_name = kmalloc(sizeof(char)*strnlen(device_name, DEVICE_NAME_SIZE), GFP_KERNEL);
+    if(!grp_data->descriptor->group_name){
+        ret = ALLOC_ERR;
+        goto cleanup_region;
+    }
+
+    
     strcpy(grp_data->descriptor->group_name, device_name);
 
 
-    //Create "group_sync" on the first device creation
-    if(group_class == NULL){
-        group_class = class_create(THIS_MODULE, "group_sync");
-
-        if(IS_ERR(group_class)){
-
-            if(group_class == -EEXIST){
-                printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
-                //group_class = class_find("group_sync");
-            }else{
-                printk(KERN_ERR "Unable to create 'group_sync' class");
-                goto cleanup;
-            }
-        }
+    //Install the global 'group_class'
+    if(installGroupClass() < 0){
+        ret = CLASS_ERR;
+        goto cleanup_class;
     }
+
+
     
     //TODO: test parent behaviour
-    grp_data->dev = device_create(group_class, NULL, grp_data->deviceID, NULL, device_name);
+    grp_data->dev = device_create(group_class, parent, grp_data->deviceID, NULL, device_name);
 
     if(IS_ERR(grp_data->dev)){
         printk(KERN_ERR "Unable to register the device");
-        goto cleanup;
+        ret = DEV_CREATION_ERR;
+        goto cleanup_device;
     }
 
-    printk(KERN_INFO "Device correctly added");
+
 
     //Initialize linked-list
     initParticipants(grp_data);   
+
     //Initialize Message Manager  
     grp_data->msg_manager = createMessageManager(DEFAULT_MSG_SIZE, DEFAULT_STORAGE_SIZE, &grp_data->garbage_collector_work);
     
+    if(!grp_data->msg_manager){
+        ret = ALLOC_ERR;
+        goto cleanup;
+    }
+
+
+
     #ifndef DISABLE_THREAD_BARRIER
         //Initialize Wait Queue
         init_waitqueue_head(&grp_data->barrier_queue);
@@ -141,13 +175,37 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     #endif
 
 
+
+    /*  Charter device creation
+    *   This should be perfomed after all the all the necessary data structures
+    *   are allocated since, immediately after 'cdev_add', the device becomes live
+    *   and starts to respond to requests
+    */
+    cdev_init(&grp_data->cdev, &group_operation);
+
+    err = cdev_add(&grp_data->cdev, grp_data->deviceID, 1);
+    if(err < 0){
+        printk(KERN_ERR "Unable to add char dev. Error %d", err);
+        ret = CDEV_ALLOC_ERR;
+        goto cleanup;
+    }
+
+
+    printk(KERN_INFO "Device correctly added");
+
     return 0;
 
     //----------------------------------------------------------
+
     cleanup:
-        cdev_del(&grp_data->cdev);  //Free the cdev device
+        device_destroy(group_class, grp_data->deviceID);
+    cleanup_device:
+        class_destroy(group_class);
+    cleanup_class:
         kfree(grp_data->descriptor->group_name);
-        return -1;
+    cleanup_region:
+        unregister_chrdev_region(grp_data->deviceID, 1);
+        return ret;
 }
 
 /**
@@ -158,21 +216,26 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
 void unregisterGroupDevice(group_data *grp_data){
 
-
     printk(KERN_INFO "Cleaning up 'group%d'", grp_data->group_id);
     cdev_del(&grp_data->cdev);
 
-    BUG_ON(group_class == NULL);
+    
 
     device_destroy(group_class, grp_data->deviceID);
-    
-    unregister_chrdev_region(grp_data->deviceID, 1);    //TODO: check the 1
+    unregister_chrdev_region(grp_data->deviceID, 1);
 
     #ifndef DISABLE_THREAD_BARRIER
         //Waking up all the sleeped thread
         printk(KERN_INFO "Waking up all the sleeped thread 'group%d'", grp_data->group_id);
         grp_data->wake_up_flag = true;
+
+        //TODO: Check if this causes starvation
+        //while(!resetSleepFlag(grp_data));
+
     #endif
+
+
+    kfree(grp_data->msg_manager);
 }
 
 

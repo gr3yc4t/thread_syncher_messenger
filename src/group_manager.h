@@ -20,11 +20,24 @@
 
 #include "message.h"
 
+/*------------------------------------------------------------------------------
+	Error Codes
+------------------------------------------------------------------------------*/
+
+#define ALLOC_ERR 		        -2
+#define CLASS_ERR		        -11
+#define DEV_CREATION_ERR        -12
+#define CDEV_ALLOC_ERR		-13
 
 
-#define EMPTY_LIST -20
-#define NODE_NOT_FOUND -21
-#define INVALID_IOCTL_COMMAND -1
+#define EMPTY_LIST              -20
+#define NODE_NOT_FOUND          -21
+#define INVALID_IOCTL_COMMAND   -1
+#define CHDEV_ALLOC_ERR         -22
+
+
+
+
 
 #define GROUP_MAX_MINORS    255
 #define DEVICE_NAME_SIZE    64
@@ -51,6 +64,10 @@
 
 
 
+#define GROUP_CLASS_NAME "group_synch"
+
+
+
 static int openGroup(struct inode *inode, struct file *file);
 static int releaseGroup(struct inode *inode, struct file *file);
 static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, size_t size, loff_t *offset);
@@ -59,7 +76,7 @@ static long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned 
 static int flushGroupMessage(struct file *filep, fl_owner_t id);
 
 inline void initParticipants(group_data *grp_data);
-
+int installGroupClass(void);
 
 static struct file_operations group_operation = {
     .owner = THIS_MODULE,
@@ -74,6 +91,7 @@ static struct file_operations group_operation = {
 
 // Global Variables
 static struct class *group_class;
+
 
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);

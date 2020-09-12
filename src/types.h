@@ -60,7 +60,7 @@ struct t_message_deliver{
 struct t_message_delayed_deliver{
     msg_t message;
 
-    msg_manager_t *manager;         //TODO: Rebase the code to remove this
+    msg_manager_t *manager;         //TODO: Rebase the code to remove this by using 'container_of'
 
     struct timer_list delayed_timer;
     struct list_head delayed_list;  
@@ -113,8 +113,11 @@ typedef struct group_t {
  */
 typedef struct group_data {
     struct cdev cdev;           /**< Characted Device definition  */
-    dev_t deviceID;             /**< TODO: remove as already present in "cdev" */
+    dev_t deviceID;            
     int group_id;               /**< Unique identifier of a group. Provided by IDR */
+
+    //Owner
+    pid_t owner;
 
     //Members
     struct list_head active_members;    

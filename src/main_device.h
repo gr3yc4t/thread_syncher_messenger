@@ -19,6 +19,19 @@
 #include "group_manager.h"
 
 
+/*------------------------------------------------------------------------------
+	Error Codes
+------------------------------------------------------------------------------*/
+
+#define ALLOC_ERR 			-2	 
+#define USER_COPY_ERR		-3
+#define IDR_ERR				-4
+#define CLASS_EXISTS		-10
+#define CLASS_ERR			-11
+#define DEV_CREATION_ERR    -12    
+#define CDEV_ALLOC_ERR		-13
+
+
 
 /*------------------------------------------------------------------------------
 	IOCTL
@@ -37,6 +50,10 @@
 #define D_DEV_NUM		(1)					/**< number of device */
 #define D_BUF_SIZE		(32)				/**< buffer size (for sample-code) */
 
+
+#define CLASS_NAME		"thread_synch"
+
+
 #define GRP_MIN_ID 		0
 #define GRP_MAX_ID		255
 
@@ -52,6 +69,8 @@ typedef struct t_groups {
 
 /** @brief Main device data */
 typedef struct t_main_sync {
+	dev_t dev;
+	struct cdev cdev;
 	int minor;								/**< minor# */
 
 	struct list_head groups_lst;
@@ -92,10 +111,10 @@ static int main_dev_major = D_DEV_MAJOR;		/**< major# */
 static int main_dev_minor = D_DEV_MINOR;		/**< minor# */
 
 //TODO: change to a more meaningful name
-static struct device *main_dev;				//Used for "parent" field in device_create; 
+static struct device *main_device;				//Used for "parent" field in device_create; 
 
 //Main device global pointer 
-static main_sync_t *main_device;		
+static main_sync_t main_device_data;	//TODO use an array to manage multiple main device	
 
 static struct file_operations main_fops;
 

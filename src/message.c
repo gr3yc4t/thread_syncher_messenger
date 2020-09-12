@@ -67,7 +67,7 @@ void delayedMessageCallback(struct timer_list *timer){
     printk(KERN_INFO "delayedMessageCallback: Writing message into the FIFO queue");
 
     if(!writeMessage(msg_deliver, delayed_msg->manager)){
-        printk(KERN_ERR "Unable to deliver delayed message");
+        printk(KERN_ERR "delayedMessageCallback: Unable to deliver delayed message");
         return;
     }
 
@@ -464,7 +464,8 @@ int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
  * @param[in] _max_storage_size    Configurable param
  * @param[in] garbageCollectorFunction Pointer to the work_struct responsible for garbage collection 
  * 
- * @return msg_manager_t    A pointer to an allocated an initialized 'msg_manager_t' struct
+ * @return msg_manager_t A pointer to an allocated an initialized 'msg_manager_t' struct, may be 
+ *             NULL in case the 'kmalloc' fails
  */
 msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector){
 
@@ -516,7 +517,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     if(!isValidSizeLimits(message, manager)){
         printk(KERN_ERR "Message size is invalid");
         return -1;
-    }    //Set message's recipients
+    }
 
 
 
@@ -650,16 +651,12 @@ void queueGarbageCollector(struct work_struct *work){
         }
         //Queue Critical Section
 
-            //printk(KERN_DEBUG "Garbage Collector: msg_queue write locked");
-
             list_for_each_safe(cursor, temp, &grp_data->msg_manager->queue){
 
                 struct t_message_deliver *entry = list_entry(cursor, struct t_message_deliver, fifo_list);
 
                 down_read(&entry->recipient_lock);
                 //Recipient critical section
-
-                    //printk(KERN_DEBUG "Garbage Collector: recipient read locked");
 
                     if(isDeliveryCompleted(&entry->recipient, current_member)){
                         printk(KERN_DEBUG "Garbage Collector: deleting entry from queue");
@@ -672,15 +669,9 @@ void queueGarbageCollector(struct work_struct *work){
                     }
 
                 up_read(&entry->recipient_lock);                
-                
-                //printk(KERN_DEBUG "Garbage Collector: recipient read unlocked");
             }
 
         up_write(&grp_data->msg_manager->queue_lock);
 
-        //printk(KERN_DEBUG "Garbage Collector: msg_queue write unlocked");
-
     up_read(&grp_data->member_lock);
-
-    //printk(KERN_DEBUG "Garbage Collector: active members read unlocked");
 }

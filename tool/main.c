@@ -424,7 +424,12 @@ int interactiveSession(const char *group_path){
             break;
         case 3: //Set Delay
             printf("\nDelay Value: ");
-            scanf("% ul", &delay);
+            //scanf("% ul", &delay);
+            char buff_delay[64];
+            scanf("%s", buff_delay);
+
+            delay = strtol(buff_delay, NULL, 10);
+
             ret = _setDelay(fd, delay);
             break;
         case 4: //Set Delay
