@@ -177,6 +177,7 @@ int revokeDelayedMessage(msg_manager_t *manager){
             if(msgDeliver != NULL){
                 //Stop the timer
                 //TODO: check thread safety with the callback function
+                printk(KERN_DEBUG "Message timer deleted");
                 del_timer(&msgDeliver->delayed_timer);
             }
 
@@ -571,7 +572,6 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
     printk(KERN_DEBUG "readMessage: queue_lock acquired");
 
         //Read queue critical section
-
         list_for_each(cursor, &manager->queue){
 
             msg_deliver = NULL;
@@ -580,7 +580,18 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
             if(!msg_deliver)
                 goto cleanup;
 
-            if(!wasDelivered(&msg_deliver->recipient, pid)){
+            if(msg_deliver->message.author == pid){
+                /**
+                 * This should't be necessary since the message's sender is
+                 * automatically added in the list of recipients and, consequently,
+                 * the 'wasDelivered' function should skip it.
+                 * However for unknown reason this does not always happens (especially
+                 * if the message is delayed)
+                 * 
+                 */
+                printk(KERN_DEBUG "Message sent from the reader, skipping...");
+                printk(KERN_DEBUG "Sender PID: %d", pid);
+            }else if(!wasDelivered(&msg_deliver->recipient, pid)){
                 printk(KERN_INFO "Message found for PID: %d", (int)pid);
                 //Copy the message to the destination buffer
                 memcpy(dest_buffer, &msg_deliver->message, sizeof(msg_t));

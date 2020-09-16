@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------*/
 
 #define ALLOC_ERR 		        -2
+#define CLASS_EXISTS		-10
 #define CLASS_ERR		        -11
 #define DEV_CREATION_ERR        -12
 #define CDEV_ALLOC_ERR		-13

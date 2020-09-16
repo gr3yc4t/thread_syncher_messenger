@@ -15,23 +15,26 @@
  */
 int installGroupClass(){
 
-    group_class;
-
 	//Create "group_sync" on the first device creation
-    if(group_class == NULL){
-        group_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
+    printk(KERN_DEBUG "Group class not exists, creating...");
+    group_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
 
-        if(IS_ERR(group_class)){
 
-            if(PTR_ERR(group_class) == -EEXIST){
-                printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
-                return 0;
-            }else{
-                printk(KERN_ERR "Unable to create 'group_sync' class");
-                return CLASS_ERR;
-            }
+    if(group_class == NULL)
+        BUG();
+
+
+    if(IS_ERR(group_class)){
+
+        if(PTR_ERR(group_class) == -EEXIST){
+            printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
+            return CLASS_EXISTS;
+        }else{
+            printk(KERN_ERR "Unable to create 'group_sync' class");
+            return CLASS_ERR;
         }
     }
+
 
     return 0;
 }
@@ -104,6 +107,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     int err;
     char device_name[DEVICE_NAME_SIZE];    //Device name buffer
+    int name_len;
     int ret = 0;    //Return value
 
 
@@ -126,22 +130,24 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     //Group ID is stored both on the group_t descriptor and on the generic structure
     grp_data->descriptor->group_id = grp_data->group_id;
 
-    grp_data->descriptor->group_name = kmalloc(sizeof(char)*strnlen(device_name, DEVICE_NAME_SIZE), GFP_KERNEL);
+    name_len = strnlen(device_name, DEVICE_NAME_SIZE);
+
+    grp_data->descriptor->group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
     if(!grp_data->descriptor->group_name){
         ret = ALLOC_ERR;
         goto cleanup_region;
     }
 
     
-    strcpy(grp_data->descriptor->group_name, device_name);
+    strncpy(grp_data->descriptor->group_name, device_name, name_len);
 
-
+    /*
     //Install the global 'group_class'
     if(installGroupClass() < 0){
         ret = CLASS_ERR;
         goto cleanup_class;
     }
-
+    */
 
     
     //TODO: test parent behaviour
@@ -200,7 +206,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     cleanup:
         device_destroy(group_class, grp_data->deviceID);
     cleanup_device:
-        class_destroy(group_class);
+        //class_destroy(group_class);
     cleanup_class:
         kfree(grp_data->descriptor->group_name);
     cleanup_region:
@@ -218,7 +224,6 @@ void unregisterGroupDevice(group_data *grp_data){
 
     printk(KERN_INFO "Cleaning up 'group%d'", grp_data->group_id);
     cdev_del(&grp_data->cdev);
-
     
 
     device_destroy(group_class, grp_data->deviceID);
@@ -231,7 +236,6 @@ void unregisterGroupDevice(group_data *grp_data){
 
         //TODO: Check if this causes starvation
         //while(!resetSleepFlag(grp_data));
-
     #endif
 
 
@@ -433,7 +437,7 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
     if(atomic_long_read(&manager->message_delay) == 0)
         return 0;
 
-    ret = cancelDelay(manager);
+    //ret = cancelDelay(manager);
 
     printk(KERN_INFO "flush: %d elements flushed from the delayed queue", ret);
     return ret;

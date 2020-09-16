@@ -24,7 +24,10 @@ int mainInit(void){
 
 	printk(KERN_INFO "%s loading ...\n", D_DEV_NAME);
 
-	group_class == NULL;	//Will be allocated when the first group is installed
+	//Try to install the 'group_class'
+	if(installGroupClass() < 0)
+		return CLASS_EXISTS;
+
 
 	// Register devices 
 	if ((ret = sRegisterMainDev()) != 0) {
@@ -44,31 +47,29 @@ int mainInit(void){
  * @retval nothing
  */
 void mainExit(void){
-	printk(KERN_INFO "%s unloading ...\n", D_DEV_NAME);
-
 	group_data *cursor;
 	int id_cursor;
 
-
-	printk(KERN_INFO "Class destroyed");
-
-
-	if(group_class != NULL){   //If some groups were installed
-
-		idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
-			unregisterGroupDevice(cursor);	//TODO:Test if this is enough
-			printk(KERN_INFO"Device %s destroyed", cursor->descriptor->group_name);
-			
-			kfree(cursor);	//Deallocate group_data structure
-		}
+	printk(KERN_INFO "%s unloading ...\n", D_DEV_NAME);
 
 
-		class_destroy(group_class);
-		printk(KERN_INFO "Class destroyed");
+	printk(KERN_INFO "Starting deallocating group devices...");
 
-		//Deallocate the IDR
-		idr_destroy(&main_device_data.group_map);
+	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
+		unregisterGroupDevice(cursor);	//TODO:Test if this is enough
+		printk(KERN_INFO "Device %s destroyed", cursor->descriptor->group_name);
+		
+		kfree(cursor);	//Deallocate group_data structure
 	}
+
+
+	class_destroy(group_class);
+	printk(KERN_INFO "Group class destroyed");
+
+	//Deallocate the IDR
+	idr_destroy(&main_device_data.group_map);
+	printk(KERN_DEBUG "IDR destroyed");
+
 
 
 	// Unregister the main devices
@@ -111,8 +112,7 @@ void initializeMainDevice(void){
  * @retval 0		success
  * @retval others	failure
  */
-static int mainOpen(struct inode *inode, struct file *filep)
-{
+static int mainOpen(struct inode *inode, struct file *filep){
 	printk(KERN_INFO "%s opening ...\n", D_DEV_NAME);
 
 
@@ -258,13 +258,14 @@ static void sUnregisterMainDev(void){
 	cdev_del(&main_device_data.cdev);
 	/* destroy device node */
 	device_destroy(main_class, main_device_data.dev);
-
+	printk(KERN_DEBUG "Main device destroryed");
 
 	/* destroy device class */
 	class_destroy(main_class);
+	printk(KERN_DEBUG "Main class destroryed");
 
 	unregister_chrdev_region(main_device_data.dev, 1);
-
+	printk(KERN_DEBUG "Char device region deallocated");
 }
 
 
@@ -336,11 +337,6 @@ int installGroup(const group_t *new_group_descriptor){
 	group_data *new_group;
 	int group_id;
 	int ret = 0;
-
-	//Try to install the 'group_class'
-	if(installGroupClass() < 0)
-		return CLASS_EXISTS;
-
 
 	new_group = kmalloc(sizeof(group_data), GFP_KERNEL);
 
