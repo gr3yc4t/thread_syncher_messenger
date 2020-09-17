@@ -124,32 +124,20 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         goto cleanup_region;
     }
 
-    pr_debug("Device Major/Minor correctly allocated");
+    printk(KERN_DEBUG "Device Major/Minor correctly allocated");
 
-
-    //Group ID is stored both on the group_t descriptor and on the generic structure
-    grp_data->descriptor->group_id = grp_data->group_id;
 
     name_len = strnlen(device_name, DEVICE_NAME_SIZE);
 
-    grp_data->descriptor->group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
-    if(!grp_data->descriptor->group_name){
+    grp_data->descriptor.group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
+    if(!grp_data->descriptor.group_name){
         ret = ALLOC_ERR;
         goto cleanup_region;
     }
 
     
-    strncpy(grp_data->descriptor->group_name, device_name, name_len);
+    strncpy(grp_data->descriptor.group_name, device_name, name_len);
 
-    /*
-    //Install the global 'group_class'
-    if(installGroupClass() < 0){
-        ret = CLASS_ERR;
-        goto cleanup_class;
-    }
-    */
-
-    
     //TODO: test parent behaviour
     grp_data->dev = device_create(group_class, parent, grp_data->deviceID, NULL, device_name);
 
@@ -208,7 +196,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     cleanup_device:
         //class_destroy(group_class);
     cleanup_class:
-        kfree(grp_data->descriptor->group_name);
+        kfree(grp_data->descriptor.group_name);
     cleanup_region:
         unregister_chrdev_region(grp_data->deviceID, 1);
         return ret;
@@ -220,13 +208,19 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
  *  @return nothing
  */
 
-void unregisterGroupDevice(group_data *grp_data){
+void unregisterGroupDevice(group_data *grp_data, bool flag){
 
     printk(KERN_INFO "Cleaning up 'group%d'", grp_data->group_id);
-    cdev_del(&grp_data->cdev);
     
+    
+    if(!flag){
+        device_destroy(group_class, grp_data->deviceID);
+        return;
+    }
 
-    device_destroy(group_class, grp_data->deviceID);
+    //Call class_destroy in between
+
+    cdev_del(&grp_data->cdev);
     unregister_chrdev_region(grp_data->deviceID, 1);
 
     #ifndef DISABLE_THREAD_BARRIER

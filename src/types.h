@@ -18,6 +18,10 @@
 #endif
 
 
+#define DEVICE_NAME_SIZE    64
+
+
+
 
 typedef struct t_message_manager msg_manager_t;
 typedef struct t_message msg_t;
@@ -99,8 +103,8 @@ typedef struct t_message_manager{
  * @brief System-wide descriptor of a group
  */
 typedef struct group_t {
-	unsigned int group_id;		//Thread group ID
 	char *group_name;           //TODO: add name len.
+    ssize_t name_len;
 } group_t;
 
 
@@ -135,7 +139,7 @@ typedef struct group_data {
     #endif
 
     struct device* dev;
-    group_t *descriptor;        /** @brief system-wide   descriptor*/
+    group_t descriptor;        /** @brief system-wide   descriptor*/
 } group_data;
 
 #endif //TYPES_H

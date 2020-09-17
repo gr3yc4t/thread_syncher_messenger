@@ -30,6 +30,7 @@
 #define CLASS_ERR			-11
 #define DEV_CREATION_ERR    -12    
 #define CDEV_ALLOC_ERR		-13
+#define GROUP_EXISTS		-14
 
 
 
@@ -38,8 +39,7 @@
 ------------------------------------------------------------------------------*/
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
-
-
+#define IOCTL_GET_GROUP_ID  _IOW('X', 100, group_t*)
 
 /*------------------------------------------------------------------------------
 	Defined Macros
@@ -73,7 +73,7 @@ typedef struct t_main_sync {
 	struct cdev cdev;
 	int minor;								/**< minor# */
 
-	struct list_head groups_lst;
+	struct list_head groups_lst;			//TODO: to remove because is unused
 	struct idr group_map;
 
 	struct semaphore sem;
@@ -86,7 +86,7 @@ int mainInit(void);
 void mainExit(void);
 
 void initializeMainDevice(void);
-int installGroup(const group_t *new_group);
+int installGroup(const group_t new_group);
 
 static int mainOpen(struct inode *inode, struct file *filep);
 static int mainRelease(struct inode *inode, struct file *filep);

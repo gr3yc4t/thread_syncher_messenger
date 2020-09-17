@@ -28,10 +28,14 @@
 #define MEMORY_ERROR -13
 
 
+/**
+ * @brief System-wide descriptor of a group
+ */
 typedef struct group_t {
-	unsigned int group_id;		//Thread group ID
-	char *group_name;
+	char *group_name;           //TODO: add name len.
+    ssize_t name_len;
 } group_t;
+
 
 
 //Global var describing threads
@@ -311,8 +315,8 @@ int installGroup(const char *main_device_path){
 
     group_t new_group;
 
-    new_group.group_id = 99;
     new_group.group_name = "pippo";
+    new_group.name_len = strlen(new_group.group_name);
 
     int ret = ioctl(numeric_descriptor, IOCTL_INSTALL_GROUP, &new_group);
 

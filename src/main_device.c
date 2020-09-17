@@ -11,6 +11,10 @@ static struct file_operations main_fops = {
 };
 
 
+int getGroupID(const group_t new_group);
+int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group);
+
+
 /**
  * @brief Kernel Module Init
  *
@@ -56,14 +60,23 @@ void mainExit(void){
 	printk(KERN_INFO "Starting deallocating group devices...");
 
 	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
-		unregisterGroupDevice(cursor);	//TODO:Test if this is enough
-		printk(KERN_INFO "Device %s destroyed", cursor->descriptor->group_name);
+		unregisterGroupDevice(cursor, false);	//TODO:Test if this is enough
+		printk(KERN_INFO "1- Device %s destroyed", cursor->descriptor.group_name);
 		
-		kfree(cursor);	//Deallocate group_data structure
+		//kfree(cursor);	//Deallocate group_data structure
 	}
 
 
 	class_destroy(group_class);
+
+
+	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
+		unregisterGroupDevice(cursor, true);	//TODO:Test if this is enough
+		printk(KERN_INFO "2- Device %s destroyed", cursor->descriptor.group_name);
+		
+		kfree(cursor);	//Deallocate group_data structure
+	}
+
 	printk(KERN_INFO "Group class destroyed");
 
 	//Deallocate the IDR
@@ -115,8 +128,6 @@ void initializeMainDevice(void){
 static int mainOpen(struct inode *inode, struct file *filep){
 	printk(KERN_INFO "%s opening ...\n", D_DEV_NAME);
 
-
-
 	//Store data into 'device_info' (kept per device)
 	//filep->device_info = main_device_data;
 
@@ -158,8 +169,7 @@ static int mainRelease(struct inode *inode, struct file *filep)
  *
  * @return	number of write byte
  */
-static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos)
-{
+static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos){
 	//Unimplemented
 	return 0;
 }
@@ -269,42 +279,43 @@ static void sUnregisterMainDev(void){
 }
 
 
-
+/**
+ * @brief Handler of ioctl's request made on main device
+ * 
+ * Available ioctl:
+ * 	-IOCTL_INSTALL_GROUP: used to install a group corresponding to the provided 'group_t' 
+ * 			structure, returns GROUP_EXISTS if the group already exists
+ * 	-IOCTL_GET_GROUP_ID: returns the ID corresponding to the provided 'group_t' structure
+ * 			or -1 if the group does not exists
+ * 
+ */
 static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param){
 
 	int ret;
+	group_t group_tmp; 	//Alias for the second IOCTL
+	char *group_name_tmp;
 
 	switch (ioctl_num){
 	case IOCTL_INSTALL_GROUP:
 
 		printk(KERN_INFO "INSTALL GROUP ioctl issued");
 
-		group_t *user_buffer;
-		group_t *new_group;
-
-
-		user_buffer = (group_t*) ioctl_param;
-
-		//Allocate the new structure
-		new_group = kmalloc(sizeof(group_t), GFP_KERNEL);
-		if(!new_group)
-			return ALLOC_ERR;
-
-		pr_debug("New 'group_t' structure allocated");
-
-		//Copy parameter from user space
-		if(ret = copy_from_user(new_group, user_buffer, sizeof(group_t))){	//Fetch the group_t structure from userspace
+		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp)){
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
-		printk(KERN_INFO "Installing group...");
-		ret = installGroup(new_group);
+		if(getGroupID(group_tmp) >= 0){
+			printk(KERN_WARNING "The group already exists!!!");
+			return GROUP_EXISTS;
+		}
 
+
+		printk(KERN_INFO "Installing group...");
+		ret = installGroup(group_tmp);
 
 		if(ret < 0){
 			printk(KERN_INFO "Unable to install a group, exiting");
-			kfree(new_group);
 			return ret;
 		}
 
@@ -313,6 +324,22 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 		break;
 	
+
+	case IOCTL_GET_GROUP_ID:
+
+		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp)){
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+		}
+
+		ret = getGroupID(group_tmp);
+
+		if(ret != -1)
+			printk(KERN_DEBUG "Group found, returning the ID");
+
+		break;
+
+
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
 		ret = -1;
@@ -332,7 +359,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
  * @note For error codes meaning see 'main_device.h'
  */
 
-int installGroup(const group_t *new_group_descriptor){
+int installGroup(const group_t new_group_descriptor){
 
 	group_data *new_group;
 	int group_id;
@@ -361,7 +388,7 @@ int installGroup(const group_t *new_group_descriptor){
 		goto cleanup;
 	}
 
-	pr_debug("Registering Group device...");
+	printk(KERN_DEBUG "Registering Group device...");
 	int err = registerGroupDevice(new_group, main_device);
 
 	if(err != 0){
@@ -384,34 +411,69 @@ int installGroup(const group_t *new_group_descriptor){
 }
 
 /**
- * @brief Check if a given group already exists
+ * @brief Return the ID of an existing group from 'group_t' structure
  * 
- * @param[in] group A pointer to a 'group_t' strucuture to check
- * @return true if the group exists, false otherwise
+ * @note This function respect thread-safety
  * 
- * @note Only the 'group_id' field is used in the check, 'group_name' is ignored
+ * @param[in] new_group 	Pointer to a 'group_t' strucuture to check
+ * @return the group ID if the group exists, -1 otherwise
+ * 
  */
-bool groupExists(group_t *group){
+int getGroupID(const group_t new_group){
 
-	struct list_head *cursor = NULL;	//Cursor
-	struct list_head *temp;
-	group_t curr_group;
+	group_data *curr_group;
+	int id_cursor;
 
-	list_for_each_safe(cursor, temp, &main_device_data.groups_lst){
+	down(&main_device_data.sem);
+		idr_for_each_entry(&main_device_data.group_map, curr_group, id_cursor){
 
-		group_list_t *elem = list_entry(cursor, group_list_t, list);
+			if(strncmp(curr_group->descriptor.group_name, new_group.group_name, DEVICE_NAME_SIZE) == 0){
 
-		curr_group = elem->group;
+				printk(KERN_INFO "Group exists with ID: %d", id_cursor);
 
-		if(curr_group.group_id == group->group_id)
-			return true; 
-
-	}
-
-	return false;
+				up(&main_device_data.sem);
+				return id_cursor;
+			}
+		}
+	up(&main_device_data.sem);
+	return -1;
 }
 
 
+/**
+ * @brief Copy a 'group_t' structure to kernel space
+ * 
+ * @param[in] user_group Pointer to a userspace 'group_t' structure
+ * @param[out] kern_group Destination that will contain the 'group_t' structure
+ * 
+ * @return 0 on success, negative number on error
+ * 
+ */
+int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){
+		int ret;
+		char *group_name_tmp;
+
+		//Copy parameter from user space
+		if(ret = copy_from_user(kern_group, user_group, sizeof(group_t))){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+		}
+
+
+		group_name_tmp = (char*) kmalloc(sizeof(char)*(kern_group->name_len), GFP_KERNEL);
+
+		if(!group_name_tmp)
+			return ALLOC_ERR;
+
+		if(ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+		}
+		//Switch pointers
+		kern_group->group_name = group_name_tmp;
+
+		return 0;
+}
 
 
 

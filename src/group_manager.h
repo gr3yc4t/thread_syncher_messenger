@@ -96,7 +96,7 @@ static struct class *group_class;
 
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);
-void unregisterGroupDevice(group_data *grp_data);
+void unregisterGroupDevice(group_data *grp_data, bool flag);
 
 
 #endif //GRP_MAN_H
