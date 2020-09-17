@@ -1,6 +1,6 @@
 # Makefile for LKM
 obj-m := final.o
-final-objs := ./src/main.o ./src/main_device.o ./src/group_manager.o ./src/message.o
+final-objs := ./src/main.o ./src/main_device.o ./src/sysfs.o ./src/group_manager.o ./src/message.o ./src/sysfs.o
 
 KDIR=/lib/modules/$(shell uname -r)/build
 
@@ -9,6 +9,8 @@ CFLAGS_main_device.o := -DDEBUG
 CFLAGS_group_manager.o := -DDEBUG
 CFLAGS_message.o := -DDEBUG
 CFLAGS_main.o := -DDEBUG
+CFLAGS_sysfs.o := -DDEBUG
+
 all:
 	make -C $(KDIR) M=$(shell pwd)  modules 
 

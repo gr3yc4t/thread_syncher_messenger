@@ -49,6 +49,8 @@ int mainInit(void){
  * @todo Check that every structure is correctly deallocated
  * @param nothing
  * @retval nothing
+ * 
+ * @bug Classes are not deallocated correctly so a reboot is necessary to reaload the module
  */
 void mainExit(void){
 	group_data *cursor;
@@ -74,6 +76,10 @@ void mainExit(void){
 		unregisterGroupDevice(cursor, true);	//TODO:Test if this is enough
 		printk(KERN_INFO "2- Device %s destroyed", cursor->descriptor.group_name);
 		
+			#ifndef DISABLE_SYSFS
+				printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor2);
+				releaseSysFs(&cursor2->group_sysfs);
+			#endif
 		kfree(cursor);	//Deallocate group_data structure
 	}
 
@@ -365,7 +371,7 @@ int installGroup(const group_t new_group_descriptor){
 	int group_id;
 	int ret = 0;
 
-	new_group = kmalloc(sizeof(group_data), GFP_KERNEL);
+	new_group = (group_data*)kmalloc(sizeof(group_data), GFP_KERNEL);
 
 	if(!new_group)
 		return ALLOC_ERR;
@@ -398,6 +404,10 @@ int installGroup(const group_t new_group_descriptor){
 	}
 
 
+	#ifndef DISABLE_SYSFS
+		new_group->group_sysfs.manager = new_group->msg_manager;
+		initSysFs(new_group);
+	#endif
 	return ret;
 
 
