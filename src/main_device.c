@@ -77,8 +77,8 @@ void mainExit(void){
 		printk(KERN_INFO "2- Device %s destroyed", cursor->descriptor.group_name);
 		
 			#ifndef DISABLE_SYSFS
-				printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor2);
-				releaseSysFs(&cursor2->group_sysfs);
+				printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor);
+				releaseSysFs(&cursor->group_sysfs);
 			#endif
 		kfree(cursor);	//Deallocate group_data structure
 	}
