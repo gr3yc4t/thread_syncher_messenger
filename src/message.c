@@ -246,7 +246,7 @@ int cancelDelay(msg_manager_t *manager){
  * @note This function is thread-safe
  */
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
-        u_int msg_size;
+        u_long msg_size;
 
         if(!msg || !manager){
             printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
@@ -255,9 +255,9 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
 
         printk(KERN_DEBUG "READ-LOCK: config_lock");
         down_read(&manager->config_lock);
-            msg_size = msg->size;
+            msg_size = (u_long)msg->size;
 
-            printk(KERN_DEBUG "Message size: %d", msg_size);
+            printk(KERN_DEBUG "Message size: %ld", msg_size);
 
             if(msg_size > manager->max_message_size){
                 printk(KERN_DEBUG "Max msg. size invalidated!!!");
@@ -468,7 +468,7 @@ int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
  * @return msg_manager_t A pointer to an allocated an initialized 'msg_manager_t' struct, may be 
  *             NULL in case the 'kmalloc' fails
  */
-msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector){
+__must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector){
 
     msg_manager_t *manager = (msg_manager_t*)kmalloc(sizeof(msg_manager_t), GFP_KERNEL);
     if(!manager)

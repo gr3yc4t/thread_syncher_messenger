@@ -33,7 +33,7 @@
  */
 typedef struct group_t {
 	char *group_name;           //TODO: add name len.
-    ssize_t name_len;
+    size_t name_len;
 } group_t;
 
 
@@ -124,6 +124,28 @@ int _revokeDelay(int fd){
 int _sleepOnBarrier(int fd){
     return ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
 }
+
+
+int _setMaxMsgSize(unsigned long _val){
+
+    int *fd;
+    int ret;
+    fd = open("/sys/class/group_synch/group0/message_param/max_message_size", O_RDWR); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    const char *buff = "111\0";
+
+    ret = write(fd, buff, sizeof(char)*strlen(buff));
+
+
+    return ret;
+}
+
 
 int _awakeBarrier(int fd){
     return ioctl(fd, IOCTL_AWAKE_BARRIER);
@@ -390,6 +412,7 @@ int interactiveSession(const char *group_path){
     char *buffer;
     int ret = 99;
     long delay;
+    long msg_size;
 
 
     int fd = openGroup(group_path);
@@ -401,7 +424,7 @@ int interactiveSession(const char *group_path){
 
     do{
     printf("\n[Group Management]\n");
-    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier\n\t99 - Exit\n:");
+    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier\n -Message Param -\n\t 81 - Set max message size\n\t99 - Exit\n:");
 
     scanf(" %d", &choice);
 
@@ -428,7 +451,6 @@ int interactiveSession(const char *group_path){
             break;
         case 3: //Set Delay
             printf("\nDelay Value: ");
-            //scanf("% ul", &delay);
             char buff_delay[64];
             scanf("%s", buff_delay);
 
@@ -452,6 +474,15 @@ int interactiveSession(const char *group_path){
             ret = _awakeBarrier(fd);
             printf("\nBarrier Awaked!");
             break;
+        case 81:
+            printf("\nMax size value: ");
+            char buff_size[64];
+
+            scanf("%s", buff_size);
+
+            msg_size = strtol(buff_size, NULL, 10);
+
+            ret = _setMaxMsgSize(msg_size);
         case 99:
             printf("\n\nExiting...\n");
             exit_flag = 1;

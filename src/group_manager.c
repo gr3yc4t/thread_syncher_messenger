@@ -234,6 +234,8 @@ void unregisterGroupDevice(group_data *grp_data, bool flag){
 
 
     kfree(grp_data->msg_manager);
+
+    grp_data->flags.initialized = 0;
 }
 
 

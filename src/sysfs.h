@@ -25,7 +25,7 @@ static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attri
 
 
 
-void initSysFs(group_data *grp_data);
+int initSysFs(group_data *grp_data);
 void releaseSysFs(group_sysfs_t *sysfs);
 
 

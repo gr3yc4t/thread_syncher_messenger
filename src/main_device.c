@@ -62,28 +62,26 @@ void mainExit(void){
 	printk(KERN_INFO "Starting deallocating group devices...");
 
 	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
-		unregisterGroupDevice(cursor, false);	//TODO:Test if this is enough
-		printk(KERN_INFO "1- Device %s destroyed", cursor->descriptor.group_name);
-		
-		//kfree(cursor);	//Deallocate group_data structure
+		unregisterGroupDevice(cursor, false);	
+		printk(KERN_INFO "Phase 1- Device %s destroyed", cursor->descriptor.group_name);
 	}
 
-
 	class_destroy(group_class);
-
+	printk(KERN_INFO "Group class destroyed");
 
 	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){
-		unregisterGroupDevice(cursor, true);	//TODO:Test if this is enough
-		printk(KERN_INFO "2- Device %s destroyed", cursor->descriptor.group_name);
+		unregisterGroupDevice(cursor, true);	
+		printk(KERN_INFO "Phase 2- Device %s destroyed", cursor->descriptor.group_name);
 		
 			#ifndef DISABLE_SYSFS
-				printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor);
-				releaseSysFs(&cursor->group_sysfs);
+				if(cursor->flags.sysfs_loaded == 1){
+					printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor);
+					releaseSysFs(&cursor->group_sysfs);
+				}
 			#endif
 		kfree(cursor);	//Deallocate group_data structure
 	}
 
-	printk(KERN_INFO "Group class destroyed");
 
 	//Deallocate the IDR
 	idr_destroy(&main_device_data.group_map);
@@ -204,8 +202,8 @@ static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff
  *
  * @param nothing
  *
- * @retval 0		success
- * @retval others	failure
+ * @retval 0 on success
+ * @retval negative number on failure
  */
 static int sRegisterMainDev(void){
 	int ret, i;
@@ -246,7 +244,6 @@ static int sRegisterMainDev(void){
 	}
 
 
-
 	return 0;
 
 
@@ -257,8 +254,7 @@ static int sRegisterMainDev(void){
 	cleanup_region:
 		unregister_chrdev_region(main_device_data.dev, 1);
 
-
-
+		return -1;
 }
 
 /**
@@ -365,7 +361,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
  * @note For error codes meaning see 'main_device.h'
  */
 
-int installGroup(const group_t new_group_descriptor){
+__must_check int installGroup(const group_t new_group_descriptor){
 
 	group_data *new_group;
 	int group_id;
@@ -375,6 +371,9 @@ int installGroup(const group_t new_group_descriptor){
 
 	if(!new_group)
 		return ALLOC_ERR;
+
+
+	memset(&new_group->flags, 0, sizeof(g_flags_t));	//Reset all flags
 
 	new_group->descriptor = new_group_descriptor;
 	new_group->owner = current->pid;
@@ -406,8 +405,16 @@ int installGroup(const group_t new_group_descriptor){
 
 	#ifndef DISABLE_SYSFS
 		new_group->group_sysfs.manager = new_group->msg_manager;
-		initSysFs(new_group);
+		if((ret = initSysFs(new_group)) < 0 ){
+			printk(KERN_ERR "Unable to initialize the sysfs interface");
+			goto cleanup;
+		}
+
+		new_group->flags.sysfs_loaded = 1;
 	#endif
+
+	new_group->flags.initialized = 1;
+
 	return ret;
 
 
@@ -429,7 +436,7 @@ int installGroup(const group_t new_group_descriptor){
  * @return the group ID if the group exists, -1 otherwise
  * 
  */
-int getGroupID(const group_t new_group){
+__must_check int getGroupID(const group_t new_group){
 
 	group_data *curr_group;
 	int id_cursor;
@@ -459,7 +466,7 @@ int getGroupID(const group_t new_group){
  * @return 0 on success, negative number on error
  * 
  */
-int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){
+__must_check int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){
 		int ret;
 		char *group_name_tmp;
 

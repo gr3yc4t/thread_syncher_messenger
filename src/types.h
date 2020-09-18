@@ -35,7 +35,7 @@ typedef struct t_message msg_t;
 typedef struct t_message{
     pid_t author;   //Author thread
     void *buffer;
-    ssize_t size;
+    size_t size;
 } msg_t;
 
 
@@ -97,10 +97,10 @@ struct t_message_deliver{
  *  respectively the sub-system's size limits
  */
 typedef struct t_message_manager{
-    u_int max_message_size;
-    u_int max_storage_size;
+    u_long max_message_size;
+    u_long max_storage_size;
 
-    u_int curr_storage_size;
+    u_long curr_storage_size;
     struct rw_semaphore config_lock;
 
 
@@ -124,6 +124,36 @@ typedef struct group_t {
 	char *group_name;           //TODO: add name len.
     ssize_t name_len;
 } group_t;
+
+
+/**
+ * @brief Contains the various flags that represent the status of the module
+ * 
+ * Those flags are useful since it indicates if a module was correctly initialized, in 
+ *  this way when the module must be unloaded, no deallocation is performed on modules
+ *  that failed.
+ * 
+ *  -initialized: indicates that a group has loaded all of its structures
+ * 
+ *  -thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized
+ *  -wake_up_flag: to implement
+ * 
+ *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ */
+typedef struct group_flags_t{
+    unsigned int initialized:1;         //Set to 1 when the device driver is fully loaded
+
+    #ifndef DISABLE_THREAD_BARRIER
+        unsigned int thread_barrier_loaded:1;
+        unsigned int wake_up_flag:1;    //TODO: switch to this on thread barrier
+    #endif
+
+    #ifndef DISABLE_SYSFS
+        unsigned int sysfs_loaded:1;
+    #endif
+
+} g_flags_t;
+
 
 
 /**
@@ -163,6 +193,9 @@ typedef struct group_data {
     #ifndef DISABLE_SYSFS
         group_sysfs_t group_sysfs;
     #endif
+
+
+    g_flags_t flags;
 } group_data;
 
 #endif //TYPES_H
