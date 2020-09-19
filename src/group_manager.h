@@ -90,8 +90,7 @@ static struct file_operations group_operation = {
 };
 
 
-// Global Variables
-static struct class *group_class;
+extern struct class *group_device_class;
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);
 void unregisterGroupDevice(group_data *grp_data, bool flag);

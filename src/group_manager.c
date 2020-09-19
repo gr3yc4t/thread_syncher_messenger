@@ -6,9 +6,13 @@
 
 #include "group_manager.h"
 
+// Global Variables
+struct class *group_device_class;
+EXPORT_SYMBOL(group_device_class);
+
 
 /**
- * @brief Install the global 'group_class' 
+ * @brief Install the global 'group_device_class' 
  * 
  * @return 0 if the class already exists, -1 on error
  * 
@@ -17,16 +21,16 @@ int installGroupClass(){
 
 	//Create "group_sync" on the first device creation
     printk(KERN_DEBUG "Group class not exists, creating...");
-    group_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
+    group_device_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
 
 
-    if(group_class == NULL)
+    if(group_device_class == NULL)
         BUG();
 
 
-    if(IS_ERR(group_class)){
+    if(IS_ERR(group_device_class)){
 
-        if(PTR_ERR(group_class) == -EEXIST){
+        if(PTR_ERR(group_device_class) == -EEXIST){
             printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
             return CLASS_EXISTS;
         }else{
@@ -139,7 +143,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     strncpy(grp_data->descriptor.group_name, device_name, name_len);
 
     //TODO: test parent behaviour
-    grp_data->dev = device_create(group_class, parent, grp_data->deviceID, NULL, device_name);
+    grp_data->dev = device_create(group_device_class, parent, grp_data->deviceID, NULL, device_name);
 
     if(IS_ERR(grp_data->dev)){
         printk(KERN_ERR "Unable to register the device");
@@ -192,9 +196,9 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     //----------------------------------------------------------
 
     cleanup:
-        device_destroy(group_class, grp_data->deviceID);
+        device_destroy(group_device_class, grp_data->deviceID);
     cleanup_device:
-        //class_destroy(group_class);
+        //class_destroy(group_device_class);
     cleanup_class:
         kfree(grp_data->descriptor.group_name);
     cleanup_region:
@@ -214,7 +218,7 @@ void unregisterGroupDevice(group_data *grp_data, bool flag){
     
     
     if(!flag){
-        device_destroy(group_class, grp_data->deviceID);
+        device_destroy(group_device_class, grp_data->deviceID);
         return;
     }
 

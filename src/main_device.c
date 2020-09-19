@@ -1,6 +1,9 @@
 #include "main_device.h"
 
 
+
+
+
 /** file operations */
 static struct file_operations main_fops = {
 	.open    = mainOpen,
@@ -28,7 +31,7 @@ int mainInit(void){
 
 	printk(KERN_INFO "%s loading ...\n", D_DEV_NAME);
 
-	//Try to install the 'group_class'
+	//Try to install the 'group_device_class'
 	if(installGroupClass() < 0)
 		return CLASS_EXISTS;
 
@@ -66,7 +69,7 @@ void mainExit(void){
 		printk(KERN_INFO "Phase 1- Device %s destroyed", cursor->descriptor.group_name);
 	}
 
-	class_destroy(group_class);
+	class_destroy(group_device_class);
 	printk(KERN_INFO "Group class destroyed");
 
 	idr_for_each_entry(&main_device_data.group_map, cursor, id_cursor){

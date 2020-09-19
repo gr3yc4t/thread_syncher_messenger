@@ -79,6 +79,7 @@ typedef struct t_main_sync {
 	struct idr group_map;
 
 	struct semaphore sem;
+
 } main_sync_t;
 
 /*------------------------------------------------------------------------------
@@ -119,6 +120,9 @@ static struct device *main_device;				//Used for "parent" field in device_create
 static main_sync_t main_device_data;	//TODO use an array to manage multiple main device	
 
 static struct file_operations main_fops;
+
+extern struct class *group_device_class;
+
 
 
 #endif //MAIN_DEV_H
