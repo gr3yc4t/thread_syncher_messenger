@@ -13,8 +13,14 @@
 
 #include <linux/kernel.h>	/* TODO: For printk, remove after debugging*/
 #include <linux/rwsem.h>
+#include <linux/uaccess.h>   //For copy_to_user/copy_from_user
 
 #include "types.h"
+
+
+
+#define ATTR_BUFF_SIZE 64
+
 
 
 static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf);

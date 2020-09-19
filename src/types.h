@@ -65,7 +65,7 @@ struct t_message_deliver{
     struct t_message_delayed_deliver{
         msg_t message;
 
-    msg_manager_t *manager;         //TODO: Rebase the code to remove this by using 'container_of'
+        msg_manager_t *manager;         //TODO: Rebase the code to remove this by using 'container_of'
 
         struct timer_list delayed_timer;
         struct list_head delayed_list;  
@@ -80,10 +80,6 @@ struct t_message_deliver{
         struct kobj_attribute attr_max_message_size;
         struct kobj_attribute attr_max_storage_size;
         struct kobj_attribute attr_current_storage_size;
-
-
-        msg_manager_t *manager;
-
     }group_sysfs_t;
 
 #endif
@@ -121,7 +117,7 @@ typedef struct t_message_manager{
  * @brief System-wide descriptor of a group
  */
 typedef struct group_t {
-	char *group_name;           //TODO: add name len.
+	char *group_name;           
     ssize_t name_len;
 } group_t;
 
@@ -152,7 +148,7 @@ typedef struct group_flags_t{
         unsigned int sysfs_loaded:1;
     #endif
 
-} g_flags_t;
+} __attribute__((packed)) g_flags_t;    //TODO: check if "packed" improve performance
 
 
 
@@ -164,12 +160,15 @@ typedef struct group_flags_t{
  * @var group_id The unique ID of the group (returned by the IDR)
  */
 typedef struct group_data {
-    struct cdev cdev;           /**< Characted Device definition  */
+    struct cdev cdev;           /** @brief Characted Device definition  */
+    struct device* dev;
     dev_t deviceID;            
-    int group_id;               /**< Unique identifier of a group. Provided by IDR */
+    int group_id;               /** @brief Unique identifier of a group. Provided by IDR */
+
+    group_t  descriptor;        /** @brief system-wide   descriptor*/
 
     //Owner
-    pid_t owner;
+    pid_t owner;                //TODO: implement security features
 
     //Members
     struct list_head active_members;    
@@ -185,9 +184,6 @@ typedef struct group_data {
         wait_queue_head_t barrier_queue;
         bool wake_up_flag;
     #endif
-
-    struct device* dev;
-    group_t  descriptor;        /** @brief system-wide   descriptor*/
 
 
     #ifndef DISABLE_SYSFS

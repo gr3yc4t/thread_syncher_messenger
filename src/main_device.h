@@ -76,7 +76,6 @@ typedef struct t_main_sync {
 	struct cdev cdev;
 	int minor;								/**< minor# */
 
-	struct list_head groups_lst;			//TODO: to remove because is unused
 	struct idr group_map;
 
 	struct semaphore sem;
@@ -113,7 +112,7 @@ static struct cdev *main_cdev;			/**< charactor devices */
 static int main_dev_major = D_DEV_MAJOR;		/**< major# */
 static int main_dev_minor = D_DEV_MINOR;		/**< minor# */
 
-//TODO: change to a more meaningful name
+
 static struct device *main_device;				//Used for "parent" field in device_create; 
 
 //Main device global pointer 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <unistd.h> //For sleep()/nanosleep()
+#include <unistd.h> //For sleep()/nanosleep()/getppid()
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -130,7 +130,7 @@ int _setMaxMsgSize(unsigned long _val){
 
     int *fd;
     int ret;
-    fd = open("/sys/class/group_synch/group0/message_param/max_message_size", O_RDWR); 
+    fd = open("/sys/class/group_synch/group0/message_param/max_message_size", O_WRONLY); 
 
     if(fd < 0){
         printf("Error while opening the group file\n");
@@ -138,13 +138,151 @@ int _setMaxMsgSize(unsigned long _val){
     }
 
 
-    const char *buff = "111\0";
+    const char buff[BUFF_SIZE];
+
+    if(sprintf(buff, "%ld", _val) < 0){
+        printf("Error while converting the paramtere value");
+        return -1;
+    }
 
     ret = write(fd, buff, sizeof(char)*strlen(buff));
 
+    return ret;
+}
+
+int _setMaxStorageSize(unsigned long _val){
+
+    int *fd;
+    int ret;
+    fd = open("/sys/class/group_synch/group0/message_param/max_storage_size", O_WRONLY); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    const char buff[BUFF_SIZE];
+
+    if(sprintf(buff, "%ld", _val) < 0){
+        printf("Error while converting the paramtere value");
+        return -1;
+    }
+
+    ret = write(fd, buff, sizeof(char)*strlen(buff));
 
     return ret;
 }
+
+
+int _readMaxMsgSize(unsigned long *_val){
+    FILE *fd;
+    int ret;
+
+    fd = fopen("/sys/class/group_synch/group0/message_param/max_message_size", "rt"); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    char buff[BUFF_SIZE];
+
+    printf("Reading param 'max_message_size'");
+    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
+    if(ret < 0){
+        printf("Errror while reading parametersaaa: %d", ret);
+        return -1;
+    }
+
+    *_val = strtoul(buff, NULL, 10);
+
+    fclose(fd);
+
+    return 0;
+}
+
+int _readMaxStorageSize(unsigned long *_val){
+    FILE *fd;
+    int ret;
+
+    fd = fopen("/sys/class/group_synch/group0/message_param/max_storage_size", "rt"); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    char buff[BUFF_SIZE];
+
+    printf("Reading param 'max_storage_size'");
+    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
+    if(ret < 0){
+        printf("Errror while reading parameters: %d", ret);
+        return -1;
+    }
+
+
+
+    *_val = strtoul(buff, NULL, 10);
+
+    fclose(fd);
+
+    return 0;
+}
+
+int _readCurrStorageSize(unsigned long *_val){
+    FILE *fd;
+    int ret;
+
+    fd = fopen("/sys/class/group_synch/group0/message_param/current_message_size", "rt"); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+    char buff[BUFF_SIZE];
+
+    printf("Reading param 'curr_storage_size'");
+    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
+    if(ret < 0){
+        printf("Errror while reading parameters: %d", ret);
+        return -1;
+    }
+
+    *_val = strtoul(buff, NULL, 10);
+
+    fclose(fd);
+
+    return 0;
+}
+
+
+
+
+int printGroupParams(){
+    int ret;
+
+    unsigned long max_message_size = 0;
+    unsigned long max_storage_size = 0;
+    unsigned long curr_storage_size = 0;
+
+
+    if(_readMaxMsgSize(&max_message_size) < 0)
+        return -1;
+    
+    if(_readMaxStorageSize(&max_storage_size) < 0)
+        return -1;
+    
+    if(_readCurrStorageSize(&curr_storage_size) < 0)
+        return -1;
+    
+    printf("\nGroup 0 Data\n\n\tMax message size:  %ld\n\tMax Storage Size: %ld\n\tCurrent storage size: %ld\n\n", max_message_size, max_storage_size, curr_storage_size);
+
+    return 0;
+}
+
 
 
 int _awakeBarrier(int fd){
@@ -342,10 +480,12 @@ int installGroup(const char *main_device_path){
 
     int ret = ioctl(numeric_descriptor, IOCTL_INSTALL_GROUP, &new_group);
 
-    printf("\n\nReturn code : %d\n\n", ret);
+    printf("\n\nGroup ID : %d\n\n", ret);
 
 
     fclose(fd);
+
+    return ret;
 }
 
 int readGroup(const char *group_path){
@@ -413,7 +553,11 @@ int interactiveSession(const char *group_path){
     int ret = 99;
     long delay;
     long msg_size;
+    long storage_size;
+    char buff_size[64];
 
+
+    pid_t my_pid = getppid();
 
     int fd = openGroup(group_path);
 
@@ -423,12 +567,15 @@ int interactiveSession(const char *group_path){
     }
 
     do{
-    printf("\n[Group Management]\n");
-    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier\n -Message Param -\n\t 81 - Set max message size\n\t99 - Exit\n:");
+    printf("\n[Group Management] - %d\n", my_pid);
+    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
+        "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
+        "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n\t"
+        "99 - Exit\n:");
 
     scanf(" %d", &choice);
 
-    clear();
+    //clear();
 
 
         switch (choice){
@@ -474,15 +621,26 @@ int interactiveSession(const char *group_path){
             ret = _awakeBarrier(fd);
             printf("\nBarrier Awaked!");
             break;
+        case 80:
+            if(printGroupParams() < 0)
+                printf("Error while reading parameters");
+            break;
         case 81:
             printf("\nMax size value: ");
-            char buff_size[64];
 
             scanf("%s", buff_size);
 
             msg_size = strtol(buff_size, NULL, 10);
 
             ret = _setMaxMsgSize(msg_size);
+        case 82:
+            printf("\nMax storage value: ");
+
+            scanf("%s", buff_size);
+
+            storage_size = strtol(buff_size, NULL, 10);
+
+            ret = _setMaxStorageSize(storage_size);            
         case 99:
             printf("\n\nExiting...\n");
             exit_flag = 1;

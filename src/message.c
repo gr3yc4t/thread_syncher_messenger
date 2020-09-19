@@ -512,6 +512,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
     struct t_message_deliver *newMessageDeliver;
     group_members_t *sender;
+    int ret = 0;
 
     debugMsg(*message);
 
@@ -524,9 +525,8 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
     newMessageDeliver = (struct t_message_deliver*)kmalloc(sizeof(struct t_message_deliver), GFP_KERNEL);
     if(!newMessageDeliver)
-        return -1;
+        return ALLOC_ERR;   //No need to cleanup
 
-    BUG_ON(message == NULL);
 
     newMessageDeliver->message = *message;
 
@@ -538,8 +538,10 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     //Add the sender to the list of recipients
     sender = (group_members_t*)kmalloc(sizeof(group_members_t), GFP_KERNEL);
     
-    if(!sender) //TODO: handle better
-        return -1;
+    if(!sender){
+        ret = ALLOC_ERR;
+        goto cleanup;
+    }
 
     sender->pid = current->pid;
     list_add_tail(&sender->list, &newMessageDeliver->recipient);
@@ -553,7 +555,12 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     up_write(&manager->queue_lock);
     printk(KERN_DEBUG "writeMessage: queue_lock released");
 
-    return 0;
+    return ret; 
+
+
+    cleanup:
+        kfree(newMessageDeliver);
+        return ret;
 }
 
 /**
@@ -588,9 +595,12 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                  * However for unknown reason this does not always happens (especially
                  * if the message is delayed)
                  * 
+                 * TODO: when 'revoke delay' functionality is called, messages trigger
+                 *  this if and will not be delivered
                  */
                 printk(KERN_DEBUG "Message sent from the reader, skipping...");
                 printk(KERN_DEBUG "Sender PID: %d", pid);
+                printk(KERN_DEBUG "Message Content %s", msg_deliver->message.buffer);
             }else if(!wasDelivered(&msg_deliver->recipient, pid)){
                 printk(KERN_INFO "Message found for PID: %d", (int)pid);
                 //Copy the message to the destination buffer

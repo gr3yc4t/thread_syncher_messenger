@@ -17,6 +17,9 @@
 
 
 #define NO_MSG_PRESENT 0
+#define ALLOC_ERR 			-2	 
+#define USER_COPY_ERR		-3
+#define SEM_INIT_ERR        -4  /** @brief Semaphore initialization **/
 #define MSG_INVALID_FORMAT -11
 #define MSG_SIZE_ERROR  -12
 #define MEMORY_ERROR -13

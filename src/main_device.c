@@ -108,10 +108,7 @@ void mainExit(void){
 void initializeMainDevice(void){
 	printk(KERN_INFO "Initializing groups list...");
 
-	INIT_LIST_HEAD(&main_device_data.groups_lst);
-
 	idr_init(&main_device_data.group_map);	//Init group IDR
-
 	sema_init(&main_device_data.sem, 1);	//Init main device semaphore
 }
 
@@ -295,7 +292,6 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 	int ret;
 	group_t group_tmp; 	//Alias for the second IOCTL
-	char *group_name_tmp;
 
 	switch (ioctl_num){
 	case IOCTL_INSTALL_GROUP:
@@ -394,17 +390,15 @@ __must_check int installGroup(const group_t new_group_descriptor){
 	}
 
 	printk(KERN_DEBUG "Registering Group device...");
-	int err = registerGroupDevice(new_group, main_device);
+	ret = registerGroupDevice(new_group, main_device);
 
-	if(err != 0){
-		printk(KERN_ERR "Error: %d", err);
-		ret = err;
+	if(ret != 0){
+		printk(KERN_ERR "Error: %d", ret);
 		goto cleanup;
 	}
 
 
 	#ifndef DISABLE_SYSFS
-		new_group->group_sysfs.manager = new_group->msg_manager;
 		if((ret = initSysFs(new_group)) < 0 ){
 			printk(KERN_ERR "Unable to initialize the sysfs interface");
 			goto cleanup;
@@ -415,7 +409,7 @@ __must_check int installGroup(const group_t new_group_descriptor){
 
 	new_group->flags.initialized = 1;
 
-	return ret;
+	return new_group->group_id;	//Return the new group ID
 
 
 	cleanup:
@@ -471,7 +465,7 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 		char *group_name_tmp;
 
 		//Copy parameter from user space
-		if(ret = copy_from_user(kern_group, user_group, sizeof(group_t))){	//Fetch the group_t structure from userspace
+		if( (ret = copy_from_user(kern_group, user_group, sizeof(group_t))) > 0){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}

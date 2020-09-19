@@ -8,26 +8,36 @@
  * 
  * @return The number of element written
  */
-static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf){ 
+static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){ 
+        group_data *grp_data;
         group_sysfs_t *group_sysfs;
         msg_manager_t *manager;
         u_long max_msg_size;
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_max_message_size);
 
-        manager = group_sysfs->manager;
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
 
-        if(!manager)
-                return 0;
+        manager = grp_data->msg_manager;
+
+        if(!manager){
+                printk(KERN_ERR "Unable to fetch msg_manager pointer");
+                return -1;
+        }
 
         printk(KERN_DEBUG "Locking config");
-
         down_read(&manager->config_lock);
                 max_msg_size = manager->max_message_size;
         up_read(&manager->config_lock);
+        printk(KERN_DEBUG "Unlocking config");
 
         
-        return sprintf(buf, "%ld\n", max_msg_size);
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", max_msg_size);
 }
 
 /**
@@ -36,7 +46,8 @@ static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *at
  * 
  * @return The new parameter value, 0 if the no changes are done
  */
-static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count){
+static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count){
+        group_data *grp_data;
         group_sysfs_t *group_sysfs;
         msg_manager_t *manager;
         u_long tmp;
@@ -44,24 +55,27 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_max_message_size);
 
-        manager = group_sysfs->manager;
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_WARNING "container_of: error");
+                return -1;
+        }
+        manager = grp_data->msg_manager;
 
         if(!manager)
                 return 0;
 
+        ret = sscanf(user_buf, "%ld", &tmp);
 
-        ret = kstrtoul(buf, 10, &tmp);
-
-        if(ret != 0){
+        if(ret < 0){
                 printk(KERN_DEBUG "Conversion error, exiting...");
                 return -1;
         }
 
-        printk(KERN_DEBUG "Locking config");
         down_write(&manager->config_lock);
                 manager->max_message_size = tmp;
         up_write(&manager->config_lock);
-        printk(KERN_DEBUG "Unlocking config");
 
         printk(KERN_DEBUG "Value set to %ld", manager->max_message_size);
 
@@ -74,26 +88,33 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
  * 
  * @return The number of element written
  */
-static ssize_t max_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf){
+static ssize_t max_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
         group_sysfs_t *group_sysfs;
         msg_manager_t *manager;
         u_long max_storage_size;
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_max_storage_size);
 
-        manager = group_sysfs->manager;
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
 
-        if(!manager)
-                return 0;
+        manager = grp_data->msg_manager;
 
-        printk(KERN_DEBUG "Locking config");
+        if(!manager){
+                printk(KERN_ERR "Unable to fetch msg_manager pointer");
+                return -1;
+        }
 
         down_read(&manager->config_lock);
                 max_storage_size = manager->max_storage_size;
         up_read(&manager->config_lock);
 
-        
-        return sprintf(buf, "%ld\n", max_storage_size);
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", max_storage_size);
 }
 
 /**
@@ -102,30 +123,38 @@ static ssize_t max_storage_size_show(struct kobject *kobj, struct kobj_attribute
  * 
  * @return The new parameter value, 0 if the no changes are done
  */
-static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count){
+static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count){
+        group_data *grp_data;
         group_sysfs_t *group_sysfs;
         msg_manager_t *manager;
         u_long tmp;
         int ret;
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_max_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
 
-        manager = group_sysfs->manager;
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        manager = grp_data->msg_manager;
 
         if(!manager)
-                return 0;
+                return -1;
 
-        ret = kstrtoul(buf, 10, &tmp);
+        ret = sscanf(user_buf, "%ld", &tmp);
 
-        if(ret != 0){
+        if(ret < 0){
                 printk(KERN_DEBUG "Conversion error, exiting...");
                 return -1;
         }
 
-        printk(KERN_DEBUG "Locking config");
         down_write(&manager->config_lock);
                 manager->max_storage_size = tmp;
         up_write(&manager->config_lock);
+
+        printk(KERN_DEBUG "Value set to %ld", manager->max_storage_size);
 
         return 0;
 }
@@ -136,26 +165,34 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
  * 
  * @return The number of element written
  */
-static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf){
+static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
         group_sysfs_t *group_sysfs;
         msg_manager_t *manager;
         u_long curr_storage_size;
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
 
-        manager = group_sysfs->manager;
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
 
-        if(!manager)
-                return 0;
+        manager = grp_data->msg_manager;
 
-        printk(KERN_DEBUG "Locking config");
+        if(!manager){
+                printk(KERN_ERR "Unable to fetch msg_manager pointer");
+                return -1;
+        }
+
         down_read(&manager->config_lock);
                 curr_storage_size = manager->curr_storage_size;
         up_read(&manager->config_lock);
-        printk(KERN_DEBUG "Unlocking config");
 
-        
-        return sprintf(buf, "%ld\n", curr_storage_size);
+
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", curr_storage_size);
 }
 
 /**
