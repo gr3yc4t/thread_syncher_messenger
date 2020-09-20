@@ -80,6 +80,8 @@ struct t_message_deliver{
         struct kobj_attribute attr_max_message_size;
         struct kobj_attribute attr_max_storage_size;
         struct kobj_attribute attr_current_storage_size;
+        struct kobj_attribute attr_strict_mode;
+        struct kobj_attribute attr_current_owner;
     }group_sysfs_t;
 
 #endif
@@ -135,6 +137,10 @@ typedef struct group_t {
  *  -wake_up_flag: to implement
  * 
  *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ * 
+ *  -strict_mode: 1 if the strict security mode is enabled, 0 otherwise
+ *  -owner_rotation: specifies if the owner should be reassigned if the current 
+ *      one left the group
  */
 typedef struct group_flags_t{
     unsigned int initialized:1;         //Set to 1 when the device driver is fully loaded
@@ -148,6 +154,9 @@ typedef struct group_flags_t{
         unsigned int sysfs_loaded:1;
     #endif
 
+    unsigned int strict_mode:1; 
+    unsigned int owner_rotation:1;  
+                                                   
 } __attribute__((packed)) g_flags_t;    //TODO: check if "packed" improve performance
 
 
@@ -168,7 +177,8 @@ typedef struct group_data {
     group_t  descriptor;        /** @brief system-wide   descriptor*/
 
     //Owner
-    pid_t owner;                //TODO: implement security features
+    pid_t owner;                
+    spinlock_t owner_lock;
 
     //Members
     struct list_head active_members;    

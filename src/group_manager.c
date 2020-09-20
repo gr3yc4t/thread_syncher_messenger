@@ -43,7 +43,95 @@ int installGroupClass(){
     return 0;
 }
 
+/**
+ * @brief Test if the current process is the owner of a group
+ * 
+ * @param[in] grp_data A group main structure
+ * 
+ * @note This function is thread-safe
+ * 
+ * @retval true if the current process is the owner
+ * @retval false if the current process is not the owner
+ */
+bool isOwner(group_data *grp_data){
+    pid_t current_owner;
+    bool ret;
 
+    spin_lock(&grp_data->owner_lock);
+
+            current_owner = grp_data->owner;
+
+            if(current->pid == current_owner){
+                    ret = true;
+            }else{
+                    ret = false;
+            }
+
+    spin_unlock(&grp_data->owner_lock);
+
+    return ret;    
+}
+
+/**
+ * @brief Change the current owner of a group
+ * 
+ * @note If strict mode is enabled, only the owner of a group can call
+ *          this function.
+ * 
+ * @retval 0    on success
+ * @retval -1   if the current process is not authorized
+ * 
+ */ 
+int changeOwner(group_data *grp_data, pid_t new_owner){
+
+    pid_t current_owner;
+    int ret;
+    bool allowed = false;
+
+    //If strict mode is disabled anyone can call this function
+    if(grp_data->flags.strict_mode == 0)
+        allowed = true;
+
+
+    spin_lock(&grp_data->owner_lock);
+
+        current_owner = grp_data->owner;
+
+        if(allowed || current->pid == current_owner){
+            grp_data->owner = new_owner;
+            ret = 0;
+        }else{
+            ret = -1;
+        }
+
+    spin_unlock(&grp_data->owner_lock);
+
+    return ret;
+}
+
+
+/**
+ * @brief Change group's 'strict' security flag
+ * 
+ * @param[in] grp_data  A group structure where the flag should be set
+ * @param[in] enabled   True if the flag must be enabled, false otherwise
+ * 
+ * @retval 0    On success
+ * @retval -1   If the current process is unauthorized
+ */
+int setStrictMode(group_data *grp_data, const bool enabled){
+
+    if(isOwner(grp_data)){
+        if(enabled)
+            grp_data->flags.strict_mode = 1;
+        else
+            grp_data->flags.strict_mode = 0;
+        
+        return 0;
+    }
+    
+    return -1;
+}
 
 
 /**
@@ -163,7 +251,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         ret = ALLOC_ERR;
         goto cleanup;
     }
-
 
 
     #ifndef DISABLE_THREAD_BARRIER
@@ -529,6 +616,8 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 	int ret;
     long delay = 0;
     group_data *grp_data;
+    bool flag;
+    pid_t new_owner;
 
 
 	switch (ioctl_num){
@@ -570,6 +659,34 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
                 ret = 0;
                 break;
         #endif
+
+        case IOCTL_SET_STRICT_MODE:
+            grp_data = (group_data*) filep->private_data;
+
+            flag = (bool)ioctl_param;
+
+            if(!setStrictMode(grp_data, flag)){
+                printk(KERN_WARNING "Unable set strict mode: unauthorized");
+                ret = -1;
+            }else
+                ret = 0;
+            
+
+            break;
+        
+        case IOCTL_CHANGE_OWNER:
+            grp_data = (group_data*) filep->private_data;
+
+            new_owner = (pid_t)ioctl_param;
+
+            if(!changeOwner(grp_data, new_owner)){
+                printk(KERN_WARNING "Unable to change owner: unauthorized");
+                ret = -1;
+            }else
+                ret = 0;
+            
+            break;
+
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
 		ret = INVALID_IOCTL_COMMAND;

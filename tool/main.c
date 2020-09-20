@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <stdbool.h>
 
 
 //IOCTL List
@@ -15,6 +16,8 @@
 #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
 #define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
 #define IOCTL_AWAKE_BARRIER _IO('Z', 1)
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, pid_t)
 
 //Configurations
 #define THREAD_NUM 64
@@ -258,9 +261,6 @@ int _readCurrStorageSize(unsigned long *_val){
     return 0;
 }
 
-
-
-
 int printGroupParams(){
     int ret;
 
@@ -283,6 +283,18 @@ int printGroupParams(){
     return 0;
 }
 
+int setStrictMode(int fd, int value){
+    if(value > 1)
+        value = 1;
+    if(value < 0)
+        value = 0;
+
+    return ioctl(fd, IOCTL_SET_STRICT_MODE, value);
+}
+
+int changeGroupOwner(int fd, pid_t new_owner){
+    return ioctl(fd, IOCTL_CHANGE_OWNER, new_owner);
+}
 
 
 int _awakeBarrier(int fd){
@@ -570,12 +582,13 @@ int interactiveSession(const char *group_path){
     printf("\n[Group Management] - %d\n", my_pid);
     printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
         "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-        "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n\t"
+        "\n -Message Param -\n\t80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n"
+        "Security\n\t91- (Dis)/Enable strict mode\n\t92- Change Owner\n"
         "99 - Exit\n:");
 
     scanf(" %d", &choice);
 
-    //clear();
+    clear();
 
 
         switch (choice){
@@ -640,7 +653,20 @@ int interactiveSession(const char *group_path){
 
             storage_size = strtol(buff_size, NULL, 10);
 
-            ret = _setMaxStorageSize(storage_size);            
+            ret = _setMaxStorageSize(storage_size);      
+
+        case 91:
+            printf("Enable strict mode? (1 for enable, 0 for disable\nChoice: ");
+            scanf("%d", &choice);
+
+            ret = setStrictMode(fd, choice);    
+            break;
+        case 92:
+            printf("Enter the PID of new owner: ");
+            scanf("%d", &choice);
+
+            ret = changeGroupOwner(fd, (pid_t)choice);   
+            break;  
         case 99:
             printf("\n\nExiting...\n");
             exit_flag = 1;

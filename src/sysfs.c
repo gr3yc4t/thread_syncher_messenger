@@ -2,6 +2,34 @@
 
 #include <linux/module.h>
 
+
+bool hasStorePrivilege(group_data *grp_data){
+
+        pid_t current_owner;
+        bool ret;
+
+        //If strict mode is disabled anyone can set parametrs
+        if(grp_data->flags.strict_mode == 0)
+                return true;
+
+        //Otherwise, only the owner can
+        spin_lock(&grp_data->owner_lock);
+
+                current_owner = grp_data->owner;
+
+                if(current->pid == current_owner){
+                        ret = true;
+                }else{
+                        ret = false;
+                }
+
+        spin_unlock(&grp_data->owner_lock);
+
+        return ret;
+}
+
+
+
 /**
  * @brief Return the 'max_message_size' param
  * @param[out] buffer The buffer where the string containing the value is written
@@ -22,6 +50,13 @@ static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *at
                 printk(KERN_ERR "container_of: error");
                 return -1;
         }
+
+
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_WARNING "Current process does not have privilege to change params");
+                return -1;
+        }
+
 
         manager = grp_data->msg_manager;
 
@@ -195,6 +230,62 @@ static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attri
         return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", curr_storage_size);
 }
 
+
+/**
+ * @brief Return the current owner of a group
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t current_owner_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        pid_t curr_owner;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+
+        spin_lock(&grp_data->owner_lock);
+                curr_owner = grp_data->owner;
+        spin_unlock(&grp_data->owner_lock);
+
+
+        return snprintf(user_buff, ATTR_BUFF_SIZE, "%d", (int)curr_owner);
+}
+
+/**
+ * @brief Return the current owner of a group
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t strict_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        bool enabled;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        if(grp_data->flags.strict_mode == 1)
+                enabled = true;
+        else
+                enabled = false;
+        
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%d", enabled);
+}
+
 /**
  * @brief Initialize sysfs attributes
  * @param[in] grp_data Pointer to the main structure of a group
@@ -218,7 +309,7 @@ int initSysFs(group_data *grp_data){
 
         group_sysfs_t *sysfs = &grp_data->group_sysfs;
 
-        sysfs->group_kobject = kobject_create_and_add("message_param", group_device);
+        sysfs->group_kobject = kobject_create_and_add("group_parameters", group_device);
 
         if(sysfs->group_kobject == NULL){
                 printk(KERN_ERR "sysfs: Unable to create kobject");
@@ -241,7 +332,13 @@ int initSysFs(group_data *grp_data){
         sysfs->attr_current_storage_size.attr.mode =  S_IRUGO;
         sysfs->attr_current_storage_size.show = current_storage_size_show;
 
+        sysfs->attr_current_owner.attr.name = "current_owner";
+        sysfs->attr_current_owner.attr.mode =  S_IRUGO;
+        sysfs->attr_current_owner.show = current_owner_show;
 
+        sysfs->attr_strict_mode.attr.name = "strict_mode";
+        sysfs->attr_strict_mode.attr.mode =  S_IRUGO;
+        sysfs->attr_strict_mode.show = strict_mode_show;
 
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_max_message_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_message_size' attribute");
@@ -249,6 +346,10 @@ int initSysFs(group_data *grp_data){
                 printk(KERN_WARNING "Unable to create 'max_storage_size' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_current_size' attribute");        
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'strict_mode' attribute");   
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'current_owner' attribute");  
 
 
         return 0;

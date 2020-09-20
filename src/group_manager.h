@@ -62,6 +62,8 @@
 
 #endif
 
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, pid_t)
 
 
 
