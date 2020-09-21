@@ -18,7 +18,7 @@
 
 //Configurations
 #define THREAD_NUM 64
-#define BUFF_SIZE 256
+#define BUFF_SIZE 512
 
 
 //Error Codes
@@ -165,6 +165,30 @@ int _setMaxStorageSize(unsigned long _val){
     const char buff[BUFF_SIZE];
 
     if(sprintf(buff, "%ld", _val) < 0){
+        printf("Error while converting the paramtere value");
+        return -1;
+    }
+
+    ret = write(fd, buff, sizeof(char)*strlen(buff));
+
+    return ret;
+}
+
+int _setGarbCollRatio(unsigned int _val){
+
+    int *fd;
+    int ret;
+    fd = open("/sys/class/group_synch/group0/message_param/garbage_collector_ratio", O_WRONLY); 
+
+    if(fd < 0){
+        printf("Error while opening the group file\n");
+        return -1;
+    }
+
+
+    const char buff[BUFF_SIZE];
+
+    if(sprintf(buff, "%ud", _val) < 0){
         printf("Error while converting the paramtere value");
         return -1;
     }
@@ -555,6 +579,7 @@ int interactiveSession(const char *group_path){
     long msg_size;
     long storage_size;
     char buff_size[64];
+    int ratio;
 
 
     pid_t my_pid = getppid();
@@ -570,12 +595,13 @@ int interactiveSession(const char *group_path){
     printf("\n[Group Management] - %d\n", my_pid);
     printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
         "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-        "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n\t"
+        "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t"
+        "82 - Set max storage size\n\t83 - Set Garbage Collector ratio\n\t"
         "99 - Exit\n:");
 
     scanf(" %d", &choice);
 
-    //clear();
+    clear();
 
 
         switch (choice){
@@ -595,6 +621,8 @@ int interactiveSession(const char *group_path){
             int len = strlen(buffer);
             
             ret = _writeGroup(fd, buffer, (ssize_t)len);
+
+            free(buffer);
             break;
         case 3: //Set Delay
             printf("\nDelay Value: ");
@@ -633,6 +661,7 @@ int interactiveSession(const char *group_path){
             msg_size = strtol(buff_size, NULL, 10);
 
             ret = _setMaxMsgSize(msg_size);
+            break;
         case 82:
             printf("\nMax storage value: ");
 
@@ -640,7 +669,15 @@ int interactiveSession(const char *group_path){
 
             storage_size = strtol(buff_size, NULL, 10);
 
-            ret = _setMaxStorageSize(storage_size);            
+            ret = _setMaxStorageSize(storage_size);   
+            break;
+        case 83:
+            printf("\nGarbage collector ratio: ");
+
+            scanf("%d", &ratio);
+            ret = _setGarbCollRatio(ratio);
+
+            break;        
         case 99:
             printf("\n\nExiting...\n");
             exit_flag = 1;

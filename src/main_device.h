@@ -29,6 +29,7 @@
 #define ALLOC_ERR 			-2	 
 #define USER_COPY_ERR		-3
 #define IDR_ERR				-4
+#define MEM_ACCESS_ERR		-5
 #define CLASS_EXISTS		-10
 #define CLASS_ERR			-11
 #define DEV_CREATION_ERR    -12    

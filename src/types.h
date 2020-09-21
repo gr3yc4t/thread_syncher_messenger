@@ -80,6 +80,10 @@ struct t_message_deliver{
         struct kobj_attribute attr_max_message_size;
         struct kobj_attribute attr_max_storage_size;
         struct kobj_attribute attr_current_storage_size;
+
+        struct kobj_attribute attr_garbage_collector_enabled;
+        struct kobj_attribute attr_garbage_collector_ratio;
+
     }group_sysfs_t;
 
 #endif
@@ -141,14 +145,25 @@ typedef struct group_flags_t{
 
     #ifndef DISABLE_THREAD_BARRIER
         unsigned int thread_barrier_loaded:1;
-        unsigned int wake_up_flag:1;    //TODO: switch to this on thread barrier
+        unsigned int wake_up_flag:1;   
     #endif
 
     #ifndef DISABLE_SYSFS
         unsigned int sysfs_loaded:1;
     #endif
 
+
+    unsigned int garbage_collector_disabled:1;
+
 } __attribute__((packed)) g_flags_t;    //TODO: check if "packed" improve performance
+
+
+
+typedef struct t_garbage_collector{
+    struct work_struct work;
+    atomic_t ratio;
+} garbage_collector_t;
+
 
 
 
@@ -177,12 +192,13 @@ typedef struct group_data {
 
     //Message-Subsystem
     msg_manager_t *msg_manager;
-    struct work_struct garbage_collector_work;
+
+    //Garbage Collector
+    garbage_collector_t garbage_collector;
 
     #ifndef DISABLE_THREAD_BARRIER
         //Thread-barrier
         wait_queue_head_t barrier_queue;
-        bool wake_up_flag;
     #endif
 
 

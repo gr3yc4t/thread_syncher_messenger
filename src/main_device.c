@@ -3,7 +3,6 @@
 
 
 
-
 /** file operations */
 static struct file_operations main_fops = {
 	.open    = mainOpen,
@@ -467,10 +466,21 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 		int ret;
 		char *group_name_tmp;
 
+		if(!access_ok(user_group, sizeof(group_t))){
+			printk(KERN_DEBUG "Unable to read user-space memory");
+			return MEM_ACCESS_ERR;
+		}
+
 		//Copy parameter from user space
 		if( (ret = copy_from_user(kern_group, user_group, sizeof(group_t))) > 0){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
+		}
+
+
+		if(!access_ok(kern_group->group_name, sizeof(char)*kern_group->name_len)){
+			printk(KERN_DEBUG "Unable to read user-space group's name memory");
+			return MEM_ACCESS_ERR;
 		}
 
 
@@ -481,6 +491,9 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 
 		if(ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			
+			kfree(group_name_tmp);
+			
 			return USER_COPY_ERR;
 		}
 		//Switch pointers
