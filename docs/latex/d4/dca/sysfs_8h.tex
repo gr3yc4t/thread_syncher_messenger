@@ -1,0 +1,88 @@
+\hypertarget{sysfs_8h}{}\doxysection{src/sysfs.h File Reference}
+\label{sysfs_8h}\index{src/sysfs.h@{src/sysfs.h}}
+
+
+Setup the required sysfs interfaces for the module.  
+
+
+{\ttfamily \#include $<$linux/fs.\+h$>$}\newline
+{\ttfamily \#include $<$linux/kobject.\+h$>$}\newline
+{\ttfamily \#include $<$uapi/linux/stat.\+h$>$}\newline
+{\ttfamily \#include $<$linux/kernel.\+h$>$}\newline
+{\ttfamily \#include $<$linux/rwsem.\+h$>$}\newline
+{\ttfamily \#include $<$linux/uaccess.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}types.\+h\char`\"{}}\newline
+Include dependency graph for sysfs.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d0/d63/sysfs_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=185pt]{de/db9/sysfs_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{sysfs_8h_a3ace61138fa8f1acec781501e032b691}\label{sysfs_8h_a3ace61138fa8f1acec781501e032b691}} 
+\#define {\bfseries A\+T\+T\+R\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}~64
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{sysfs_8h_a92416717e286da5ff22fdcb841e36160}{init\+Sys\+Fs}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Initialize sysfs attributes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{sysfs_8h_a3710b2f2cf5b902a7c394beb22211dc4}{release\+Sys\+Fs}} (group\+\_\+sysfs\+\_\+t $\ast$sysfs)
+\begin{DoxyCompactList}\small\item\em Deallocate all sysfs attributes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Setup the required sysfs interfaces for the module. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{sysfs_8h_a92416717e286da5ff22fdcb841e36160}\label{sysfs_8h_a92416717e286da5ff22fdcb841e36160}} 
+\index{sysfs.h@{sysfs.h}!initSysFs@{initSysFs}}
+\index{initSysFs@{initSysFs}!sysfs.h@{sysfs.h}}
+\doxysubsubsection{\texorpdfstring{initSysFs()}{initSysFs()}}
+{\footnotesize\ttfamily int init\+Sys\+Fs (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Initialize sysfs attributes. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the main structure of a group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+In case the file\textquotesingle{}s attribute cannot be created, no error is returned
+\end{DoxyNote}
+\begin{DoxyReturn}{Returns}
+0 on success, negative number on error 
+\end{DoxyReturn}
+\mbox{\Hypertarget{sysfs_8h_a3710b2f2cf5b902a7c394beb22211dc4}\label{sysfs_8h_a3710b2f2cf5b902a7c394beb22211dc4}} 
+\index{sysfs.h@{sysfs.h}!releaseSysFs@{releaseSysFs}}
+\index{releaseSysFs@{releaseSysFs}!sysfs.h@{sysfs.h}}
+\doxysubsubsection{\texorpdfstring{releaseSysFs()}{releaseSysFs()}}
+{\footnotesize\ttfamily void release\+Sys\+Fs (\begin{DoxyParamCaption}\item[{group\+\_\+sysfs\+\_\+t $\ast$}]{sysfs }\end{DoxyParamCaption})}
+
+
+
+Deallocate all sysfs attributes. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em sysfs} & Pointer to the \textquotesingle{}group\+\_\+sysfs\+\_\+t\textquotesingle{} structure of a group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}

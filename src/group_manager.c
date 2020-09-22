@@ -14,7 +14,9 @@ EXPORT_SYMBOL(group_device_class);
 /**
  * @brief Install the global 'group_device_class' 
  * 
- * @return 0 if the class already exists, -1 on error
+ * @retval 0 if the class already exists
+ * @retval CLASS_ERR If the class cannot be installed
+ * @retval CLASS_EXISTS If the class already exists
  * 
  */
 int installGroupClass(){
@@ -24,8 +26,10 @@ int installGroupClass(){
     group_device_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
 
 
-    if(group_device_class == NULL)
-        BUG();
+    if(group_device_class == NULL){
+        printk(KERN_ERR "Unable to create the group device class");
+        return CLASS_ERR;
+    }
 
 
     if(IS_ERR(group_device_class)){
@@ -168,7 +172,10 @@ int removeParticipant(struct list_head *participants, pid_t _pid){
  *  @param [in] grp_data    The group data descriptor
  *  @param [in] parent      device parent (usually 'main_device')
  * 
- *  @return 0 on success, <0 otherwise
+ *  @retval 0 on success
+ *  @retval CHDEV_ALLOC_ERR If the char device allocation fails
+ *  @retval ALLOC_ERR If some memory allocation fails
+ *  @retval DEV_CREATION_ERR If the char device creation fails
  */
 int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
@@ -238,7 +245,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
 
 
-    /*  Charter device creation
+    /** @note Charter device creation
     *   This should be perfomed after all the all the necessary data structures
     *   are allocated since, immediately after 'cdev_add', the device becomes live
     *   and starts to respond to requests
@@ -301,7 +308,7 @@ void unregisterGroupDevice(group_data *grp_data, bool flag){
         printk(KERN_INFO "Waking up all the sleeped thread 'group%d'", grp_data->group_id);
         grp_data->flags.wake_up_flag = 1;
 
-        //TODO: Check if this causes starvation
+        /** @todo: Check if this causes starvation*/
         //while(!resetSleepFlag(grp_data));
     #endif
 
@@ -318,6 +325,8 @@ void unregisterGroupDevice(group_data *grp_data, bool flag){
  * 
  * Add the process that opened the device to the 'active_members' list
  * 
+ * @retval 0 on success
+ * @retval -1 on error
  */
 static int openGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
@@ -335,7 +344,7 @@ static int openGroup(struct inode *inode, struct file *file){
     }
 
 
-    //TODO: integrate in a function
+    /** @todo: integrate in a function*/
     {
         group_members_t *newMember = (group_members_t*)kmalloc(sizeof(group_members_t), GFP_KERNEL);
         if(!newMember){
@@ -362,6 +371,8 @@ static int openGroup(struct inode *inode, struct file *file){
  * Remove the process that closed the device from the 'active_members' list
  *  and start the garbage collector
  * 
+ * @retval 0 on success
+ * @retval -1 on error
  */
 static int releaseGroup(struct inode *inode, struct file *file){
     group_data *grp_data;
@@ -477,7 +488,8 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
  * @param [in]		_size	write data size
  * @param [in,out]	f_pos	file position (Currently Unused)
  * 
- * @return 0 on success, MSG_SIZE_ERROR if the size of message is wrong, 
+ * @retval 0 on success
+ * @retval MSG_SIZE_ERROR if the size of message is wrong, 
  */
 
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t _size, loff_t *f_pos){
@@ -492,7 +504,6 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
         printk(KERN_ERR "Device still not initialized or deallocated, close and reopen the file descriptor");
         return -1;
     }
-
 
 
     msg_t* msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
@@ -580,7 +591,8 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
  * @brief Resets the flag used to wake up threds
  * @param[in] grp_data Pointer to the main structure group
  * 
- * @return true if the flag was resetted, false otherwise
+ * @retval true if the flag was resetted
+ * @retval false otherwise
  */
 bool resetSleepFlag(group_data *grp_data){
     bool ret_flag = false;
@@ -648,12 +660,13 @@ void awakeBarrier(group_data *grp_data){
  * 
  * Depending on the compile arguments, four ioctl commands are available:
  * 
- *  -IOCTL_SET_SEND_DELAY: set the message delayed
- *  -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
- *  -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
- *  -IOCTL_AWAKE_BARRIER: Awake the sleep queue
+ *      -IOCTL_SET_SEND_DELAY: set the message delayed
+ *      -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
+ *      -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
+ *      -IOCTL_AWAKE_BARRIER: Awake the sleep queue
  * 
- * @return 0 on success, -1 otherwise
+ * @retval 0 on success
+ * @retval -1 on error
  */
 long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param){
 

@@ -1,0 +1,529 @@
+\hypertarget{message_8c}{}\doxysection{src/message.c File Reference}
+\label{message_8c}\index{src/message.c@{src/message.c}}
+
+
+Handles all procedures releated to messages releated to a group device.  
+
+
+{\ttfamily \#include \char`\"{}message.\+h\char`\"{}}\newline
+Include dependency graph for message.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d4/da8/message_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{message_8c_abcd6e2e843100cdfc613241a02a4910c}{is\+Valid\+Size\+Limits}} (msg\+\_\+t $\ast$msg, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Check if the delivery of msg will exceed max sizes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{message_8c_a59c35593582090f7294b459faf6a51e1}{debug\+Msg}} (msg\+\_\+t msg)
+\begin{DoxyCompactList}\small\item\em Print a msg\+\_\+t structure. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{message_8c_abe680d2cb4664ed30117bea22d4733a0}\label{message_8c_abe680d2cb4664ed30117bea22d4733a0}} 
+bool {\bfseries is\+Delay\+Set} (const msg\+\_\+manager\+\_\+t $\ast$manager)
+\item 
+void \mbox{\hyperlink{message_8c_a39ccede09c258649eb302c9eae019bfd}{delayed\+Message\+Callback}} (struct timer\+\_\+list $\ast$timer)
+\begin{DoxyCompactList}\small\item\em Called when a timer for a delayed message expires. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_af58ffeb71713f9051b0e065c1aab6318}{queue\+Delayed\+Message}} (msg\+\_\+t $\ast$message, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Insert a delayed message into the pending queue. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_a0205d35a68e74d35bab2858e077865ae}{revoke\+Delayed\+Message}} (msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Remove all the delayed message from the queue. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_a03e27c8961ac14bd4453f9d64bf2ae43}{cancel\+Delay}} (msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Set the delay of messages in the delay queue to zero. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{message_8c_a52aa3da94abdefc702cc3cfb60a97a88}\label{message_8c_a52aa3da94abdefc702cc3cfb60a97a88}} 
+void \mbox{\hyperlink{message_8c_a52aa3da94abdefc702cc3cfb60a97a88}{copy\+\_\+current\+\_\+participants}} (struct list\+\_\+head $\ast$dest, struct list\+\_\+head $\ast$source)
+\begin{DoxyCompactList}\small\item\em copy the list of participants into a new list \end{DoxyCompactList}\item 
+u\+\_\+int \mbox{\hyperlink{message_8c_a88b3209a3f195a419481e99636a099dc}{count\+\_\+recipients\+\_\+safe}} (struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$msg\+\_\+deliver)
+\begin{DoxyCompactList}\small\item\em Counts the current number of recipient in a message deliver. \end{DoxyCompactList}\item 
+u\+\_\+int \mbox{\hyperlink{message_8c_ad16e668a594905443a0f204de647b12e}{count\+\_\+recipients}} (struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$msg\+\_\+deliver)
+\begin{DoxyCompactList}\small\item\em Counts the current number of recipient in a message deliver. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_a2934d9937454f772195295ab4f8f8f86}{deallocate\+\_\+recipients}} (struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$msg\+\_\+deliver)
+\begin{DoxyCompactList}\small\item\em Deallocate the current recipients in a message deliver structure. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_a0620c5b4b142ad0dce341cc24fb8c9b8}{deallocate\+\_\+recipients\+\_\+safe}} (struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$msg\+\_\+deliver)
+\begin{DoxyCompactList}\small\item\em Deallocate the current recipients in a message deliver structure. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{message_8c_ac138128d3197b5459a302cb5137c7942}{was\+Delivered}} (const struct list\+\_\+head $\ast$recipients, const pid\+\_\+t my\+\_\+pid)
+\begin{DoxyCompactList}\small\item\em Check if a given pid is present in the recepit list. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{message_8c_aeae8aca78c8dac257e44d3c282d7c6cb}{set\+Delivered}} (struct list\+\_\+head $\ast$recipients, const pid\+\_\+t my\+\_\+pid)
+\begin{DoxyCompactList}\small\item\em Add a P\+ID to the delivered list of a message. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{message_8c_a7d9b7ed942a40af45dd9b2fdf83106cd}{is\+Delivery\+Completed}} (const struct list\+\_\+head $\ast$recipients, const struct list\+\_\+head $\ast$active\+\_\+member)
+\begin{DoxyCompactList}\small\item\em Checks if the set of recipients of a message contains all the active members. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+must\+\_\+check int \mbox{\hyperlink{message_8c_a02620253a55902a0dc6e793191a678a8}{copy\+\_\+msg\+\_\+to\+\_\+user}} (const msg\+\_\+t $\ast$kmsg, \+\_\+\+\_\+user int8\+\_\+t $\ast$ubuffer, const ssize\+\_\+t \+\_\+size)
+\begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from kernel-\/space to user-\/space \end{DoxyCompactList}\item 
+\+\_\+\+\_\+must\+\_\+check int \mbox{\hyperlink{message_8c_aaa0bbdede7f7c74403859a3e2d367aee}{copy\+\_\+msg\+\_\+from\+\_\+user}} (msg\+\_\+t $\ast$kmsg, const int8\+\_\+t $\ast$umsg, const ssize\+\_\+t \+\_\+size)
+\begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from user-\/space to kernel-\/space \end{DoxyCompactList}\item 
+\+\_\+\+\_\+must\+\_\+check msg\+\_\+manager\+\_\+t $\ast$ \mbox{\hyperlink{message_8c_a0fc02c47c992c949112e71e5cc705618}{create\+Message\+Manager}} (const u\+\_\+int \+\_\+max\+\_\+storage\+\_\+size, const u\+\_\+int \+\_\+max\+\_\+message\+\_\+size, garbage\+\_\+collector\+\_\+t $\ast$garbage\+\_\+collector)
+\begin{DoxyCompactList}\small\item\em Allocate and initialize all the members of a \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_a1ba93a9118165a7e11a1b0865f78da85}{write\+Message}} (msg\+\_\+t $\ast$message, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em write message on a group queue \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8c_af0eb4f46db2a45d736b02c2ac731fdba}{read\+Message}} (msg\+\_\+t $\ast$dest\+\_\+buffer, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Read a message from the corresponding queue. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{message_8c_aba1d8514abde9dfb52f2fb006fd5dbf1}{queue\+Garbage\+Collector}} (struct work\+\_\+struct $\ast$work)
+\begin{DoxyCompactList}\small\item\em Remove a message from the queue when it was completely delivered. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all procedures releated to messages releated to a group device. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{message_8c_a03e27c8961ac14bd4453f9d64bf2ae43}\label{message_8c_a03e27c8961ac14bd4453f9d64bf2ae43}} 
+\index{message.c@{message.c}!cancelDelay@{cancelDelay}}
+\index{cancelDelay@{cancelDelay}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{cancelDelay()}{cancelDelay()}}
+{\footnotesize\ttfamily int cancel\+Delay (\begin{DoxyParamCaption}\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Set the delay of messages in the delay queue to zero. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em manager} & The group\textquotesingle{}s message manager\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The number of messages which delay was cancelled
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+At the moment the function locks the delayed queue, set all timers to zero and unlock the queue. This means that while the function loops through the queue, timer\textquotesingle{}s callback will wait since the queue is locked. 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_aaa0bbdede7f7c74403859a3e2d367aee}\label{message_8c_aaa0bbdede7f7c74403859a3e2d367aee}} 
+\index{message.c@{message.c}!copy\_msg\_from\_user@{copy\_msg\_from\_user}}
+\index{copy\_msg\_from\_user@{copy\_msg\_from\_user}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{copy\_msg\_from\_user()}{copy\_msg\_from\_user()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+must\+\_\+check int copy\+\_\+msg\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{kmsg,  }\item[{const int8\+\_\+t $\ast$}]{umsg,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+copy a msg\+\_\+t structure from user-\/space to kernel-\/space 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em kmsg} & Kernel-\/space msg\+\_\+t \\
+\hline
+\mbox{\texttt{ in}}  & {\em umsg} & User-\/space msg\+\_\+t\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/\+E\+F\+A\+U\+LT} & if the copy fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]Check thread-\/safety of the function \end{DoxyRefDesc}
+\begin{DoxyNote}{Note}
+The kmsg structure must be allocated 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_a02620253a55902a0dc6e793191a678a8}\label{message_8c_a02620253a55902a0dc6e793191a678a8}} 
+\index{message.c@{message.c}!copy\_msg\_to\_user@{copy\_msg\_to\_user}}
+\index{copy\_msg\_to\_user@{copy\_msg\_to\_user}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{copy\_msg\_to\_user()}{copy\_msg\_to\_user()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+must\+\_\+check int copy\+\_\+msg\+\_\+to\+\_\+user (\begin{DoxyParamCaption}\item[{const msg\+\_\+t $\ast$}]{kmsg,  }\item[{\+\_\+\+\_\+user int8\+\_\+t $\ast$}]{ubuffer,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+copy a msg\+\_\+t structure from kernel-\/space to user-\/space 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em kmsg} & Kernel-\/space msg\+\_\+t \\
+\hline
+\mbox{\texttt{ out}}  & {\em umsg} & User-\/space buffer\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/\+E\+F\+A\+U\+LT} & if the copy fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]Check thread-\/safety of the function \end{DoxyRefDesc}
+\begin{DoxyNote}{Note}
+The umsg structure must be allocated 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_ad16e668a594905443a0f204de647b12e}\label{message_8c_ad16e668a594905443a0f204de647b12e}} 
+\index{message.c@{message.c}!count\_recipients@{count\_recipients}}
+\index{count\_recipients@{count\_recipients}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{count\_recipients()}{count\_recipients()}}
+{\footnotesize\ttfamily u\+\_\+int count\+\_\+recipients (\begin{DoxyParamCaption}\item[{struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$}]{msg\+\_\+deliver }\end{DoxyParamCaption})}
+
+
+
+Counts the current number of recipient in a message deliver. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg\+\_\+deliver} & A \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is N\+OT thread-\/safe with respect to recipients atomic\+\_\+long\+\_\+read should be called only when the recipient lock is held in read mode.
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & number of recipients in the list \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_a88b3209a3f195a419481e99636a099dc}\label{message_8c_a88b3209a3f195a419481e99636a099dc}} 
+\index{message.c@{message.c}!count\_recipients\_safe@{count\_recipients\_safe}}
+\index{count\_recipients\_safe@{count\_recipients\_safe}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{count\_recipients\_safe()}{count\_recipients\_safe()}}
+{\footnotesize\ttfamily u\+\_\+int count\+\_\+recipients\+\_\+safe (\begin{DoxyParamCaption}\item[{struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$}]{msg\+\_\+deliver }\end{DoxyParamCaption})}
+
+
+
+Counts the current number of recipient in a message deliver. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg\+\_\+deliver} & A \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread-\/safe with respect to recipients
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & number of recipients in the list \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_a0fc02c47c992c949112e71e5cc705618}\label{message_8c_a0fc02c47c992c949112e71e5cc705618}} 
+\index{message.c@{message.c}!createMessageManager@{createMessageManager}}
+\index{createMessageManager@{createMessageManager}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{createMessageManager()}{createMessageManager()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+must\+\_\+check msg\+\_\+manager\+\_\+t$\ast$ create\+Message\+Manager (\begin{DoxyParamCaption}\item[{const u\+\_\+int}]{\+\_\+max\+\_\+storage\+\_\+size,  }\item[{const u\+\_\+int}]{\+\_\+max\+\_\+message\+\_\+size,  }\item[{garbage\+\_\+collector\+\_\+t $\ast$}]{garbage\+\_\+collector }\end{DoxyParamCaption})}
+
+
+
+Allocate and initialize all the members of a \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em \+\_\+max\+\_\+message\+\_\+size} & Configurable param \\
+\hline
+\mbox{\texttt{ in}}  & {\em \+\_\+max\+\_\+storage\+\_\+size} & Configurable param \\
+\hline
+\mbox{\texttt{ in}}  & {\em garbage\+Collector\+Function} & Pointer to the work\+\_\+struct responsible for garbage collection\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em An} & \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} pointer to an allocated an initialized \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct \\
+\hline
+{\em A} & N\+U\+LL pointer in case the \textquotesingle{}kmalloc\textquotesingle{} fails \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_a2934d9937454f772195295ab4f8f8f86}\label{message_8c_a2934d9937454f772195295ab4f8f8f86}} 
+\index{message.c@{message.c}!deallocate\_recipients@{deallocate\_recipients}}
+\index{deallocate\_recipients@{deallocate\_recipients}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{deallocate\_recipients()}{deallocate\_recipients()}}
+{\footnotesize\ttfamily int deallocate\+\_\+recipients (\begin{DoxyParamCaption}\item[{struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$}]{msg\+\_\+deliver }\end{DoxyParamCaption})}
+
+
+
+Deallocate the current recipients in a message deliver structure. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg\+\_\+deliver} & A \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is N\+OT thread-\/safe with respect to recipients and should be called only when the recipient lock is held in read mode.
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & number of deallocated recipients in the list \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_a0620c5b4b142ad0dce341cc24fb8c9b8}\label{message_8c_a0620c5b4b142ad0dce341cc24fb8c9b8}} 
+\index{message.c@{message.c}!deallocate\_recipients\_safe@{deallocate\_recipients\_safe}}
+\index{deallocate\_recipients\_safe@{deallocate\_recipients\_safe}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{deallocate\_recipients\_safe()}{deallocate\_recipients\_safe()}}
+{\footnotesize\ttfamily int deallocate\+\_\+recipients\+\_\+safe (\begin{DoxyParamCaption}\item[{struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} $\ast$}]{msg\+\_\+deliver }\end{DoxyParamCaption})}
+
+
+
+Deallocate the current recipients in a message deliver structure. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg\+\_\+deliver} & A \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread-\/safe with respect to recipients list
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & number of deallocated recipients in the list \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_a59c35593582090f7294b459faf6a51e1}\label{message_8c_a59c35593582090f7294b459faf6a51e1}} 
+\index{message.c@{message.c}!debugMsg@{debugMsg}}
+\index{debugMsg@{debugMsg}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{debugMsg()}{debugMsg()}}
+{\footnotesize\ttfamily void debug\+Msg (\begin{DoxyParamCaption}\item[{msg\+\_\+t}]{msg }\end{DoxyParamCaption})}
+
+
+
+Print a msg\+\_\+t structure. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg} & The \textquotesingle{}msg\+\_\+t\textquotesingle{} to print \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothign 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8c_a39ccede09c258649eb302c9eae019bfd}\label{message_8c_a39ccede09c258649eb302c9eae019bfd}} 
+\index{message.c@{message.c}!delayedMessageCallback@{delayedMessageCallback}}
+\index{delayedMessageCallback@{delayedMessageCallback}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{delayedMessageCallback()}{delayedMessageCallback()}}
+{\footnotesize\ttfamily void delayed\+Message\+Callback (\begin{DoxyParamCaption}\item[{struct timer\+\_\+list $\ast$}]{timer }\end{DoxyParamCaption})}
+
+
+
+Called when a timer for a delayed message expires. 
+
+The function simply take the existing \textquotesingle{}\mbox{\hyperlink{structt__message__delayed__deliver}{t\+\_\+message\+\_\+delayed\+\_\+deliver}}\textquotesingle{} structure, extract the \textquotesingle{}msg\+\_\+t\textquotesingle{} field and write it into the F\+I\+FO queue via the \textquotesingle{}write\+Message\textquotesingle{} function.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em timer} & The timer that elasped \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8c_a7d9b7ed942a40af45dd9b2fdf83106cd}\label{message_8c_a7d9b7ed942a40af45dd9b2fdf83106cd}} 
+\index{message.c@{message.c}!isDeliveryCompleted@{isDeliveryCompleted}}
+\index{isDeliveryCompleted@{isDeliveryCompleted}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{isDeliveryCompleted()}{isDeliveryCompleted()}}
+{\footnotesize\ttfamily bool is\+Delivery\+Completed (\begin{DoxyParamCaption}\item[{const struct list\+\_\+head $\ast$}]{recipients,  }\item[{const struct list\+\_\+head $\ast$}]{active\+\_\+member }\end{DoxyParamCaption})}
+
+
+
+Checks if the set of recipients of a message contains all the active members. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em recipients} & The recipients of the message to \textquotesingle{}was\+Delivered\textquotesingle{} \\
+\hline
+\mbox{\texttt{ in}}  & {\em active\+\_\+member} & The list of active members to compare\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if active members is contained in recipients \\
+\hline
+{\em false} & if active members is N\+OT contained in recipients\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+This function must be called only when there is a reader lock on the active\+\_\+member recipients structure 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_abcd6e2e843100cdfc613241a02a4910c}\label{message_8c_abcd6e2e843100cdfc613241a02a4910c}} 
+\index{message.c@{message.c}!isValidSizeLimits@{isValidSizeLimits}}
+\index{isValidSizeLimits@{isValidSizeLimits}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{isValidSizeLimits()}{isValidSizeLimits()}}
+{\footnotesize\ttfamily bool is\+Valid\+Size\+Limits (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{msg,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Check if the delivery of msg will exceed max sizes. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em msg} & The message to test for \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if the size limits are respected \\
+\hline
+{\em false} & if the size exceed the limits\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+This function is thread-\/safe 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_af58ffeb71713f9051b0e065c1aab6318}\label{message_8c_af58ffeb71713f9051b0e065c1aab6318}} 
+\index{message.c@{message.c}!queueDelayedMessage@{queueDelayedMessage}}
+\index{queueDelayedMessage@{queueDelayedMessage}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{queueDelayedMessage()}{queueDelayedMessage()}}
+{\footnotesize\ttfamily int queue\+Delayed\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{message,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Insert a delayed message into the pending queue. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em message} & The message to insert into the queue \\
+\hline
+\mbox{\texttt{ in}}  & {\em manager} & A pointer to the current msg\+\_\+manager\+\_\+t of the group\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/1} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8c_aba1d8514abde9dfb52f2fb006fd5dbf1}\label{message_8c_aba1d8514abde9dfb52f2fb006fd5dbf1}} 
+\index{message.c@{message.c}!queueGarbageCollector@{queueGarbageCollector}}
+\index{queueGarbageCollector@{queueGarbageCollector}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{queueGarbageCollector()}{queueGarbageCollector()}}
+{\footnotesize\ttfamily void queue\+Garbage\+Collector (\begin{DoxyParamCaption}\item[{struct work\+\_\+struct $\ast$}]{work }\end{DoxyParamCaption})}
+
+
+
+Remove a message from the queue when it was completely delivered. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em work} & The work struct contained inside \char`\"{}msg\+\_\+manager\+\_\+t\char`\"{}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This function has three critical section, therefore it could be a bottleneck of the module 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_af0eb4f46db2a45d736b02c2ac731fdba}\label{message_8c_af0eb4f46db2a45d736b02c2ac731fdba}} 
+\index{message.c@{message.c}!readMessage@{readMessage}}
+\index{readMessage@{readMessage}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{readMessage()}{readMessage()}}
+{\footnotesize\ttfamily int read\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{dest\+\_\+buffer,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Read a message from the corresponding queue. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em 1} & if no message is present \\
+\hline
+{\em -\/1} & on critical error \\
+\hline
+\end{DoxyRetVals}
+This should\textquotesingle{}t be necessary since the message\textquotesingle{}s sender is automatically added in the list of recipients and, consequently, the \textquotesingle{}was\+Delivered\textquotesingle{} function should skip it. However for unknown reason this does not always happens (especially if the message is delayed)
+
+\begin{DoxyRefDesc}{Bug}
+\item[\mbox{\hyperlink{bug__bug000001}{Bug}}]\+: when \textquotesingle{}revoke delay\textquotesingle{} functionality is called, messages trigger this if and will not be delivered \end{DoxyRefDesc}
+\mbox{\Hypertarget{message_8c_a0205d35a68e74d35bab2858e077865ae}\label{message_8c_a0205d35a68e74d35bab2858e077865ae}} 
+\index{message.c@{message.c}!revokeDelayedMessage@{revokeDelayedMessage}}
+\index{revokeDelayedMessage@{revokeDelayedMessage}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{revokeDelayedMessage()}{revokeDelayedMessage()}}
+{\footnotesize\ttfamily int revoke\+Delayed\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Remove all the delayed message from the queue. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em manager} & The message manager of the group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread safe with respect to the list of delayed message
+\end{DoxyNote}
+\begin{DoxyReturn}{Returns}
+The number of delayed messages which revoked 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8c_aeae8aca78c8dac257e44d3c282d7c6cb}\label{message_8c_aeae8aca78c8dac257e44d3c282d7c6cb}} 
+\index{message.c@{message.c}!setDelivered@{setDelivered}}
+\index{setDelivered@{setDelivered}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{setDelivered()}{setDelivered()}}
+{\footnotesize\ttfamily void set\+Delivered (\begin{DoxyParamCaption}\item[{struct list\+\_\+head $\ast$}]{recipients,  }\item[{const pid\+\_\+t}]{my\+\_\+pid }\end{DoxyParamCaption})}
+
+
+
+Add a P\+ID to the delivered list of a message. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em recipients} & The list\+\_\+head structure of a \textquotesingle{}\mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}}\textquotesingle{} struct \\
+\hline
+\mbox{\texttt{ in}}  & {\em my\+\_\+pid} & The pid to add\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is N\+OT thread-\/safe and must be called while holding a lock to the recipient\textquotesingle{}s list.
+\end{DoxyNote}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8c_ac138128d3197b5459a302cb5137c7942}\label{message_8c_ac138128d3197b5459a302cb5137c7942}} 
+\index{message.c@{message.c}!wasDelivered@{wasDelivered}}
+\index{wasDelivered@{wasDelivered}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{wasDelivered()}{wasDelivered()}}
+{\footnotesize\ttfamily bool was\+Delivered (\begin{DoxyParamCaption}\item[{const struct list\+\_\+head $\ast$}]{recipients,  }\item[{const pid\+\_\+t}]{my\+\_\+pid }\end{DoxyParamCaption})}
+
+
+
+Check if a given pid is present in the recepit list. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em recipients} & The list of recipients of the message to check \\
+\hline
+\mbox{\texttt{ in}}  & {\em my\+\_\+pid} & The P\+ID to check\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if the provided pid is present in the recipient list \\
+\hline
+{\em false} & if the pid is not present in the recipient list\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+This function is not thread-\/safe, so it must be called after locking the recipient list 
+
+A possible improvement would sort the list and return if the current member\textquotesingle{}s pid is greater than \textquotesingle{}my\+\_\+pid\textquotesingle{} 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8c_a1ba93a9118165a7e11a1b0865f78da85}\label{message_8c_a1ba93a9118165a7e11a1b0865f78da85}} 
+\index{message.c@{message.c}!writeMessage@{writeMessage}}
+\index{writeMessage@{writeMessage}!message.c@{message.c}}
+\doxysubsubsection{\texorpdfstring{writeMessage()}{writeMessage()}}
+{\footnotesize\ttfamily int write\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{message,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+write message on a group queue 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em message} & The data pointed must never be deallocatated \\
+\hline
+\mbox{\texttt{ in}}  & {\em manager} & Pointer to the message manager \\
+\hline
+\mbox{\texttt{ in}}  & {\em recipients} & The head of the linked list containing the thread recipients\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+RR} & if the message does not respect the group\textquotesingle{}s size limits \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if some allocation fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+Must be protected by a write-\/spinlock to avoid concurrent modification of The recipient data-\/structure and manager\textquotesingle{}s message queue 
+\end{DoxyNote}

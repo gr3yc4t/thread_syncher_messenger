@@ -23,6 +23,7 @@ int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group);
  * @param nothing
  *
  * @retval 0		success
+ * @retval CLASS_EXISTS if the class already exists
  * @retval others	failure
  */
 int mainInit(void){
@@ -52,7 +53,6 @@ int mainInit(void){
  * @param nothing
  * @retval nothing
  * 
- * @bug Classes are not deallocated correctly so a reboot is necessary to reaload the module
  */
 void mainExit(void){
 	group_data *cursor;
@@ -105,10 +105,9 @@ void mainExit(void){
  * 
  * 	@note If a new structure is addedd to 't_main_sync' all init 
  *  	procedures should be perfomed here
- * 	@todo Handle errors on initialization
  */
 void initializeMainDevice(void){
-	printk(KERN_INFO "Initializing groups list...");
+	printk(KERN_DEBUG "Initializing groups list...");
 
 	idr_init(&main_device_data.group_map);	//Init group IDR
 	sema_init(&main_device_data.sem, 1);	//Init main device semaphore
@@ -284,9 +283,9 @@ static void sUnregisterMainDev(void){
  * @brief Handler of ioctl's request made on main device
  * 
  * Available ioctl:
- * 	-IOCTL_INSTALL_GROUP: used to install a group corresponding to the provided 'group_t' 
+ *	-IOCTL_INSTALL_GROUP: used to install a group corresponding to the provided 'group_t' 
  * 			structure, returns GROUP_EXISTS if the group already exists
- * 	-IOCTL_GET_GROUP_ID: returns the ID corresponding to the provided 'group_t' structure
+ *	-IOCTL_GET_GROUP_ID: returns the ID corresponding to the provided 'group_t' structure
  * 			or -1 if the group does not exists
  * 
  */
@@ -354,7 +353,9 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
  * 
  * @param[in]	new_group_descriptor	The group descriptor
  * 
- * @return 0 on success, negative number on error
+ * @retval The installed group's ID
+ * @retval ALLOC_ERR if some memory allocation fails
+ * @retval IDR_ERR If the IDR fails to allocate the ID
  * 
  * @note For error codes meaning see 'main_device.h'
  */
@@ -429,7 +430,8 @@ __must_check int installGroup(const group_t new_group_descriptor){
  * @note This function respect thread-safety
  * 
  * @param[in] new_group 	Pointer to a 'group_t' strucuture to check
- * @return the group ID if the group exists, -1 otherwise
+ * @retval the group ID if the group exists
+ * @retval, -1 if the group does not exists
  * 
  */
 __must_check int getGroupID(const group_t new_group){
@@ -459,7 +461,10 @@ __must_check int getGroupID(const group_t new_group){
  * @param[in] user_group Pointer to a userspace 'group_t' structure
  * @param[out] kern_group Destination that will contain the 'group_t' structure
  * 
- * @return 0 on success, negative number on error
+ * @retval 0 on success
+ * @retval MEM_ACCESS_ERR if the user memory is not valid for the kernel
+ * @retval USER_COPY_ERR if there was error while copying user data to kernel
+ * @retval ALLOC_ERR if there was some meory allocation error
  * 
  */
 __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){

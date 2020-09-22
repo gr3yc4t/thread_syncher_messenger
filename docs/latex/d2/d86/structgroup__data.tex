@@ -1,0 +1,119 @@
+\hypertarget{structgroup__data}{}\doxysection{group\+\_\+data Struct Reference}
+\label{structgroup__data}\index{group\_data@{group\_data}}
+
+
+Group device data structure.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+
+
+Collaboration diagram for group\+\_\+data\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=168pt]{d8/dde/structgroup__data__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structgroup__data_ad541ac5927dfc8231d17caeacb7c6db1}\label{structgroup__data_ad541ac5927dfc8231d17caeacb7c6db1}} 
+struct cdev {\bfseries cdev}
+\item 
+\mbox{\Hypertarget{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}\label{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}} 
+struct device $\ast$ \mbox{\hyperlink{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}{dev}}
+\begin{DoxyCompactList}\small\item\em Characted Device definition ~\newline
+ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structgroup__data_a44e989778a8f993fd656f9e0b3777b01}\label{structgroup__data_a44e989778a8f993fd656f9e0b3777b01}} 
+dev\+\_\+t {\bfseries device\+ID}
+\item 
+\mbox{\Hypertarget{structgroup__data_a5a6853132a7e885bae369aab99929d98}\label{structgroup__data_a5a6853132a7e885bae369aab99929d98}} 
+int {\bfseries group\+\_\+id}
+\item 
+\mbox{\Hypertarget{structgroup__data_adeb4ff99aded485b308604c89bc2784a}\label{structgroup__data_adeb4ff99aded485b308604c89bc2784a}} 
+\mbox{\hyperlink{structgroup__t}{group\+\_\+t}} \mbox{\hyperlink{structgroup__data_adeb4ff99aded485b308604c89bc2784a}{descriptor}}
+\begin{DoxyCompactList}\small\item\em Unique identifier of a group. Provided by I\+DR. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}\label{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}} 
+pid\+\_\+t \mbox{\hyperlink{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}{owner}}
+\begin{DoxyCompactList}\small\item\em System-\/wide descriptor of a group. \end{DoxyCompactList}\item 
+struct list\+\_\+head \mbox{\hyperlink{structgroup__data_a0286ca64be7cc5bde20be703ceaac631}{active\+\_\+members}}
+\item 
+atomic\+\_\+t \mbox{\hyperlink{structgroup__data_ac58c9638adc534261d1045d31c1b9deb}{members\+\_\+count}}
+\item 
+struct rw\+\_\+semaphore \mbox{\hyperlink{structgroup__data_ab96fffa3bbc875518685b108a3d09b0c}{member\+\_\+lock}}
+\item 
+msg\+\_\+manager\+\_\+t $\ast$ \mbox{\hyperlink{structgroup__data_ad8685dd352e0d593d4286e0480189c81}{msg\+\_\+manager}}
+\item 
+garbage\+\_\+collector\+\_\+t \mbox{\hyperlink{structgroup__data_a7f5d4839f4b745bbd2c5a767b2eb0e64}{garbage\+\_\+collector}}
+\item 
+wait\+\_\+queue\+\_\+head\+\_\+t \mbox{\hyperlink{structgroup__data_af90c450a39350d9e1aaae590d7768bf1}{barrier\+\_\+queue}}
+\item 
+group\+\_\+sysfs\+\_\+t \mbox{\hyperlink{structgroup__data_adf0f30b55d1d542435543a93a858f486}{group\+\_\+sysfs}}
+\item 
+g\+\_\+flags\+\_\+t \mbox{\hyperlink{structgroup__data_a7f1e18c433412d82cd6df9cf5a8c5d48}{flags}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Group device data structure. 
+
+Contains all the private data of a group character device 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structgroup__data_a0286ca64be7cc5bde20be703ceaac631}\label{structgroup__data_a0286ca64be7cc5bde20be703ceaac631}} 
+\index{group\_data@{group\_data}!active\_members@{active\_members}}
+\index{active\_members@{active\_members}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{active\_members}{active\_members}}
+{\footnotesize\ttfamily struct list\+\_\+head group\+\_\+data\+::active\+\_\+members}
+
+List of process that opened the group \mbox{\Hypertarget{structgroup__data_af90c450a39350d9e1aaae590d7768bf1}\label{structgroup__data_af90c450a39350d9e1aaae590d7768bf1}} 
+\index{group\_data@{group\_data}!barrier\_queue@{barrier\_queue}}
+\index{barrier\_queue@{barrier\_queue}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{barrier\_queue}{barrier\_queue}}
+{\footnotesize\ttfamily wait\+\_\+queue\+\_\+head\+\_\+t group\+\_\+data\+::barrier\+\_\+queue}
+
+Queue where processes which slept on a barrier are put \mbox{\Hypertarget{structgroup__data_a7f1e18c433412d82cd6df9cf5a8c5d48}\label{structgroup__data_a7f1e18c433412d82cd6df9cf5a8c5d48}} 
+\index{group\_data@{group\_data}!flags@{flags}}
+\index{flags@{flags}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{flags}{flags}}
+{\footnotesize\ttfamily g\+\_\+flags\+\_\+t group\+\_\+data\+::flags}
+
+Group\textquotesingle{}s status flags \mbox{\Hypertarget{structgroup__data_a7f5d4839f4b745bbd2c5a767b2eb0e64}\label{structgroup__data_a7f5d4839f4b745bbd2c5a767b2eb0e64}} 
+\index{group\_data@{group\_data}!garbage\_collector@{garbage\_collector}}
+\index{garbage\_collector@{garbage\_collector}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{garbage\_collector}{garbage\_collector}}
+{\footnotesize\ttfamily garbage\+\_\+collector\+\_\+t group\+\_\+data\+::garbage\+\_\+collector}
+
+Garbage collector instance \mbox{\Hypertarget{structgroup__data_adf0f30b55d1d542435543a93a858f486}\label{structgroup__data_adf0f30b55d1d542435543a93a858f486}} 
+\index{group\_data@{group\_data}!group\_sysfs@{group\_sysfs}}
+\index{group\_sysfs@{group\_sysfs}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{group\_sysfs}{group\_sysfs}}
+{\footnotesize\ttfamily group\+\_\+sysfs\+\_\+t group\+\_\+data\+::group\+\_\+sysfs}
+
+Group\textquotesingle{}s sysfs structure \mbox{\Hypertarget{structgroup__data_ab96fffa3bbc875518685b108a3d09b0c}\label{structgroup__data_ab96fffa3bbc875518685b108a3d09b0c}} 
+\index{group\_data@{group\_data}!member\_lock@{member\_lock}}
+\index{member\_lock@{member\_lock}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{member\_lock}{member\_lock}}
+{\footnotesize\ttfamily struct rw\+\_\+semaphore group\+\_\+data\+::member\+\_\+lock}
+
+Lock on the active members list \mbox{\Hypertarget{structgroup__data_ac58c9638adc534261d1045d31c1b9deb}\label{structgroup__data_ac58c9638adc534261d1045d31c1b9deb}} 
+\index{group\_data@{group\_data}!members\_count@{members\_count}}
+\index{members\_count@{members\_count}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{members\_count}{members\_count}}
+{\footnotesize\ttfamily atomic\+\_\+t group\+\_\+data\+::members\+\_\+count}
+
+Number of process that opened the group \mbox{\Hypertarget{structgroup__data_ad8685dd352e0d593d4286e0480189c81}\label{structgroup__data_ad8685dd352e0d593d4286e0480189c81}} 
+\index{group\_data@{group\_data}!msg\_manager@{msg\_manager}}
+\index{msg\_manager@{msg\_manager}!group\_data@{group\_data}}
+\doxysubsubsection{\texorpdfstring{msg\_manager}{msg\_manager}}
+{\footnotesize\ttfamily msg\+\_\+manager\+\_\+t$\ast$ group\+\_\+data\+::msg\+\_\+manager}
+
+Message manager subsytem 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}

@@ -45,11 +45,13 @@ bool isDelaySet(const msg_manager_t *manager){
  * extract the 'msg_t' field and write it into the FIFO queue via the 'writeMessage'
  * function.
  * 
+ * @param[in] timer The timer that elasped
+ * @return nothing
  */
 void delayedMessageCallback(struct timer_list *timer){
 
     struct t_message_delayed_deliver *delayed_msg;  //Elasped msg
-    msg_t *msg_deliver;          //Message to add to the queue
+    msg_t *msg_deliver;                             //Message to add to the queue
 
     printk(KERN_INFO "delayedMessageCallback: timer elasped");
 
@@ -96,7 +98,8 @@ void delayedMessageCallback(struct timer_list *timer){
  * @param[in] manager A pointer to the current msg_manager_t of the group
  * 
  * 
- * @return 0 on success, -1 on error
+ * @retval 0 on success
+ * @retval -1 on error
  */
 int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_delayed_deliver *newMessageDeliver;
@@ -241,7 +244,8 @@ int cancelDelay(msg_manager_t *manager){
 /**
  * @brief Check if the delivery of msg will exceed max sizes
  * @param[in] msg The message to test for
- * @return true if the size limits are respected, false otherwise
+ * @retval true if the size limits are respected
+ * @retval false if the size exceed the limits
  * 
  * @note This function is thread-safe
  */
@@ -422,7 +426,8 @@ int deallocate_recipients_safe(struct t_message_deliver *msg_deliver){
  * @param[in] recipients The list of recipients of the message to check
  * @param[in] my_pid The PID to check
  * 
- * @return true if the provided pid is present in the recipient list, false otherwise
+ * @retval true if the provided pid is present in the recipient list
+ * @retval false if the pid is not present in the recipient list
  * 
  * @note This function is not thread-safe, so it must be called after locking the recipient list
  * @note A possible improvement would sort the list and return if the current member's
@@ -476,7 +481,8 @@ void setDelivered(struct list_head *recipients, const pid_t my_pid){
  * @param[in] recipients The recipients of the message to 'wasDelivered'
  * @param[in] active_member The list of active members to compare
  * 
- * @return true if active members is contained in recipients, false otherwise
+ * @retval true if active members is contained in recipients
+ * @retval false if active members is NOT contained in recipients
  * 
  * @note This function must be called only when there is a reader lock on the active_member
  *      recipients structure
@@ -509,7 +515,9 @@ bool isDeliveryCompleted(const struct list_head *recipients, const struct list_h
  *  @param[in] kmsg Kernel-space msg_t
  *  @param[out] umsg User-space buffer 
  *
- *  @return 0 on success, -EFAULT if copy fails
+ *  @retval 0 on success
+ *  @retval -EFAULT if the copy fails
+ * 
  *  @todo Check thread-safety of the function 
  *  @note   The umsg structure must be allocated
  */
@@ -539,7 +547,9 @@ __must_check int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, con
  *  @param[out] kmsg Kernel-space msg_t
  *  @param[in] umsg User-space msg_t 
  *
- *  @return 0 on success, EFAULT if copy fails
+ *  @retval 0 on success
+ *  @retval -EFAULT if the copy fails
+ * 
  *  @todo Check thread-safety of the function
  *  @note The kmsg structure must be allocated
  */
@@ -581,10 +591,10 @@ __must_check int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize
  * @param[in] _max_storage_size    Configurable param
  * @param[in] garbageCollectorFunction Pointer to the work_struct responsible for garbage collection 
  * 
- * @return msg_manager_t A pointer to an allocated an initialized 'msg_manager_t' struct, may be 
- *             NULL in case the 'kmalloc' fails
+ * @retval An 'msg_manager_t' pointer to an allocated an initialized 'msg_manager_t' struct
+ * @retval A NULL pointer in case the 'kmalloc' fails
  */
-__must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, garbage_collector_t *garbage_collector){
+__must_check msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbage_collector){
 
     msg_manager_t *manager = (msg_manager_t*)kmalloc(sizeof(msg_manager_t), GFP_KERNEL);
     if(!manager)
@@ -618,12 +628,13 @@ __must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int 
  * @param[in] manager   Pointer to the message manager
  * @param[in] recipients    The head of the linked list containing the thread recipients
  * 
- * @return 0 on success, negative number otherwise
+ * @retval 0 on success
+ * @retval STORAGE_SIZE_ERR if the message does not respect the group's size limits
+ * @retval ALLOC_ERR if some allocation fails
  * 
  * @note Must be protected by a write-spinlock to avoid concurrent modification of The
  *          recipient data-structure and manager's message queue
  * 
- * @todo Define clear error code
  */
 int writeMessage(msg_t *message, msg_manager_t *manager){
 
@@ -695,7 +706,9 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
 /**
  * @brief Read a message from the corresponding queue
- * @return 0 on success, 1 if no message is present, -1 on critical error
+ * @retval 0 on success
+ * @retval 1 if no message is present
+ * @retval -1 on critical error
  */
 
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
@@ -725,7 +738,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                  * However for unknown reason this does not always happens (especially
                  * if the message is delayed)
                  * 
-                 * TODO: when 'revoke delay' functionality is called, messages trigger
+                 * @bug: when 'revoke delay' functionality is called, messages trigger
                  *  this if and will not be delivered
                  */
                 printk(KERN_DEBUG "Message sent from the reader, skipping...");

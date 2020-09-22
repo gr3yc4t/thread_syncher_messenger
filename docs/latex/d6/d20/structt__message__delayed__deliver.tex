@@ -1,0 +1,56 @@
+\hypertarget{structt__message__delayed__deliver}{}\doxysection{t\+\_\+message\+\_\+delayed\+\_\+deliver Struct Reference}
+\label{structt__message__delayed__deliver}\index{t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}}
+
+
+Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the timer needed to delay the delivery.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+msg\+\_\+t \mbox{\hyperlink{structt__message__delayed__deliver_ad5935ae20f8152f301d233360a29fef4}{message}}
+\item 
+msg\+\_\+manager\+\_\+t $\ast$ \mbox{\hyperlink{structt__message__delayed__deliver_a7025f227cfed9af638a0a24600d7577b}{manager}}
+\item 
+struct timer\+\_\+list \mbox{\hyperlink{structt__message__delayed__deliver_a4dc2e110e50e2b2177dc650085d9cf31}{delayed\+\_\+timer}}
+\item 
+\mbox{\Hypertarget{structt__message__delayed__deliver_a2a29f00c48ff2d0da2f3394e8e7ce856}\label{structt__message__delayed__deliver_a2a29f00c48ff2d0da2f3394e8e7ce856}} 
+struct list\+\_\+head {\bfseries delayed\+\_\+list}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the timer needed to delay the delivery. 
+
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000006}{Todo}}]Remove the \textquotesingle{}manager\textquotesingle{} field and retrieve it at runtime (saves 8 bytes of mem.) \end{DoxyRefDesc}
+
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structt__message__delayed__deliver_a4dc2e110e50e2b2177dc650085d9cf31}\label{structt__message__delayed__deliver_a4dc2e110e50e2b2177dc650085d9cf31}} 
+\index{t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}!delayed\_timer@{delayed\_timer}}
+\index{delayed\_timer@{delayed\_timer}!t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}}
+\doxysubsubsection{\texorpdfstring{delayed\_timer}{delayed\_timer}}
+{\footnotesize\ttfamily struct timer\+\_\+list t\+\_\+message\+\_\+delayed\+\_\+deliver\+::delayed\+\_\+timer}
+
+The timer used to delay the delivery \mbox{\Hypertarget{structt__message__delayed__deliver_a7025f227cfed9af638a0a24600d7577b}\label{structt__message__delayed__deliver_a7025f227cfed9af638a0a24600d7577b}} 
+\index{t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}!manager@{manager}}
+\index{manager@{manager}!t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}}
+\doxysubsubsection{\texorpdfstring{manager}{manager}}
+{\footnotesize\ttfamily msg\+\_\+manager\+\_\+t$\ast$ t\+\_\+message\+\_\+delayed\+\_\+deliver\+::manager}
+
+Pointer to the group\textquotesingle{}s message manager struct \mbox{\Hypertarget{structt__message__delayed__deliver_ad5935ae20f8152f301d233360a29fef4}\label{structt__message__delayed__deliver_ad5935ae20f8152f301d233360a29fef4}} 
+\index{t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}!message@{message}}
+\index{message@{message}!t\_message\_delayed\_deliver@{t\_message\_delayed\_deliver}}
+\doxysubsubsection{\texorpdfstring{message}{message}}
+{\footnotesize\ttfamily msg\+\_\+t t\+\_\+message\+\_\+delayed\+\_\+deliver\+::message}
+
+The message to deliver 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}

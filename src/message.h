@@ -27,7 +27,7 @@
 
 
 
-msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, garbage_collector_t *garbageCollector);
+msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbageCollector);
 
 int writeMessage(msg_t *message, msg_manager_t *manager);
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager);

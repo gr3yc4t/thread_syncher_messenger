@@ -1,0 +1,62 @@
+\hypertarget{structt__main__sync}{}\doxysection{t\+\_\+main\+\_\+sync Struct Reference}
+\label{structt__main__sync}\index{t\_main\_sync@{t\_main\_sync}}
+
+
+Main device structure.  
+
+
+
+
+{\ttfamily \#include $<$main\+\_\+device.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structt__main__sync_ab839d83c4bbc33447f0eb3e29aeb92da}\label{structt__main__sync_ab839d83c4bbc33447f0eb3e29aeb92da}} 
+dev\+\_\+t {\bfseries dev}
+\item 
+struct cdev \mbox{\hyperlink{structt__main__sync_acb9fb56e2da6df26d72fc3edf3060d2c}{cdev}}
+\item 
+int \mbox{\hyperlink{structt__main__sync_a38ea2435e6607d5e89cb4070916d9471}{minor}}
+\item 
+struct idr \mbox{\hyperlink{structt__main__sync_a915d360164784d5712d90e5a82b4fb48}{group\+\_\+map}}
+\item 
+struct semaphore \mbox{\hyperlink{structt__main__sync_a989dd471668d9a94de22b2bcb22c04bb}{sem}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Main device structure. 
+
+This structure is associated with the \textquotesingle{}main\+\_\+thread\+\_\+synch\textquotesingle{} device. Apart from containing the device specification, the field \textquotesingle{}group\+\_\+map\textquotesingle{} employs Linux I\+DR in order to map group\textquotesingle{}s \textquotesingle{}\mbox{\hyperlink{structgroup__data}{group\+\_\+data}}\textquotesingle{} structure to I\+Ds 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structt__main__sync_acb9fb56e2da6df26d72fc3edf3060d2c}\label{structt__main__sync_acb9fb56e2da6df26d72fc3edf3060d2c}} 
+\index{t\_main\_sync@{t\_main\_sync}!cdev@{cdev}}
+\index{cdev@{cdev}!t\_main\_sync@{t\_main\_sync}}
+\doxysubsubsection{\texorpdfstring{cdev}{cdev}}
+{\footnotesize\ttfamily struct cdev t\+\_\+main\+\_\+sync\+::cdev}
+
+Main Charcter device \mbox{\Hypertarget{structt__main__sync_a915d360164784d5712d90e5a82b4fb48}\label{structt__main__sync_a915d360164784d5712d90e5a82b4fb48}} 
+\index{t\_main\_sync@{t\_main\_sync}!group\_map@{group\_map}}
+\index{group\_map@{group\_map}!t\_main\_sync@{t\_main\_sync}}
+\doxysubsubsection{\texorpdfstring{group\_map}{group\_map}}
+{\footnotesize\ttfamily struct idr t\+\_\+main\+\_\+sync\+::group\+\_\+map}
+
+I\+DR that maps group\textquotesingle{}s ID to their structure \mbox{\Hypertarget{structt__main__sync_a38ea2435e6607d5e89cb4070916d9471}\label{structt__main__sync_a38ea2435e6607d5e89cb4070916d9471}} 
+\index{t\_main\_sync@{t\_main\_sync}!minor@{minor}}
+\index{minor@{minor}!t\_main\_sync@{t\_main\_sync}}
+\doxysubsubsection{\texorpdfstring{minor}{minor}}
+{\footnotesize\ttfamily int t\+\_\+main\+\_\+sync\+::minor}
+
+minor\# \mbox{\Hypertarget{structt__main__sync_a989dd471668d9a94de22b2bcb22c04bb}\label{structt__main__sync_a989dd471668d9a94de22b2bcb22c04bb}} 
+\index{t\_main\_sync@{t\_main\_sync}!sem@{sem}}
+\index{sem@{sem}!t\_main\_sync@{t\_main\_sync}}
+\doxysubsubsection{\texorpdfstring{sem}{sem}}
+{\footnotesize\ttfamily struct semaphore t\+\_\+main\+\_\+sync\+::sem}
+
+Main device I\+DR semaphore 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/main\+\_\+device.\+h\end{DoxyCompactItemize}

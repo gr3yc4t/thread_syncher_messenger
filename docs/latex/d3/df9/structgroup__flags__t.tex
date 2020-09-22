@@ -1,0 +1,73 @@
+\hypertarget{structgroup__flags__t}{}\doxysection{group\+\_\+flags\+\_\+t Struct Reference}
+\label{structgroup__flags__t}\index{group\_flags\_t@{group\_flags\_t}}
+
+
+Contains the various flags that represent the status of the module.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}{initialized}}\+:1
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_a2d1611ebf30b7204860171c8ec0f5186}{thread\+\_\+barrier\+\_\+loaded}}\+:1
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_a551fb9f0f2c5b064100ff37e15728803}{wake\+\_\+up\+\_\+flag}}\+:1
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_aacf9e90bc7b8769dec99ae595c9c4e79}{sysfs\+\_\+loaded}}\+:1
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}{garbage\+\_\+collector\+\_\+disabled}}\+:1
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the various flags that represent the status of the module. 
+
+Those flags are useful since it indicates if a module was correctly initialized, in this way when the module must be unloaded, no deallocation is performed on modules that failed.
+
+-\/initialized\+: indicates that a group has loaded all of its structures -\/thread\+\_\+barrier\+\_\+loaded\+: indicate that the \textquotesingle{}thread barrier\textquotesingle{} submodule is initialized -\/wake\+\_\+up\+\_\+flag\+: to implement -\/sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized -\/garbage\+\_\+collector\+\_\+disabled\+: specifies the status of the garbage collector
+
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000007}{Todo}}]Check the performace impact of \char`\"{}packing\char`\"{} the structure\end{DoxyRefDesc}
+
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}\label{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}} 
+\index{group\_flags\_t@{group\_flags\_t}!garbage\_collector\_disabled@{garbage\_collector\_disabled}}
+\index{garbage\_collector\_disabled@{garbage\_collector\_disabled}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{garbage\_collector\_disabled}{garbage\_collector\_disabled}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::garbage\+\_\+collector\+\_\+disabled}
+
+1 if the garbage collector is disabled, zero otherwise \mbox{\Hypertarget{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}\label{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}} 
+\index{group\_flags\_t@{group\_flags\_t}!initialized@{initialized}}
+\index{initialized@{initialized}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{initialized}{initialized}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::initialized}
+
+Set to 1 when the device driver is fully loaded \mbox{\Hypertarget{structgroup__flags__t_aacf9e90bc7b8769dec99ae595c9c4e79}\label{structgroup__flags__t_aacf9e90bc7b8769dec99ae595c9c4e79}} 
+\index{group\_flags\_t@{group\_flags\_t}!sysfs\_loaded@{sysfs\_loaded}}
+\index{sysfs\_loaded@{sysfs\_loaded}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{sysfs\_loaded}{sysfs\_loaded}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::sysfs\+\_\+loaded}
+
+1 if the sysfs submodule is initialized correctly \mbox{\Hypertarget{structgroup__flags__t_a2d1611ebf30b7204860171c8ec0f5186}\label{structgroup__flags__t_a2d1611ebf30b7204860171c8ec0f5186}} 
+\index{group\_flags\_t@{group\_flags\_t}!thread\_barrier\_loaded@{thread\_barrier\_loaded}}
+\index{thread\_barrier\_loaded@{thread\_barrier\_loaded}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{thread\_barrier\_loaded}{thread\_barrier\_loaded}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::thread\+\_\+barrier\+\_\+loaded}
+
+1 if the \textquotesingle{}thread\+\_\+barrier\textquotesingle{} submodule is initialized \mbox{\Hypertarget{structgroup__flags__t_a551fb9f0f2c5b064100ff37e15728803}\label{structgroup__flags__t_a551fb9f0f2c5b064100ff37e15728803}} 
+\index{group\_flags\_t@{group\_flags\_t}!wake\_up\_flag@{wake\_up\_flag}}
+\index{wake\_up\_flag@{wake\_up\_flag}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{wake\_up\_flag}{wake\_up\_flag}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::wake\+\_\+up\+\_\+flag}
+
+Flag used to wake-\/up all thread which slept on barrier 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}
