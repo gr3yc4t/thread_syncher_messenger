@@ -186,9 +186,36 @@ static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t coun
  *
  * @return	number of read byte
  */
-static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff_t *f_pos)
-{
-	//Unimplemented
+static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff_t *f_pos){
+
+	int group_id;
+	group_data *grp_data;
+	group_t descriptor;
+	size_t len;
+
+	group_id = (int) *f_pos;
+
+	if(group_id < 0 ){
+		printk(KERN_INFO "mainRead: conversion error, exiting...");
+		return -1;
+	}
+
+	printk(KERN_INFO "mainRead: readed f_pos value: %ud", group_id);
+
+	down(&main_device_data.sem);
+		grp_data = idr_get_next(&main_device_data.group_map, &group_id);
+	up(&main_device_data.sem);
+
+
+	descriptor = grp_data->descriptor;
+
+	len = min(count, descriptor.name_len);
+	
+
+	if( copy_to_user(buf, descriptor.group_name, len) > 0){
+		printk(KERN_ERR "mainRead: Unable to copy memory to user");
+	}
+
 	return 0;
 }
 
@@ -326,7 +353,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 	case IOCTL_GET_GROUP_ID:
 
-		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp)){
+		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp) < 0){
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
@@ -456,56 +483,32 @@ __must_check int getGroupID(const group_t new_group){
 
 
 /**
- * @brief Copy a 'group_t' structure to kernel space
+ * @brief Get the 'group_t' descriptor from the group ID
  * 
- * @param[in] user_group Pointer to a userspace 'group_t' structure
- * @param[out] kern_group Destination that will contain the 'group_t' structure
+ * @param[in] group_id The group ID
+ * @param[out] group_dest A pointer to a 'group_t' strucuture
  * 
  * @retval 0 on success
- * @retval MEM_ACCESS_ERR if the user memory is not valid for the kernel
- * @retval USER_COPY_ERR if there was error while copying user data to kernel
- * @retval ALLOC_ERR if there was some meory allocation error
+ * @retval -1 on error
  * 
+ * @todo: test if the semaphore is necessary (idr_find)
  */
-__must_check int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){
-		int ret;
-		char *group_name_tmp;
+__must_check int getGroupInfo(unsigned long group_id, group_t *group_dest){
+	group_data *grp_data;
+	
+	down(&main_device_data.sem);
+		grp_data = idr_find(&main_device_data.group_map, group_id);
+	up(&main_device_data.sem);
 
-		if(!access_ok(user_group, sizeof(group_t))){
-			printk(KERN_DEBUG "Unable to read user-space memory");
-			return MEM_ACCESS_ERR;
-		}
+	if(grp_data == NULL)
+		return -1;
 
-		//Copy parameter from user space
-		if( (ret = copy_from_user(kern_group, user_group, sizeof(group_t))) > 0){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
-			return USER_COPY_ERR;
-		}
+	*group_dest = grp_data->descriptor;
 
+	return 0;
 
-		if(!access_ok(kern_group->group_name, sizeof(char)*kern_group->name_len)){
-			printk(KERN_DEBUG "Unable to read user-space group's name memory");
-			return MEM_ACCESS_ERR;
-		}
-
-
-		group_name_tmp = (char*) kmalloc(sizeof(char)*(kern_group->name_len), GFP_KERNEL);
-
-		if(!group_name_tmp)
-			return ALLOC_ERR;
-
-		if(ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
-			
-			kfree(group_name_tmp);
-			
-			return USER_COPY_ERR;
-		}
-		//Switch pointers
-		kern_group->group_name = group_name_tmp;
-
-		return 0;
 }
+
 
 
 

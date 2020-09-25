@@ -11,6 +11,9 @@ struct class *group_device_class;
 EXPORT_SYMBOL(group_device_class);
 
 
+int copy_group_t_to_user(__user group_t *user_group, group_t *kern_group);
+
+
 /**
  * @brief Install the global 'group_device_class' 
  * 
@@ -672,6 +675,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
 	int ret;
     long delay = 0;
+    group_t* user_descriptor;
     group_data *grp_data;
 
 
@@ -714,6 +718,19 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
                 ret = 0;
                 break;
         #endif
+
+        case IOCTL_GET_GROUP_DESC:
+            grp_data = (group_data*) filep->private_data;
+
+            user_descriptor = (group_t*)ioctl_param;
+
+            if((ret = copy_group_t_to_user(user_descriptor, &grp_data->descriptor)) < 0){
+                printk("\nUnable to retrieve group's data");
+                break;
+            }
+
+            ret = 0;
+            break;
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
 		ret = INVALID_IOCTL_COMMAND;
@@ -721,4 +738,102 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 	}
 
 	return ret;
+}
+
+
+
+
+
+
+/**
+ * @brief Copy a 'group_t' structure to kernel space
+ * 
+ * @param[in] user_group Pointer to a userspace 'group_t' structure
+ * @param[out] kern_group Destination that will contain the 'group_t' structure
+ * 
+ * @retval 0 on success
+ * @retval MEM_ACCESS_ERR if the user memory is not valid for the kernel
+ * @retval USER_COPY_ERR if there was error while copying user data to kernel
+ * @retval ALLOC_ERR if there was some meory allocation error
+ * 
+ */
+__must_check int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group){
+		int ret;
+		char *group_name_tmp;
+
+		if(!access_ok(user_group, sizeof(group_t))){
+			printk(KERN_DEBUG "Unable to read user-space memory");
+			return MEM_ACCESS_ERR;
+		}
+
+		//Copy parameter from user space
+		if( (ret = copy_from_user(kern_group, user_group, sizeof(group_t))) > 0){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+		}
+
+
+		if(!access_ok(kern_group->group_name, sizeof(char)*kern_group->name_len)){
+			printk(KERN_DEBUG "Unable to read user-space group's name memory");
+			return MEM_ACCESS_ERR;
+		}
+
+
+		group_name_tmp = (char*) kmalloc(sizeof(char)*(kern_group->name_len), GFP_KERNEL);
+
+		if(!group_name_tmp)
+			return ALLOC_ERR;
+
+		if(ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			
+			kfree(group_name_tmp);
+			
+			return USER_COPY_ERR;
+		}
+		//Switch pointers
+		kern_group->group_name = group_name_tmp;
+
+		return 0;
+}
+
+
+
+
+/**
+ * @brief Copy a 'group_t' structure to user space
+ * 
+ * @param[in] user_group Pointer to a userspace 'group_t' structure
+ * @param[out] kern_group Destination that will contain the 'group_t' structure
+ * 
+ * @retval 0 on success
+ * @retval MEM_ACCESS_ERR if the user memory is not valid for the kernel
+ * @retval USER_COPY_ERR if there was error while copying user data to kernel
+ * @retval ALLOC_ERR if there was some meory allocation error
+ * 
+ */
+__must_check int copy_group_t_to_user(__user group_t *user_group, group_t *kern_group){
+		int ret;
+		char *group_name_tmp;
+
+        //Check user-space memory access
+		if(!access_ok(user_group, sizeof(group_t))){
+			printk(KERN_DEBUG "Unable to write user-space memory");
+			return MEM_ACCESS_ERR;
+		}
+
+
+		if(ret = copy_to_user(user_group->group_name, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+		}
+
+
+		//Copy parameter from user space
+		if( (ret = put_user(kern_group->name_len, &user_group->name_len)) > 0){	//Fetch the group_t structure from userspace
+			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			return USER_COPY_ERR;
+        }
+
+		return 0;
 }
