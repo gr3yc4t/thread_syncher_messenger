@@ -33,7 +33,8 @@
 
 
 /** @brief Errors code*/
-#define NO_MSG_PRESENT       0
+#define NO_MSG_PRESENT       1
+
 #define ALLOC_ERR 			-2	 
 #define USER_COPY_ERR		-3
 #define SEM_INIT_ERR        -4  /** @brief Semaphore initialization **/

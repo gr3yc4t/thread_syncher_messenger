@@ -8,6 +8,15 @@
 #include "thread_synch.h"
 
 
+//Colors
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 
 //Configurations
 #define THREAD_NUM 64
@@ -95,10 +104,13 @@ int flushMessages(const char *group_path){
 
     fclose(fd);
 }
-/*
-void concurrentRead(void *args){
 
+void concurrentRead(void *args){
+    const char *default_message = "TH-NUM-%lu\0";   
+    char buffer[BUFF_SIZE];   
+    size_t len;
     pthread_t id = pthread_self();
+
     printf("\n[R] Thread N. %ld\n", id);
 
     int *fd;
@@ -115,14 +127,10 @@ void concurrentRead(void *args){
     usleep(sleep_time1);
 
 
-
-    char buffer[256];
-    const unsigned int len = 50;
     int ret = read(fd, &buffer, sizeof(char)*len);
 
     if(!ret){
-        switch (ret)
-        {
+        switch (ret){
         case NO_MSG_PRESENT:
             printf("[T-%ld/R] No msg. present\n", id);
             break;
@@ -145,15 +153,15 @@ void concurrentRead(void *args){
 
 void concurrentWrite(void *args){
 
+    const char *default_message = "TH-NUM-%lu\0";
     pthread_t id = pthread_self();
+    char buffer[BUFF_SIZE];
+    size_t len;
+
     printf("\n[w] Thread N. %ld\n", id);
 
-    char buffer[256];
-
-
-    strcpy(buffer, "PIPPO\0");
-    int len = strlen(buffer);
-    printf("\nLen = %d\n", len);
+    snprintf(buffer, BUFF_SIZE, default_message, id);
+    len = strnlen(buffer, BUFF_SIZE);
 
 
     int *fd;
@@ -164,6 +172,7 @@ void concurrentWrite(void *args){
         return -1;
     }
 
+    printf("\nLen = %d\n", len);
 
     int ret = write(fd, &buffer, sizeof(char)*len);
 
@@ -180,7 +189,7 @@ void concurrentWrite(void *args){
     return;
 
 }
-*/
+
 
 
 int showLoadedGroups(){
@@ -191,9 +200,11 @@ int showLoadedGroups(){
         if(groups[i] == NULL){
             continue;
         }else{
-            printf("\nGroup found at index %d\n", i);
 
-            printf("\n\tGroup name: %s\n", groups[i]->descriptor.group_name);
+            if(groups[i]->descriptor.group_name == NULL)
+                printf("\n[" ANSI_COLOR_YELLOW "%d" ANSI_COLOR_RESET "]\tGroup ID: %d\n", i, groups[i]->group_id);
+            else
+                printf("\n[" ANSI_COLOR_YELLOW "%d" ANSI_COLOR_RESET "]\tGroup name: %s\n", i, groups[i]->descriptor.group_name);
         }
 
     }
@@ -221,15 +232,14 @@ int groupSubMenu(thread_group_t group){
         return -1;
     }
 
-    printf("\nGroup fd: %d\n", group.file_descriptor);
-
+    clear();
  
     do{
         printf("\n[Group %d Management]\n", group.group_id);
 
-        //printf("Current storage size: %lu\n", getCurrentStorageSize(&group));
-        //printf("Max storage size: %lu\n", getMaxStorageSize(&group));
-        //printf("Max message size: %lu\n", getMaxMessageSize(&group));
+        printf("Current storage size: %lu\n", getCurrentStorageSize(&group));
+        printf("Max storage size: %lu\n", getMaxStorageSize(&group));
+        printf("Max message size: %lu\n", getMaxMessageSize(&group));
 
         printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
             "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
@@ -239,7 +249,7 @@ int groupSubMenu(thread_group_t group){
 
         scanf(" %d", &choice);
 
-        //clear();
+        clear();
 
 
             switch (choice){
@@ -253,11 +263,11 @@ int groupSubMenu(thread_group_t group){
                 ret = readMessage(buffer, buff_size, &group);
 
                 if(ret < 0){
-                    printf("\n[X] Error while reading the message\n");
+                    printf(ANSI_COLOR_RED "\n[X] Error while reading the message\n" ANSI_COLOR_RESET);
                 }else if(ret == 1){
-                    printf("\nNo message present");
+                    printf(ANSI_COLOR_YELLOW "\nNo message present\n" ANSI_COLOR_RESET);
                 }else{
-                    printf("\nReaded message: %s", buffer);
+                    printf(ANSI_COLOR_YELLOW "\nReaded message\n" ANSI_COLOR_RESET ": %s", buffer);
                 }
 
                 free(buffer);
@@ -271,7 +281,7 @@ int groupSubMenu(thread_group_t group){
 
                 printf("\nContent: ");
                 if(scanf(" %s", buffer) > BUFF_SIZE){
-                    printf("\n[X] Size too large");
+                    printf(ANSI_COLOR_RED "\n[X] Size too large" ANSI_COLOR_RESET);
                     free(buffer);
                     break;
                 }
@@ -279,9 +289,7 @@ int groupSubMenu(thread_group_t group){
                 buff_size = strlen(buffer);
                 
                 if(writeMessage(buffer, buff_size, &group) < 0)
-                    printf("\n[X] Error while writing the message");
-
-
+                    printf(ANSI_COLOR_RED "\n[X] Error while writing the message" ANSI_COLOR_RESET);
 
                 free(buffer);
                 break;
@@ -293,7 +301,7 @@ int groupSubMenu(thread_group_t group){
 
                 printf("\nDelay Value: ");
                 if(scanf(" %s", buffer) > BUFF_SIZE){
-                    printf("\n[X] Size too large");
+                    printf(ANSI_COLOR_RED "\n[X] Size too large" ANSI_COLOR_RESET);
                     free(buffer);
                     break;
                 }
@@ -301,7 +309,7 @@ int groupSubMenu(thread_group_t group){
                 delay = strtol(buffer, NULL, 10);
 
                 if(setDelay(delay, &group) < 0)
-                    printf("\n[X] Error while setting the delay");
+                    printf(ANSI_COLOR_RED "\n[X] Error while setting the delay" ANSI_COLOR_RESET);
 
                 free(buffer);
 
@@ -309,11 +317,10 @@ int groupSubMenu(thread_group_t group){
             case 4: //Revoke Delay
 
                 if(revokeDelay(&group) < 0){
-                    printf("\n[X] Error while revoking the delay");
+                    printf(ANSI_COLOR_RED "\n[X] Error while revoking the delay" ANSI_COLOR_RESET);
                 }else{
                     printf("\nDelayed message revoked");
                 }
-
                 break;
             case 5: //Flush
                 printf("\nUnimplemented");
@@ -321,31 +328,29 @@ int groupSubMenu(thread_group_t group){
             case 6: //Sleep on barrier
                 printf("\nThread is going to sleep...");
                 if(sleepOnBarrier(&group) < 0){
-                    printf("\n[X] Error while sleeping");
+                    printf(ANSI_COLOR_RED "\n[X] Error while sleeping" ANSI_COLOR_RESET);
                     break;
                 }
                 printf("\nThread awaken!!!");
                 break;
             case 7: //Awake barrier
                 if(awakeBarrier(&group) < 0){
-                    printf("\n[X] Error while awaken threads");
+                    printf(ANSI_COLOR_RED "\n[X] Error while awaken threads" ANSI_COLOR_RESET);
                     break;
                 }
                 printf("\nBarrier Awaked!");
                 break;
             case 80:
                 if(printGroupParams() < 0)
-                    printf("Error while reading parameters");
+                    printf(ANSI_COLOR_RED "[X] Error while reading parameters\n" ANSI_COLOR_RESET);
                 break;
             case 81:
                 printf("\nMax size value: ");
                 scanf("%lu", &param_value);
-
                 ret = setMaxMessageSize(&group, param_value);
                 break;
             case 82:
                 printf("\nMax storage value: ");
-
                 scanf("%lu", &param_value);
                 ret = setMaxStorageSize(&group, param_value);   
                 break;
@@ -360,11 +365,12 @@ int groupSubMenu(thread_group_t group){
                 exit_flag = 1;
                 break;
             default:
-                printf("\n\nInvalid command\n\n");
+                printf(ANSI_COLOR_RED "\n\nInvalid command\n\n" ANSI_COLOR_RESET);
+                ret = -1;
                 break;
             }
 
-            printf("\nReturn Value: %d\n", ret);
+            printf("Returned Value: %d\n", ret);
 
     }while(exit_flag == 0);
 }
@@ -410,19 +416,19 @@ int interactiveSession(){
 
             if(!descriptor.group_name){
                 printf("\nAllocation error");
-                continue;
+                break;
             }
 
             descriptor.name_len = strlen(group_name);
-            strncpy(descriptor.group_name, group_name, strlen(group_name));
+            strncpy(descriptor.group_name, group_name, descriptor.name_len);
             
-            printf("\nInstalling group...");
+            printf("\nInstalling group [%s]...", descriptor.group_name);
 
             groups[group_index] = installGroup(descriptor, &main_synch);
 
             printf("\nGroup installed");
 
-            if(!groups){
+            if(!groups[group_index]){
                 printf("\nError while installing the group");
             }else{
                 printf("\nGroup installed!!\n");
@@ -474,6 +480,9 @@ int interactiveSession(){
 
             if(choice > group_index)
                 choice = group_index-1;
+
+            if(groups[choice] == NULL)
+                break;
 
             groupSubMenu(*groups[choice]);
 

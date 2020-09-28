@@ -203,7 +203,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     printk(KERN_DEBUG "Device Major/Minor correctly allocated");
 
-
+    /*
     name_len = strnlen(device_name, DEVICE_NAME_SIZE);
 
     grp_data->descriptor.group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
@@ -214,6 +214,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     
     strncpy(grp_data->descriptor.group_name, device_name, name_len);
+    */
 
     //TODO: test parent behaviour
     grp_data->dev = device_create(group_device_class, parent, grp_data->deviceID, NULL, device_name);
@@ -274,7 +275,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     cleanup_device:
         //class_destroy(group_device_class);
     cleanup_class:
-        kfree(grp_data->descriptor.group_name);
+        //kfree(grp_data->descriptor.group_name);
     cleanup_region:
         unregister_chrdev_region(grp_data->deviceID, 1);
         return ret;

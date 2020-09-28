@@ -1,5 +1,4 @@
 #include "thread_synch.h"
-
 #include <errno.h>
 
 static int _installGroup(group_t *new_group, thread_synch_t *main_synch){
@@ -12,18 +11,13 @@ static int _installGroup(group_t *new_group, thread_synch_t *main_synch){
     if(new_group->group_name == NULL || new_group->name_len == 0)
         return -1;
 
-
     group_id = ioctl(main_synch->main_file_descriptor, IOCTL_INSTALL_GROUP, new_group);
 
     if(group_id < 0)
         return -1;
 
-        
-
     return group_id;
 }
-
-//Parameter Read Functions
 
 static int _getParamPath(const int group_id, const char *param_name, char *dest_buffer, size_t dest_size){
     char param_path[BUFF_SIZE];
@@ -44,7 +38,6 @@ static int _getParamPath(const int group_id, const char *param_name, char *dest_
     return 0;
 }
 
-
 static int _readMaxMsgSize(unsigned long *_val, const int group_id){
     FILE *fd;
     int ret;
@@ -53,16 +46,8 @@ static int _readMaxMsgSize(unsigned long *_val, const int group_id){
     char buffer[BUFF_SIZE];
 
 
-    ret = snprintf(param_path, BUFF_SIZE, param_default_path, group_id);
-
-    if(ret < 0 || ret > BUFF_SIZE)
+    if(_getParamPath(group_id, param_name, param_path, BUFF_SIZE) < 0)
         return -1;
-
-    printf("\nFirst string: %s", param_path);
-
-    strncat(param_path, param_name, BUFF_SIZE);
-
-    printf("\nSecond string: %s", param_path);
 
 
     fd = fopen(param_path, "rt"); 
@@ -73,14 +58,11 @@ static int _readMaxMsgSize(unsigned long *_val, const int group_id){
     }
 
 
-    printf("Reading param 'max_message_size'");
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
         printf("Errror while reading parameters: %d", ret);
         return -1;
     }
-
-    printf("\n\nParam value %s", buffer);
 
     *_val = strtoul(buffer, NULL, 10);
 
@@ -97,16 +79,8 @@ static int _readMaxStorageSize(unsigned long *_val, const int group_id){
     char buffer[BUFF_SIZE];
 
 
-    ret = snprintf(param_path, BUFF_SIZE, param_default_path, group_id);
-
-    if(ret < 0 || ret > BUFF_SIZE)
+    if(_getParamPath(group_id, param_name, param_path, BUFF_SIZE) < 0)
         return -1;
-
-    printf("\nFirst string: %s", param_path);
-
-    strncat(param_path, param_name, BUFF_SIZE);
-
-    printf("\nSecond string: %s", param_path);
 
 
     fd = fopen(param_path, "rt"); 
@@ -117,7 +91,6 @@ static int _readMaxStorageSize(unsigned long *_val, const int group_id){
     }
 
 
-    printf("Reading param 'max_message_size'");
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
         printf("Errror while reading parametersaaa: %d", ret);
@@ -134,46 +107,31 @@ static int _readMaxStorageSize(unsigned long *_val, const int group_id){
 static int _readCurrStorageSize(unsigned long *_val, const int group_id){
     FILE *fd;
     int ret;
-    const char *param_name = "current_storage_size\0";
+    const char *param_name = "current_message_size";
     char param_path[BUFF_SIZE];
     char buffer[BUFF_SIZE];
 
-    char *final_string = NULL;
 
-    printf("\nZero string: %s", param_default_path);
+    if(_getParamPath(group_id, param_name, param_path, BUFF_SIZE) < 0)
+        return -1;
 
-    ret = snprintf(param_path, BUFF_SIZE, "/sys/class/group_synch/group%d/message_param/", group_id);
+
 
     if(ret < 0 || ret > BUFF_SIZE)
         return -1;
 
-    printf("\nFirst string: %s", param_path);
 
-    if (asprintf(&final_string, "%s%s", param_path, "current_storage_size\0") == -1){
-        printf("\nError while reading parameter");
+    fd = fopen(param_path, "rt"); 
+
+    if(!fd){
+        printf("Error while opening the group file: %d\n", errno);
         return -1;
     }
 
 
-
-
-    //strcat(param_path, "current_storage_size\0");
-
-    printf("\nSecond string: %s", final_string);
-
-
-    fd = fopen(final_string, "rt"); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-
-    printf("Reading param 'max_message_size'");
-    ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
-    if(ret < 0){
-        printf("Errror while reading parametersaaa: %d", ret);
+    ret = fread(buffer, sizeof(char), 64, fd);
+    if(ferror(fd) != 0){
+        printf("Errror while reading parameters: %d", ret);
         return -1;
     }
 
@@ -191,16 +149,8 @@ static int _readGroupParameter(unsigned long *_val, const int group_id, const ch
     char buffer[BUFF_SIZE];
 
 
-    ret = snprintf(param_path, BUFF_SIZE, param_default_path, group_id);
-
-    if(ret < 0 || ret > BUFF_SIZE)
+    if(_getParamPath(group_id, param_name, param_path, BUFF_SIZE) < 0)
         return -1;
-
-    printf("\nFirst string: %s", param_path);
-
-    strncat(param_path, param_name, BUFF_SIZE);
-
-    printf("\nSecond string: %s", param_path);
 
 
     fd = fopen(param_path, "rt"); 
@@ -211,7 +161,6 @@ static int _readGroupParameter(unsigned long *_val, const int group_id, const ch
     }
 
 
-    printf("Reading param 'max_message_size'");
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
         printf("Errror while reading parametersaaa: %d", ret);
@@ -322,17 +271,40 @@ static int _getGroupID(group_t *descriptor, thread_synch_t *main_synch){
 
     group_id = ioctl(main_synch->main_file_descriptor, IOCTL_GET_GROUP_ID, descriptor);
 
-    printf("\nGroup id ioctl: %d", group_id);
-
     if(group_id < 0)
         return -1;      
 
     return group_id;    
 }
 
+static int _getDescriptorFromID(const int group_fd, group_t *descriptor){
+    int ret;
+
+    if(group_fd == -1)
+        return -1;
+
+
+    ret = ioctl(group_fd, IOCTL_GET_GROUP_DESC, descriptor);
+
+    return ret;
+}
 
 
 
+
+
+/**
+ *  @brief Initialize a 'thread_synch_t' structure 
+ *  
+ *  @param[out] main_syncher A pointer to the structure to initialize
+ *  
+ *  @retval TS_NOT_FOUND if the main_syncher default file cannot be found
+ *  @retval TS_OPEN_ERR if there was an error while opening the main_syncher file
+ *  @retval ALLOC_ERR if there was an error during memory allocation
+ *  @retval 0 on success
+ *  
+ * 
+ */
 int initThreadSycher(thread_synch_t *main_syncher){
 
     char *main_device_default_path = "/dev/main_thread_sync0";  //TODO: remove the zero
@@ -385,7 +357,6 @@ int openGroup(thread_group_t* group){
     int fd;
 
     if(group->file_descriptor < 0){
-        printf("\nGroup path: %s\n", group->group_path);    
         fd = open(group->group_path, O_RDWR);
 
         if(fd < 0){
@@ -411,6 +382,17 @@ int openGroup(thread_group_t* group){
 
     return 0;
 }
+
+
+/**
+ * @brief Install a group in the system given a group descriptor
+ * 
+ * @param[in] group_descriptor The new group's descriptor
+ * @param[in] main_synch A pointer to an initialized main_sych structure
+ * 
+ * @retval A pointer to a group structure
+ * @retval NULL on error
+ */
 
 thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *main_synch){
     
@@ -442,20 +424,14 @@ thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *mai
 
     max_size = strnlen(default_group_path, DEVICE_NAME_SIZE) + 4;   //Max group ID=255
 
-    printf("\nMax size: %ud", max_size);    
-
     new_group->group_path = (char*)malloc(sizeof(char)*max_size);
     if(!new_group->group_path)
         goto cleanup1;
-
-    printf("\nGenerating device path\n");
 
     ret = snprintf(new_group->group_path, DEVICE_NAME_SIZE, "/dev/group%d", group_id);
 
     if(ret < 0 || ret >= DEVICE_NAME_SIZE)
         goto cleanup2;
-
-    printf("\nDevice path: %s", new_group->group_path);
 
     new_group->path_len = strnlen(new_group->group_path, DEVICE_NAME_SIZE);
 
@@ -485,6 +461,21 @@ thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *mai
     
 }
 
+
+/**
+ * @brief Read a message from a given group
+ * 
+ * @param[out] buffer The buffer where the readed message is stored
+ * @param[in]  len  The number of bytes to read
+ * @param[in]  group A pointer to the group's structure where the msg is readed
+ * 
+ * @retval NO_MSG_PRESENT if there is no message available
+ * @retval negative number on error
+ * @retval 0 on success
+ * 
+ * @note Even if the parameter 'len' is less the the size of the actual message, the message 
+ *          is considered delivered and thus removed from the queue
+ */
 int readMessage(void *buffer, size_t len, thread_group_t *group){
 
     int ret;
@@ -496,27 +487,46 @@ int readMessage(void *buffer, size_t len, thread_group_t *group){
     ret = read(group->file_descriptor, buffer, sizeof(u_int8_t)*len);
 
     if(ret == 0)
-        return 1;
+        return NO_MSG_PRESENT;
     else if(ret < 0)
         return -1;
 
     return 0;
 }
 
+/**
+ * @brief Write a message in a given group
+ * 
+ * @param[in] buffer The buffer that contains the message to write
+ * @param[in]  len  The number of bytes to write
+ * @param[in]  group A pointer to the group's structure where the msg is written
+ * 
+ * @retval negative number on error
+ * @retval The number of written bytes on successs 
+ * 
+ */
 int writeMessage(const void *buffer, size_t len, thread_group_t *group){
 
     int ret;
-
+    
     if(group->file_descriptor == -1){
         printf("Group not opened");
         return -1;
     }
 
     ret = write(group->file_descriptor, buffer, sizeof(u_int8_t)*len);
-    printf("\nReturn: %d\n", ret);
     return ret;
 }
 
+/**
+ * @brief Set the delay value for a given group
+ * 
+ * @param[in] _delay The new delay value
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ */
 int setDelay(const long _delay, thread_group_t *group){
     int ret;
 
@@ -528,6 +538,14 @@ int setDelay(const long _delay, thread_group_t *group){
     return ret;
 }
 
+/**
+ * @brief Revoke all the delayed messaged on a given group and deliver it
+ * 
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval -1 on error
+ * @retval The number of revoked messages on success (>= 0)
+ */
 int revokeDelay(thread_group_t *group){
     int ret;
 
@@ -539,6 +557,14 @@ int revokeDelay(thread_group_t *group){
     return ret;  
 }
 
+/**
+ * @brief Put the process which call this function on sleep
+ * 
+ * @param[in] *group T A pointer to an initialized group structure
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ */
 int sleepOnBarrier(thread_group_t *group){
     int ret;
 
@@ -550,6 +576,14 @@ int sleepOnBarrier(thread_group_t *group){
     return ret;
 }
 
+/**
+ * @brief Awake all the process present in a wait queue for a given group
+ * 
+ * @param[in] *group T A pointer to an initialized group structure
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ */
 int awakeBarrier(thread_group_t *group){
     int ret;
 
@@ -561,12 +595,21 @@ int awakeBarrier(thread_group_t *group){
     return ret;    
 }
 
+/**
+ * @brief Get the maximum message size value for a given group
+ * 
+ * @param[in] *group T A pointer to an initialized group structure
+ * 
+ * @retval The value of the parameter
+ * @retval 0 on error
+ * 
+ */
 unsigned long getMaxMessageSize(thread_group_t *group){
     unsigned long val;
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return 0L;
 
     ret = _readMaxMsgSize(&val, group->group_id);
 
@@ -576,12 +619,21 @@ unsigned long getMaxMessageSize(thread_group_t *group){
     return val;
 }
 
+/**
+ * @brief Get the maximum storage size value for a given group
+ * 
+ * @param[in] *group T A pointer to an initialized group structure
+ * 
+ * @retval The value of the parameter
+ * @retval 0 on error
+ * 
+ */
 unsigned long getMaxStorageSize(thread_group_t *group){
     unsigned long val;
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return 0L;
 
     ret = _readMaxStorageSize(&val, group->group_id);
 
@@ -591,12 +643,21 @@ unsigned long getMaxStorageSize(thread_group_t *group){
     return val;
 }
 
+/**
+ * @brief Get the current storage size value for a given group
+ * 
+ * @param[in] *group T A pointer to an initialized group structure
+ * 
+ * @retval The value of the parameter
+ * @retval 0 on error
+ * 
+ */
 unsigned long getCurrentStorageSize(thread_group_t *group){
     unsigned long val;
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return 0L;
 
     ret = _readCurrStorageSize(&val, group->group_id);
 
@@ -605,6 +666,8 @@ unsigned long getCurrentStorageSize(thread_group_t *group){
 
     return val;
 }
+
+
 
 int readGroupInfo(thread_synch_t *main_syncher){
     int ret;
@@ -622,13 +685,20 @@ int readGroupInfo(thread_synch_t *main_syncher){
     if(ret < 0)
         return -1;
 
-    printf("\nGroup name: %s", buffer);
-
     return 0;
 }
 
-
-int setMaxMessageSize(thread_group_t *group, unsigned long val){
+/**
+ * @brief Set the maximum message size value for a given group
+ * 
+ * @param[in] *group A pointer to an initialized group structure
+ * @param[in] val The new value of the parameter
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ * 
+ */
+int setMaxMessageSize(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
@@ -639,7 +709,17 @@ int setMaxMessageSize(thread_group_t *group, unsigned long val){
     return 0;
 }
 
-int setMaxStorageSize(thread_group_t *group, unsigned long val){
+/**
+ * @brief Set the maximum storage size value for a given group
+ * 
+ * @param[in] *group A pointer to an initialized group structure
+ * @param[in] val The new value of the parameter
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ * 
+ */
+int setMaxStorageSize(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
@@ -650,7 +730,17 @@ int setMaxStorageSize(thread_group_t *group, unsigned long val){
     return 0;
 }
 
-int setGarbageCollectorRatio(thread_group_t *group, unsigned long val){
+/**
+ * @brief Set the garbage collector ratio value for a given group
+ * 
+ * @param[in] *group A pointer to an initialized group structure
+ * @param[in] val The new value of the parameter
+ * 
+ * @retval -1 on error
+ * @retval 0 on success
+ * 
+ */
+int setGarbageCollectorRatio(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
@@ -662,19 +752,20 @@ int setGarbageCollectorRatio(thread_group_t *group, unsigned long val){
 }
 
 
-int _getDescriptorFromID(const int group_fd, group_t *descriptor){
-    int ret;
-
-    if(group_fd == -1)
-        return -1;
 
 
-    ret = ioctl(group_fd, IOCTL_GET_GROUP_DESC, descriptor);
 
-    return ret;
-}
-
-
+/**
+ * @brief Load a group's structure given a group descriptor
+ * 
+ * @param[in] *descriptor The descritor of the group to load
+ * @param[in] *main_syncher Pointer to a thread_synch_t main structure
+ * 
+ * @retval A pointer to the group structure of the specified group
+ * @retval NULL on error
+ *  
+ * @note The provided group structure is not opened by default
+ */
 thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_t *main_syncher){
     char group_path[BUFF_SIZE];
     group_t tmp_group;
@@ -707,12 +798,8 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
 
     group_id = _getGroupID(&tmp_group, main_syncher);
 
-    printf("\nFetched group ID: %d", group_id);
-
     if(group_id < 0)
         goto cleanup2;
-
-
 
     group->descriptor = tmp_group;
     group->group_id = group_id;
@@ -747,7 +834,17 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
 
 
 
-
+/**
+ * @brief Load a group structure given a group ID
+ * 
+ * @param group_id The group ID
+ * @retval A pointer to the group structure of the specified group
+ * @retval NULL on error
+ * 
+ * @note On success, the group is not opened 
+ * @bug The group's descriptor is not loaded, thus the diplayed name will appear as "(null)"
+ * 
+ */
 thread_group_t* loadGroupFromID(const int group_id){
     const char *default_path = "/dev/group%d";
     char group_path[BUFF_SIZE];
@@ -769,14 +866,6 @@ thread_group_t* loadGroupFromID(const int group_id){
         printf("\nUnable to open the file: %d", errno);
         return NULL;
     }
-
-    /*
-    if(_getDescriptorFromID(fd, &group_descriptor) < 0){
-        printf("\nIOCTL call error");
-        return NULL;
-    }*/
-
-
 
     group = (thread_group_t*)malloc(sizeof(thread_group_t));
 

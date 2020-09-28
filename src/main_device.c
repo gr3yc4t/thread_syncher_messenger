@@ -337,7 +337,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 		}
 
 
-		printk(KERN_INFO "Installing group...");
+		printk(KERN_INFO "Installing group [%s]...", group_tmp.group_name);
 		ret = installGroup(group_tmp);
 
 		if(ret < 0){
@@ -353,12 +353,18 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 
 	case IOCTL_GET_GROUP_ID:
 
+		printk("\nIOCTL: get group ID");
+
 		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp) < 0){
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
+		printk("Group name: %s\nLen: %d", group_tmp.group_name, group_tmp.name_len);
+
 		ret = getGroupID(group_tmp);
+
+		printk("Fetched Group ID: %d", ret);
 
 		if(ret != -1)
 			printk(KERN_DEBUG "Group found, returning the ID");
@@ -403,6 +409,11 @@ __must_check int installGroup(const group_t new_group_descriptor){
 
 	new_group->descriptor = new_group_descriptor;
 	new_group->owner = current->pid;
+
+
+	printk(KERN_DEBUG "Group descriptor: [%s]", new_group->descriptor.group_name);
+
+
 
 	down(&main_device_data.sem);
 
@@ -468,6 +479,8 @@ __must_check int getGroupID(const group_t new_group){
 
 	down(&main_device_data.sem);
 		idr_for_each_entry(&main_device_data.group_map, curr_group, id_cursor){
+			
+			printk(KERN_DEBUG "Comparing [%s] with [%s]", curr_group->descriptor.group_name, new_group.group_name);
 
 			if(strncmp(curr_group->descriptor.group_name, new_group.group_name, DEVICE_NAME_SIZE) == 0){
 
