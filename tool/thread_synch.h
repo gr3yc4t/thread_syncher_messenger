@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define ATTR_BUFF_SIZE 64
 #define DEVICE_NAME_SIZE    64      /**< Maximum device name lenght*/
@@ -48,8 +49,8 @@
 
 #define TS_NOT_FOUND    -50
 #define TS_OPEN_ERR     -51
-
-
+#define UNAUTHORIZED    -52
+#define PERMISSION_ERR  -53
 
 
 
@@ -71,6 +72,10 @@
 
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
 #define IOCTL_GET_GROUP_ID  _IOW('X', 100, group_t*)
+
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+
 
 /**
  * @brief Basic structure to represent a message
@@ -117,7 +122,7 @@ typedef struct T_THREAD_GROUP {
 
 
 
-static const char *param_default_path = "/sys/class/group_synch/group%d/message_param/";
+static const char *param_default_path = "/sys/class/group_synch/group%d/group_parameters/";
 
 
 
@@ -145,6 +150,14 @@ unsigned long getMaxMessageSize(thread_group_t *group);
 int setMaxMessageSize(thread_group_t *group, unsigned long val);
 int setMaxStorageSize(thread_group_t *group, unsigned long val);
 int setGarbageCollectorRatio(thread_group_t *group, unsigned long val);
+
+
+int enableStrictMode(thread_group_t *group);
+int disableStrictMode(thread_group_t *group);
+int changeOwner(thread_group_t *group, const uid_t new_owner);
+int becomeOwner(thread_group_t *group);
+
+
 
 thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_t *main_syncher);
 thread_group_t* loadGroupFromID(const int group_id);

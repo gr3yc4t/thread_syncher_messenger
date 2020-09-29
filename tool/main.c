@@ -6,8 +6,7 @@
 
 
 #include "thread_synch.h"
-#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
-#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+
 
 
 //Colors
@@ -87,18 +86,7 @@ int printGroupParams(){
     return 0;
 }
 
-int setStrictMode(int fd, const int _value){
-    int value = 0;
-    if(_value > 1)
-        value = 1;
-    if(_value < 0)
-        value = 0;
 
-    return ioctl(fd, IOCTL_SET_STRICT_MODE, value);
-}
-int changeGroupOwner(int fd, uid_t new_owner){
-    return ioctl(fd, IOCTL_CHANGE_OWNER, new_owner);
-}
 int flushMessages(const char *group_path){
 
     FILE *fd;
@@ -234,6 +222,7 @@ int groupSubMenu(thread_group_t group){
     long delay;
     unsigned long param_value;
     long storage_size;
+    uid_t new_owner;
 
     char *buffer;
     size_t buff_size;
@@ -257,8 +246,9 @@ int groupSubMenu(thread_group_t group){
 
         printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
             "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-            "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t"
+            "\n -Message Param -\n\t80 - Show Message Param \n\t81 - Set max message size\n\t"
             "82 - Set max storage size\n\t83 - Set Garbage Collector ratio\n\t"
+            "91 - (Dis)Enable strict mode\n\t92 - Change Owner\n\t"
             "99 - Exit\n:");
 
         scanf(" %d", &choice);
@@ -281,7 +271,7 @@ int groupSubMenu(thread_group_t group){
                 }else if(ret == 1){
                     printf(ANSI_COLOR_YELLOW "\nNo message present\n" ANSI_COLOR_RESET);
                 }else{
-                    printf(ANSI_COLOR_YELLOW "\nReaded message\n" ANSI_COLOR_RESET ": %s", buffer);
+                    printf(ANSI_COLOR_YELLOW "\nReaded message" ANSI_COLOR_RESET ": %s\n", buffer);
                 }
 
                 free(buffer);
@@ -368,12 +358,42 @@ int groupSubMenu(thread_group_t group){
                 scanf("%lu", &param_value);
                 ret = setMaxStorageSize(&group, param_value);   
                 break;
-            case 83:
+            case 83:    //Set Garbage collector ratio
                 printf("\nGarbage collector ratio: ");
                 scanf("%lu", &param_value);
                 ret = setGarbageCollectorRatio(&group, param_value);
 
-                break;        
+                break;  
+            case 91:    //Enable/Disable strict mode
+
+                printf("\n\t1 - Enable strict mode\n\t2 - Disable strict mode\n\t 99 - Back\n\n:");
+                scanf(" %d", &choice);
+
+                if(choice == 1)
+                    ret = enableStrictMode(&group);
+                else if (choice == 2)
+                    ret = disableStrictMode(&group);
+                else 
+                    ret = -1;
+
+                if(ret == UNAUTHORIZED)
+                    printf(ANSI_COLOR_RED "\n[X] UNAUTHORIZED\n" ANSI_COLOR_RESET);
+
+                break;
+
+            case 92:    //Change Owner
+
+                printf("\nInsert new owner UID: ");
+                scanf(" %ud", (unsigned int*) &new_owner);
+
+                ret = changeOwner(&group, new_owner);
+
+                if(ret == UNAUTHORIZED)
+                    printf(ANSI_COLOR_RED "\n[X] UNAUTHORIZED\n" ANSI_COLOR_RESET);
+                else if(ret == 0)
+                    printf("\nSuccessfully change owner of the group\n");
+
+                break;
             case 99:
                 printf("\n\nExiting...\n");
                 exit_flag = 1;
@@ -439,8 +459,6 @@ int interactiveSession(){
             printf("\nInstalling group [%s]...", descriptor.group_name);
 
             groups[group_index] = installGroup(descriptor, &main_synch);
-
-            printf("\nGroup installed");
 
             if(!groups[group_index]){
                 printf("\nError while installing the group");
@@ -509,8 +527,6 @@ int interactiveSession(){
         }
 
         
-        //readGroupInfo(&main_synch);
-
     }while(exit_flag == 0);
 
 

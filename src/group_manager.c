@@ -181,6 +181,12 @@ int changeOwner(group_data *grp_data, uid_t new_owner){
 
     up_write(&grp_data->owner_lock);
 
+    if(ret == 0){
+        printk(KERN_DEBUG "New Owner UID: %u", new_owner);
+        printk(KERN_DEBUG "Current owner UID: %u", current_owner);
+    }
+
+
     return ret;
 }
 
@@ -197,6 +203,7 @@ int changeOwner(group_data *grp_data, uid_t new_owner){
 int setStrictMode(group_data *grp_data, const bool enabled){
 
     if(isOwner(grp_data)){
+        printk(KERN_DEBUG "Authorized to change strict mode to %d", enabled);
         if(enabled)
             grp_data->flags.strict_mode = 1;
         else
@@ -296,18 +303,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     printk(KERN_DEBUG "Device Major/Minor correctly allocated");
 
-    /*
-    name_len = strnlen(device_name, DEVICE_NAME_SIZE);
 
-    grp_data->descriptor.group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
-    if(!grp_data->descriptor.group_name){
-        ret = ALLOC_ERR;
-        goto cleanup_region;
-    }
-
-    
-    strncpy(grp_data->descriptor.group_name, device_name, name_len);
-    */
 
     grp_data->dev = device_create(group_device_class, parent, grp_data->deviceID, NULL, device_name);
 
@@ -759,6 +755,9 @@ void awakeBarrier(group_data *grp_data){
  *      -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
  *      -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
  *      -IOCTL_AWAKE_BARRIER: Awake the sleep queue
+ *      -IOCTL_GET_GROUP_DESC: Write a group descriptor into the provided pointer
+ *      -IOCTL_SET_STRICT_MODE: Set the strict mode flag
+ *      -IOCTL_CHANGE_OWNER: Change the owner of the group
  * 
  * @retval 0 on success
  * @retval -1 on error
@@ -819,7 +818,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
             user_descriptor = (group_t*)ioctl_param;
 
             if((ret = copy_group_t_to_user(user_descriptor, &grp_data->descriptor)) < 0){
-                printk("\nUnable to retrieve group's data");
+                printk(KERN_ERR "Unable to retrieve group's data");
                 break;
             }
 
@@ -861,9 +860,6 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
 	return ret;
 }
-
-
-
 
 
 

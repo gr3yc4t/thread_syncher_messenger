@@ -2,7 +2,14 @@
 
 #include <linux/module.h>
 
-
+/**
+ * @brief Check if the current thread has the privilege to change sysfs parameters
+ * 
+ * @param[in] grp_data A pointer to a group_data structure
+ * 
+ * @retval true If the current thread has privilege
+ * @retval false If the current thread has not the privilege
+ */
 bool hasStorePrivilege(group_data *grp_data){
 
         uid_t current_owner;
@@ -265,7 +272,7 @@ static ssize_t current_owner_show(struct kobject *kobj, struct kobj_attribute *a
         up_read(&grp_data->owner_lock);
 
 
-        return snprintf(user_buff, ATTR_BUFF_SIZE, "%d", (int)curr_owner);
+        return snprintf(user_buff, ATTR_BUFF_SIZE, "%u", (unsigned int)curr_owner);
 }
 
 /**
@@ -343,6 +350,12 @@ static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj
                 return -1;
         }
 
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change parameter: unauthorized");
+                return -1;
+        }
+
+
         ret = sscanf(user_buf, "%d", &tmp);
 
         if(ret < 0){
@@ -418,6 +431,12 @@ static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_a
                 return -1;
         }
 
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change parameter: unauthorized");
+                return -1;
+        }
+
+
         ret = sscanf(user_buf, "%d", &tmp);
 
         if(ret < 0){
@@ -485,14 +504,15 @@ int initSysFs(group_data *grp_data){
         sysfs->attr_current_owner.attr.name = "current_owner";
         sysfs->attr_current_owner.attr.mode =  S_IRUGO;
         sysfs->attr_current_owner.show = current_owner_show;
-        sysfs->attr_garbage_collector_enabled.attr.name = "garbage_collector_enabled";
-        sysfs->attr_garbage_collector_enabled.attr.mode =  S_IWUGO | S_IRUGO;
-        sysfs->attr_garbage_collector_enabled.show = garbage_collector_enabled_show;
-        sysfs->attr_garbage_collector_enabled.store = garbage_collector_enabled_store;
 
         sysfs->attr_strict_mode.attr.name = "strict_mode";
         sysfs->attr_strict_mode.attr.mode =  S_IRUGO;
         sysfs->attr_strict_mode.show = strict_mode_show;
+
+        sysfs->attr_garbage_collector_enabled.attr.name = "garbage_collector_enabled";
+        sysfs->attr_garbage_collector_enabled.attr.mode =  S_IWUGO | S_IRUGO;
+        sysfs->attr_garbage_collector_enabled.show = garbage_collector_enabled_show;
+        sysfs->attr_garbage_collector_enabled.store = garbage_collector_enabled_store;
 
         sysfs->attr_garbage_collector_ratio.attr.name = "garbage_collector_ratio";
         sysfs->attr_garbage_collector_ratio.attr.mode =  S_IWUGO | S_IRUGO;
@@ -506,7 +526,6 @@ int initSysFs(group_data *grp_data){
                 printk(KERN_WARNING "Unable to create 'max_storage_size' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_current_size' attribute");        
-                printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'garbage_collector_ratio' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr) < 0)
@@ -514,6 +533,8 @@ int initSysFs(group_data *grp_data){
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'current_owner' attribute");  
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
+
 
 
         return 0;
