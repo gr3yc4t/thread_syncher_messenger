@@ -116,6 +116,106 @@ bool checkGarbageRatio(group_data *grp_data){
 
 
 
+
+/** @brief Test if the current process is the owner of a group
+ * 
+ * @param[in] grp_data A group main structure
+ * 
+ * @note This function is thread-safe
+ * 
+ * @retval true if the current process is the owner
+ * @retval false if the current process is not the owner
+ */
+bool isOwner(group_data *grp_data){
+    uid_t current_owner;
+    bool ret;
+
+    down_read(&grp_data->owner_lock);
+
+            current_owner = grp_data->owner;
+            printk(KERN_DEBUG "Current owner: %d", current_owner);
+            printk(KERN_DEBUG "Current user: %d", current_uid().val);
+            if(current_uid().val == current_owner){
+                    ret = true;
+            }else{
+                    ret = false;
+            }
+
+    up_read(&grp_data->owner_lock);
+
+    return ret;    
+}
+
+
+/**
+ * @brief Change the current owner of a group
+ * 
+ * @note If strict mode is enabled, only the owner of a group can call
+ *          this function.
+ * 
+ * @retval 0    on success
+ * @retval -1   if the current process is not authorized
+ * 
+ */ 
+int changeOwner(group_data *grp_data, uid_t new_owner){
+
+    uid_t current_owner;
+    int ret;
+    bool allowed = false;
+
+    //If strict mode is disabled anyone can call this function
+    if(grp_data->flags.strict_mode == 0)
+        allowed = true;
+
+
+    down_write(&grp_data->owner_lock);
+
+        current_owner = grp_data->owner;
+
+        if(allowed || current_uid().val == current_owner){
+            grp_data->owner = new_owner;
+            ret = 0;
+        }else{
+            ret = -1;
+        }
+
+    up_write(&grp_data->owner_lock);
+
+    if(ret == 0){
+        printk(KERN_DEBUG "New Owner UID: %u", new_owner);
+        printk(KERN_DEBUG "Current owner UID: %u", current_owner);
+    }
+
+
+    return ret;
+}
+
+
+/**
+ * @brief Change group's 'strict' security flag
+ * 
+ * @param[in] grp_data  A group structure where the flag should be set
+ * @param[in] enabled   True if the flag must be enabled, false otherwise
+ * 
+ * @retval 0    On success
+ * @retval -1   If the current process is unauthorized
+ */
+int setStrictMode(group_data *grp_data, const bool enabled){
+
+    if(isOwner(grp_data)){
+        printk(KERN_DEBUG "Authorized to change strict mode to %d", enabled);
+        if(enabled)
+            grp_data->flags.strict_mode = 1;
+        else
+            grp_data->flags.strict_mode = 0;
+        
+        return 0;
+    }
+    
+    return -1;
+}
+
+
 /**
  * @brief Initialize group_data participants' structures
  * 
@@ -203,20 +303,8 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     printk(KERN_DEBUG "Device Major/Minor correctly allocated");
 
-    /*
-    name_len = strnlen(device_name, DEVICE_NAME_SIZE);
 
-    grp_data->descriptor.group_name = kmalloc(sizeof(char)*name_len, GFP_KERNEL);
-    if(!grp_data->descriptor.group_name){
-        ret = ALLOC_ERR;
-        goto cleanup_region;
-    }
 
-    
-    strncpy(grp_data->descriptor.group_name, device_name, name_len);
-    */
-
-    //TODO: test parent behaviour
     grp_data->dev = device_create(group_device_class, parent, grp_data->deviceID, NULL, device_name);
 
     if(IS_ERR(grp_data->dev)){
@@ -237,7 +325,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         ret = ALLOC_ERR;
         goto cleanup;
     }
-
 
 
     #ifndef DISABLE_THREAD_BARRIER
@@ -668,6 +755,9 @@ void awakeBarrier(group_data *grp_data){
  *      -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
  *      -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
  *      -IOCTL_AWAKE_BARRIER: Awake the sleep queue
+ *      -IOCTL_GET_GROUP_DESC: Write a group descriptor into the provided pointer
+ *      -IOCTL_SET_STRICT_MODE: Set the strict mode flag
+ *      -IOCTL_CHANGE_OWNER: Change the owner of the group
  * 
  * @retval 0 on success
  * @retval -1 on error
@@ -678,6 +768,8 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
     long delay = 0;
     group_t* user_descriptor;
     group_data *grp_data;
+    bool flag;
+    uid_t new_owner;
 
 
 	switch (ioctl_num){
@@ -726,12 +818,40 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
             user_descriptor = (group_t*)ioctl_param;
 
             if((ret = copy_group_t_to_user(user_descriptor, &grp_data->descriptor)) < 0){
-                printk("\nUnable to retrieve group's data");
+                printk(KERN_ERR "Unable to retrieve group's data");
                 break;
             }
 
             ret = 0;
             break;
+
+        case IOCTL_SET_STRICT_MODE:
+            grp_data = (group_data*) filep->private_data;
+
+            flag = (bool)ioctl_param;
+
+            if(setStrictMode(grp_data, flag) < 0){
+                printk(KERN_WARNING "Unable set strict mode: unauthorized");
+                ret = -1;
+            }else
+                ret = 0;
+            
+
+            break;
+        
+        case IOCTL_CHANGE_OWNER:
+            grp_data = (group_data*) filep->private_data;
+
+            new_owner = (uid_t)ioctl_param;
+
+            if(changeOwner(grp_data, new_owner) < 0){
+                printk(KERN_WARNING "Unable to change owner: unauthorized");
+                ret = -1;
+            }else
+                ret = 0;
+            
+            break;
+
 	default:
 		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
 		ret = INVALID_IOCTL_COMMAND;
@@ -740,9 +860,6 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
 	return ret;
 }
-
-
-
 
 
 

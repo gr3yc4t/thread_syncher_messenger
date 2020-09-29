@@ -289,8 +289,19 @@ static int _getDescriptorFromID(const int group_fd, group_t *descriptor){
     return ret;
 }
 
+static int _setStrictMode(int fd, const int _value){
+    int value = 0;
+    if(_value >= 1)
+        value = 1;
+    if(_value < 0)
+        value = 0;
 
+    return ioctl(fd, IOCTL_SET_STRICT_MODE, value);
+}
 
+static int _changeGroupOwner(int fd, const uid_t new_owner){
+    return ioctl(fd, IOCTL_CHANGE_OWNER, new_owner);
+}
 
 
 /**
@@ -362,20 +373,14 @@ int openGroup(thread_group_t* group){
         if(fd < 0){
             group->file_descriptor = -1;
 
-            switch (errno)
-            {
+            switch (errno){
             case EACCES:
-                printf("\nPermission denied\n");
-                
-                break;
-            
+                return PERMISSION_ERR;
             default:
                 break;
             }
-            printf("\nUnable to open the group: %d", errno);
-            return -1;
+            return -errno;
         }
-
 
         group->file_descriptor = fd;
     }
@@ -754,6 +759,55 @@ int setGarbageCollectorRatio(thread_group_t *group, const unsigned long val){
 
 
 
+
+int enableStrictMode(thread_group_t *group){
+    int ret = 0;
+
+    if(group->file_descriptor == -1)
+        return -1;
+
+    
+    ret = _setStrictMode(group->file_descriptor, 1);
+
+    if(ret < 0)
+        return UNAUTHORIZED;
+    
+    return 0;
+}
+
+int disableStrictMode(thread_group_t *group){
+    int ret = 0;
+
+    if(group->file_descriptor == -1)
+        return -1;
+
+    
+    ret = _setStrictMode(group->file_descriptor, 0);
+
+    if(ret < 0)
+        return UNAUTHORIZED;
+    
+    return 0;
+}
+
+
+int changeOwner(thread_group_t *group, const uid_t new_owner){
+    int ret = 0;
+
+    if(group->file_descriptor == -1)
+        return -1;
+
+    ret = _changeGroupOwner(group->file_descriptor, new_owner);
+
+    if(ret < 0)
+        return UNAUTHORIZED;
+    
+    return 0;
+}
+
+int becomeOwner(thread_group_t *group){
+    return changeOwner(group, getuid());
+}
 
 /**
  * @brief Load a group's structure given a group descriptor

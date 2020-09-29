@@ -87,10 +87,10 @@ struct t_message_deliver{
         struct kobj_attribute attr_max_message_size;
         struct kobj_attribute attr_max_storage_size;
         struct kobj_attribute attr_current_storage_size;
-
+        struct kobj_attribute attr_strict_mode;
+        struct kobj_attribute attr_current_owner;
         struct kobj_attribute attr_garbage_collector_enabled;
         struct kobj_attribute attr_garbage_collector_ratio;
-
     }group_sysfs_t;
 
 #endif
@@ -146,6 +146,9 @@ typedef struct group_t {
  *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
  *  -garbage_collector_disabled: specifies the status of the garbage collector
  * 
+ *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ * 
+ *  -strict_mode: 1 if the strict security mode is enabled, 0 otherwise
  *  @todo Check the performace impact of "packing" the structure
  * 
  */
@@ -161,6 +164,7 @@ typedef struct group_flags_t{
         unsigned int sysfs_loaded:1;            /**< 1 if the sysfs submodule is initialized correctly*/
     #endif
 
+    unsigned int strict_mode:1; 
 
     unsigned int garbage_collector_disabled:1;  /**< 1 if the garbage collector is disabled, zero otherwise*/
 
@@ -200,7 +204,8 @@ typedef struct group_data {
     group_t  descriptor;        /** @brief System-wide descriptor of a group*/
 
     //Owner
-    pid_t owner;                //TODO: implement security features
+    uid_t owner;                
+    struct rw_semaphore owner_lock;
 
     //Members
     struct list_head active_members;            /**< List of process that opened the group*/    

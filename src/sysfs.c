@@ -3,6 +3,44 @@
 #include <linux/module.h>
 
 /**
+ * @brief Check if the current thread has the privilege to change sysfs parameters
+ * 
+ * @param[in] grp_data A pointer to a group_data structure
+ * 
+ * @retval true If the current thread has privilege
+ * @retval false If the current thread has not the privilege
+ */
+bool hasStorePrivilege(group_data *grp_data){
+
+        uid_t current_owner;
+        bool ret;
+
+        //If strict mode is disabled anyone can set parametrs
+        if(grp_data->flags.strict_mode == 0)
+                return true;
+
+        //Otherwise, only the owner can
+        down_read(&grp_data->owner_lock);
+
+                current_owner = grp_data->owner;
+
+                printk(KERN_DEBUG "Current owner: %d", current_owner);
+                printk(KERN_DEBUG "Current thread: %d", current_uid().val );
+
+                if(current_uid().val == current_owner){
+                        ret = true;
+                }else{
+                        ret = false;
+                }
+
+        up_read(&grp_data->owner_lock);
+
+        return ret;
+}
+
+
+
+/**
  * @brief Return the 'max_message_size' param
  * @param[out] buffer The buffer where the string containing the value is written
  * 
@@ -61,6 +99,14 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
                 printk(KERN_WARNING "container_of: error");
                 return -1;
         }
+
+
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change param: unauthorized");
+                return -1;
+        }
+
+
         manager = grp_data->msg_manager;
 
         if(!manager)
@@ -138,6 +184,11 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
                 return -1;
         }
 
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change param: unauthorized");
+                return -1;
+        }
+
         manager = grp_data->msg_manager;
 
         if(!manager)
@@ -195,6 +246,62 @@ static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attri
         return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", curr_storage_size);
 }
 
+
+/**
+ * @brief Return the current owner of a group
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t current_owner_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        uid_t curr_owner;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+
+        down_read(&grp_data->owner_lock);
+                curr_owner = grp_data->owner;
+        up_read(&grp_data->owner_lock);
+
+
+        return snprintf(user_buff, ATTR_BUFF_SIZE, "%u", (unsigned int)curr_owner);
+}
+
+/**
+ * @brief Return the current owner of a group
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t strict_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        bool enabled;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        if(grp_data->flags.strict_mode == 1)
+                enabled = true;
+        else
+                enabled = false;
+        
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%d", enabled);
+}
+
 /**
  * @brief Return the current owner of a group
  * @param[out] buffer The buffer where the string containing the owner's PID is written
@@ -242,6 +349,12 @@ static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj
                 printk(KERN_ERR "container_of: error");
                 return -1;
         }
+
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change parameter: unauthorized");
+                return -1;
+        }
+
 
         ret = sscanf(user_buf, "%d", &tmp);
 
@@ -318,6 +431,12 @@ static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_a
                 return -1;
         }
 
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change parameter: unauthorized");
+                return -1;
+        }
+
+
         ret = sscanf(user_buf, "%d", &tmp);
 
         if(ret < 0){
@@ -359,7 +478,7 @@ int initSysFs(group_data *grp_data){
 
         group_sysfs_t *sysfs = &grp_data->group_sysfs;
 
-        sysfs->group_kobject = kobject_create_and_add("message_param", group_device);
+        sysfs->group_kobject = kobject_create_and_add("group_parameters", group_device);
 
         if(sysfs->group_kobject == NULL){
                 printk(KERN_ERR "sysfs: Unable to create kobject");
@@ -382,11 +501,18 @@ int initSysFs(group_data *grp_data){
         sysfs->attr_current_storage_size.attr.mode =  S_IRUGO;
         sysfs->attr_current_storage_size.show = current_storage_size_show;
 
+        sysfs->attr_current_owner.attr.name = "current_owner";
+        sysfs->attr_current_owner.attr.mode =  S_IRUGO;
+        sysfs->attr_current_owner.show = current_owner_show;
+
+        sysfs->attr_strict_mode.attr.name = "strict_mode";
+        sysfs->attr_strict_mode.attr.mode =  S_IRUGO;
+        sysfs->attr_strict_mode.show = strict_mode_show;
+
         sysfs->attr_garbage_collector_enabled.attr.name = "garbage_collector_enabled";
         sysfs->attr_garbage_collector_enabled.attr.mode =  S_IWUGO | S_IRUGO;
         sysfs->attr_garbage_collector_enabled.show = garbage_collector_enabled_show;
         sysfs->attr_garbage_collector_enabled.store = garbage_collector_enabled_store;
-
 
         sysfs->attr_garbage_collector_ratio.attr.name = "garbage_collector_ratio";
         sysfs->attr_garbage_collector_ratio.attr.mode =  S_IWUGO | S_IRUGO;
@@ -400,10 +526,15 @@ int initSysFs(group_data *grp_data){
                 printk(KERN_WARNING "Unable to create 'max_storage_size' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_current_size' attribute");        
-        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr) < 0)
-                printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'garbage_collector_ratio' attribute");        
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'strict_mode' attribute");   
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'current_owner' attribute");  
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
+
 
 
         return 0;
@@ -420,6 +551,10 @@ void releaseSysFs(group_sysfs_t *sysfs){
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_max_message_size.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_max_storage_size.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr);
 
     kobject_put(sysfs->group_kobject);
 

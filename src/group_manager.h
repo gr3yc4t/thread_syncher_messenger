@@ -16,6 +16,7 @@
 
 #include <linux/idr.h>
 #include <linux/errno.h>
+#include <linux/cred.h>    //For current_uid()
 
 
 #include "message.h"
@@ -66,6 +67,8 @@
 
 #endif
 
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
 
 
 
