@@ -19,7 +19,7 @@
 #endif
 
 
-#define DEVICE_NAME_SIZE    64
+#define DEVICE_NAME_SIZE    64      /**< Maximum device name lenght*/
 
 
 
@@ -33,9 +33,9 @@ typedef struct t_message msg_t;
  * @brief Basic structure to represent a message
  */
 typedef struct t_message{
-    pid_t author;   //Author thread
-    void *buffer;
-    size_t size;
+    pid_t author;           /**< Process which wrote the message*/
+    void *buffer;           /**< Buffer containing the message*/
+    size_t size;            /**< Size (in bytes) of the buffer*/
 } msg_t;
 
 
@@ -52,37 +52,45 @@ typedef struct t_group_members{
  * 
  */
 struct t_message_deliver{
-    msg_t message;
+    msg_t message;                          /**< The message to deliver */
 
-    struct list_head recipient;         /**< PIDs of threads that should read 'message' */
-    struct rw_semaphore recipient_lock;
+    struct list_head recipient;             /**< PIDs of threads that have read 'message' */
+    struct rw_semaphore recipient_lock;     /**< Recopient list semaphore*/
 
     struct list_head fifo_list;
 };
 
 #ifndef DISABLE_DELAYED_MSG
-
+    /**
+     * @brief Contains a 'msg_t' structure and the timer needed to delay the delivery
+     * 
+     * @todo Remove the 'manager' field and retrieve it at runtime (saves 8 bytes of mem.)
+     */
     struct t_message_delayed_deliver{
-        msg_t message;
+        msg_t message;                      /**< The message to deliver*/
 
-        msg_manager_t *manager;         //TODO: Rebase the code to remove this by using 'container_of'
+        msg_manager_t *manager;             /**< Pointer to the group's message manager struct */
 
-        struct timer_list delayed_timer;
+        struct timer_list delayed_timer;    /**< The timer used to delay the delivery*/
         struct list_head delayed_list;  
     };
 
 #endif
 
 #ifndef DISABLE_SYSFS
-
+    /**
+     * @brief Contains all the 'sysfs' attrubutes and the group's kobject
+     * 
+     */
     typedef struct t_group_sysfs {
         struct kobject *group_kobject;
         struct kobj_attribute attr_max_message_size;
         struct kobj_attribute attr_max_storage_size;
         struct kobj_attribute attr_current_storage_size;
-        
         struct kobj_attribute attr_strict_mode;
         struct kobj_attribute attr_current_owner;
+        struct kobj_attribute attr_garbage_collector_enabled;
+        struct kobj_attribute attr_garbage_collector_ratio;
     }group_sysfs_t;
 
 #endif
@@ -96,20 +104,20 @@ struct t_message_deliver{
  *  respectively the sub-system's size limits
  */
 typedef struct t_message_manager{
-    u_long max_message_size;
-    u_long max_storage_size;
+    u_long max_message_size;                /**< Group's max message size*/
+    u_long max_storage_size;                /**< Max group storage size */
 
-    u_long curr_storage_size;
-    struct rw_semaphore config_lock;
+    u_long curr_storage_size;               /**< Stores the current group's messages size*/
+    struct rw_semaphore config_lock;        /**< Semaphore for size parameters access*/
 
 
-    struct list_head queue;
-    struct rw_semaphore queue_lock;
+    struct list_head queue;                 /**< The messages FIFO queue */
+    struct rw_semaphore queue_lock;         /**< FIFO queue semaphore */
 
     #ifndef DISABLE_DELAYED_MSG
-        atomic_long_t message_delay;
-        struct list_head delayed_queue;
-        struct semaphore delayed_lock;
+        atomic_long_t message_delay;        /**< Specifies the current delay applied to the group*/
+        struct list_head delayed_queue;     /**< The delayed messages queue*/
+        struct semaphore delayed_lock;      /**< Semaphore to manage access to the 'delayed_queue'*/
     #endif
 
 } msg_manager_t;
@@ -133,38 +141,59 @@ typedef struct group_t {
  *  that failed.
  * 
  *  -initialized: indicates that a group has loaded all of its structures
- * 
  *  -thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized
  *  -wake_up_flag: to implement
+ *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ *  -garbage_collector_disabled: specifies the status of the garbage collector
  * 
  *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
  * 
  *  -strict_mode: 1 if the strict security mode is enabled, 0 otherwise
+ *  @todo Check the performace impact of "packing" the structure
+ * 
  */
 typedef struct group_flags_t{
-    unsigned int initialized:1;         //Set to 1 when the device driver is fully loaded
+    unsigned int initialized:1;         /**< Set to 1 when the device driver is fully loaded*/
 
     #ifndef DISABLE_THREAD_BARRIER
-        unsigned int thread_barrier_loaded:1;
-        unsigned int wake_up_flag:1;    //TODO: switch to this on thread barrier
+        unsigned int thread_barrier_loaded:1;   /**< 1 if the 'thread_barrier' submodule is initialized*/
+        unsigned int wake_up_flag:1;            /**< Flag used to wake-up all thread which slept on barrier*/
     #endif
 
     #ifndef DISABLE_SYSFS
-        unsigned int sysfs_loaded:1;
+        unsigned int sysfs_loaded:1;            /**< 1 if the sysfs submodule is initialized correctly*/
     #endif
 
     unsigned int strict_mode:1; 
-                                                   
-} __attribute__((packed)) g_flags_t;    //TODO: check if "packed" improve performance
+
+    unsigned int garbage_collector_disabled:1;  /**< 1 if the garbage collector is disabled, zero otherwise*/
+
+} __attribute__((packed)) g_flags_t;
+
+
+/**
+ * @brief Garbage Collector structure
+ * 
+ * The ratio parameter indicates when the garbage collector should starts:
+ *      If the current ratio is higher that the garbage collector ratio, it 
+ *      perform cleaning operation, otherwise it will not start
+ * 
+ * Ratio is computed by dividing the current storage size with the maximum storage size_t
+ * and by multiplying it by 10.
+ */
+typedef struct t_garbage_collector{
+    struct work_struct work;        /**< Garbage Collector deferred work*/
+    atomic_t ratio;                 /**< Ratio of the garbage collector*/
+} garbage_collector_t;
+
 
 
 
 /**
  * @brief Group device data structure
  * 
- * Contains all the modules and private data of a group character device
+ * Contains all the private data of a group character device
  * 
- * @var group_id The unique ID of the group (returned by the IDR)
  */
 typedef struct group_data {
     struct cdev cdev;           /** @brief Characted Device definition  */
@@ -172,34 +201,35 @@ typedef struct group_data {
     dev_t deviceID;            
     int group_id;               /** @brief Unique identifier of a group. Provided by IDR */
 
-    group_t  descriptor;        /** @brief system-wide   descriptor*/
+    group_t  descriptor;        /** @brief System-wide descriptor of a group*/
 
     //Owner
     uid_t owner;                
     struct rw_semaphore owner_lock;
 
     //Members
-    struct list_head active_members;    
-    atomic_t members_count;
-    struct rw_semaphore member_lock;
+    struct list_head active_members;            /**< List of process that opened the group*/    
+    atomic_t members_count;                     /**< Number of process that opened the group*/
+    struct rw_semaphore member_lock;            /**< Lock on the active members list*/
 
     //Message-Subsystem
-    msg_manager_t *msg_manager;
-    struct work_struct garbage_collector_work;
+    msg_manager_t *msg_manager;                 /**< Message manager subsytem*/
+
+    //Garbage Collector
+    garbage_collector_t garbage_collector;      /**< Garbage collector instance*/
 
     #ifndef DISABLE_THREAD_BARRIER
         //Thread-barrier
-        wait_queue_head_t barrier_queue;
-        bool wake_up_flag;
+        wait_queue_head_t barrier_queue;        /**< Queue where processes which slept on a barrier are put*/
     #endif
 
 
     #ifndef DISABLE_SYSFS
-        group_sysfs_t group_sysfs;
+        group_sysfs_t group_sysfs;              /**< Group's sysfs structure*/
     #endif
 
 
-    g_flags_t flags;
+    g_flags_t flags;                            /**< Group's status flags*/
 } group_data;
 
 #endif //TYPES_H

@@ -36,7 +36,7 @@
 #define NODE_NOT_FOUND          -21
 #define INVALID_IOCTL_COMMAND   -1
 #define CHDEV_ALLOC_ERR         -22
-
+#define MEM_ACCESS_ERR          -23
 
 
 
@@ -48,6 +48,10 @@
 #define DEFAULT_STORAGE_SIZE 256
 
 //IOCTLS
+
+#define IOCTL_GET_GROUP_DESC _IOR('Q', 1, group_t*)
+
+
 
 #ifndef DISABLE_DELAYED_MSG
 
@@ -97,6 +101,6 @@ extern struct class *group_device_class;
 
 int registerGroupDevice(group_data *grp_data, const struct device* parent);
 void unregisterGroupDevice(group_data *grp_data, bool flag);
-
+int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group);
 
 #endif //GRP_MAN_H

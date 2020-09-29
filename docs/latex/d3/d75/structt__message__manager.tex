@@ -1,0 +1,99 @@
+\hypertarget{structt__message__manager}{}\doxysection{msg\+\_\+manager\+\_\+t Struct Reference}
+\label{structt__message__manager}\index{msg\_manager\_t@{msg\_manager\_t}}
+
+
+Manage the message sub-\/system.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+u\+\_\+long \mbox{\hyperlink{structt__message__manager_a1db68234b14be6ac4a72d80f91a878bc}{max\+\_\+message\+\_\+size}}
+\item 
+u\+\_\+long \mbox{\hyperlink{structt__message__manager_a382a84de32f419e305038f9c57de39e1}{max\+\_\+storage\+\_\+size}}
+\item 
+u\+\_\+long \mbox{\hyperlink{structt__message__manager_aab76b5de5a8ae0e98e4303dfab867aa0}{curr\+\_\+storage\+\_\+size}}
+\item 
+struct rw\+\_\+semaphore \mbox{\hyperlink{structt__message__manager_ab0c034d1eb2b2c19b6e47ecd4cd4c1b5}{config\+\_\+lock}}
+\item 
+struct list\+\_\+head \mbox{\hyperlink{structt__message__manager_a1879d89416e1919bfb295875a806fbb5}{queue}}
+\item 
+struct rw\+\_\+semaphore \mbox{\hyperlink{structt__message__manager_a75bf6d6524c42f871a92b26a432e4681}{queue\+\_\+lock}}
+\item 
+atomic\+\_\+long\+\_\+t \mbox{\hyperlink{structt__message__manager_aeeba85d8afb6e996a3914f4daeb2f572}{message\+\_\+delay}}
+\item 
+struct list\+\_\+head \mbox{\hyperlink{structt__message__manager_a34f16e56c4409098eb4c6557365047e0}{delayed\+\_\+queue}}
+\item 
+struct semaphore \mbox{\hyperlink{structt__message__manager_a5cda442d4f429014d86fc71b799775a2}{delayed\+\_\+lock}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manage the message sub-\/system. 
+
+The \textquotesingle{}queue\textquotesingle{} represent the F\+I\+FO list of messages, while the other members are respectively the sub-\/system\textquotesingle{}s size limits 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structt__message__manager_ab0c034d1eb2b2c19b6e47ecd4cd4c1b5}\label{structt__message__manager_ab0c034d1eb2b2c19b6e47ecd4cd4c1b5}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!config\_lock@{config\_lock}}
+\index{config\_lock@{config\_lock}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{config\_lock}{config\_lock}}
+{\footnotesize\ttfamily struct rw\+\_\+semaphore msg\+\_\+manager\+\_\+t\+::config\+\_\+lock}
+
+Semaphore for size parameters access \mbox{\Hypertarget{structt__message__manager_aab76b5de5a8ae0e98e4303dfab867aa0}\label{structt__message__manager_aab76b5de5a8ae0e98e4303dfab867aa0}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!curr\_storage\_size@{curr\_storage\_size}}
+\index{curr\_storage\_size@{curr\_storage\_size}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{curr\_storage\_size}{curr\_storage\_size}}
+{\footnotesize\ttfamily u\+\_\+long msg\+\_\+manager\+\_\+t\+::curr\+\_\+storage\+\_\+size}
+
+Stores the current group\textquotesingle{}s messages size \mbox{\Hypertarget{structt__message__manager_a5cda442d4f429014d86fc71b799775a2}\label{structt__message__manager_a5cda442d4f429014d86fc71b799775a2}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!delayed\_lock@{delayed\_lock}}
+\index{delayed\_lock@{delayed\_lock}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{delayed\_lock}{delayed\_lock}}
+{\footnotesize\ttfamily struct semaphore msg\+\_\+manager\+\_\+t\+::delayed\+\_\+lock}
+
+Semaphore to manage access to the \textquotesingle{}delayed\+\_\+queue\textquotesingle{} \mbox{\Hypertarget{structt__message__manager_a34f16e56c4409098eb4c6557365047e0}\label{structt__message__manager_a34f16e56c4409098eb4c6557365047e0}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!delayed\_queue@{delayed\_queue}}
+\index{delayed\_queue@{delayed\_queue}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{delayed\_queue}{delayed\_queue}}
+{\footnotesize\ttfamily struct list\+\_\+head msg\+\_\+manager\+\_\+t\+::delayed\+\_\+queue}
+
+The delayed messages queue \mbox{\Hypertarget{structt__message__manager_a1db68234b14be6ac4a72d80f91a878bc}\label{structt__message__manager_a1db68234b14be6ac4a72d80f91a878bc}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!max\_message\_size@{max\_message\_size}}
+\index{max\_message\_size@{max\_message\_size}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{max\_message\_size}{max\_message\_size}}
+{\footnotesize\ttfamily u\+\_\+long msg\+\_\+manager\+\_\+t\+::max\+\_\+message\+\_\+size}
+
+Group\textquotesingle{}s max message size \mbox{\Hypertarget{structt__message__manager_a382a84de32f419e305038f9c57de39e1}\label{structt__message__manager_a382a84de32f419e305038f9c57de39e1}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!max\_storage\_size@{max\_storage\_size}}
+\index{max\_storage\_size@{max\_storage\_size}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{max\_storage\_size}{max\_storage\_size}}
+{\footnotesize\ttfamily u\+\_\+long msg\+\_\+manager\+\_\+t\+::max\+\_\+storage\+\_\+size}
+
+Max group storage size \mbox{\Hypertarget{structt__message__manager_aeeba85d8afb6e996a3914f4daeb2f572}\label{structt__message__manager_aeeba85d8afb6e996a3914f4daeb2f572}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!message\_delay@{message\_delay}}
+\index{message\_delay@{message\_delay}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{message\_delay}{message\_delay}}
+{\footnotesize\ttfamily atomic\+\_\+long\+\_\+t msg\+\_\+manager\+\_\+t\+::message\+\_\+delay}
+
+Specifies the current delay applied to the group \mbox{\Hypertarget{structt__message__manager_a1879d89416e1919bfb295875a806fbb5}\label{structt__message__manager_a1879d89416e1919bfb295875a806fbb5}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!queue@{queue}}
+\index{queue@{queue}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{queue}{queue}}
+{\footnotesize\ttfamily struct list\+\_\+head msg\+\_\+manager\+\_\+t\+::queue}
+
+The messages F\+I\+FO queue \mbox{\Hypertarget{structt__message__manager_a75bf6d6524c42f871a92b26a432e4681}\label{structt__message__manager_a75bf6d6524c42f871a92b26a432e4681}} 
+\index{msg\_manager\_t@{msg\_manager\_t}!queue\_lock@{queue\_lock}}
+\index{queue\_lock@{queue\_lock}!msg\_manager\_t@{msg\_manager\_t}}
+\doxysubsubsection{\texorpdfstring{queue\_lock}{queue\_lock}}
+{\footnotesize\ttfamily struct rw\+\_\+semaphore msg\+\_\+manager\+\_\+t\+::queue\+\_\+lock}
+
+F\+I\+FO queue semaphore 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}

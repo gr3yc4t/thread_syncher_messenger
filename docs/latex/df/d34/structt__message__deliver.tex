@@ -1,0 +1,54 @@
+\hypertarget{structt__message__deliver}{}\doxysection{t\+\_\+message\+\_\+deliver Struct Reference}
+\label{structt__message__deliver}\index{t\_message\_deliver@{t\_message\_deliver}}
+
+
+Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the relative delivery info.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+msg\+\_\+t \mbox{\hyperlink{structt__message__deliver_a160e8a829051bf086939b7c4c425065c}{message}}
+\item 
+struct list\+\_\+head \mbox{\hyperlink{structt__message__deliver_aff80d371e0df74b1c6b18d6705396ec0}{recipient}}
+\item 
+struct rw\+\_\+semaphore \mbox{\hyperlink{structt__message__deliver_add834d242298b09cb8290fb81ef1355d}{recipient\+\_\+lock}}
+\item 
+\mbox{\Hypertarget{structt__message__deliver_a24026383fb5b30a5f7f4bcda8741c69c}\label{structt__message__deliver_a24026383fb5b30a5f7f4bcda8741c69c}} 
+struct list\+\_\+head {\bfseries fifo\+\_\+list}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the relative delivery info. 
+
+The recipient list contains the P\+I\+Ds of thread that readed the message 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structt__message__deliver_a160e8a829051bf086939b7c4c425065c}\label{structt__message__deliver_a160e8a829051bf086939b7c4c425065c}} 
+\index{t\_message\_deliver@{t\_message\_deliver}!message@{message}}
+\index{message@{message}!t\_message\_deliver@{t\_message\_deliver}}
+\doxysubsubsection{\texorpdfstring{message}{message}}
+{\footnotesize\ttfamily msg\+\_\+t t\+\_\+message\+\_\+deliver\+::message}
+
+The message to deliver \mbox{\Hypertarget{structt__message__deliver_aff80d371e0df74b1c6b18d6705396ec0}\label{structt__message__deliver_aff80d371e0df74b1c6b18d6705396ec0}} 
+\index{t\_message\_deliver@{t\_message\_deliver}!recipient@{recipient}}
+\index{recipient@{recipient}!t\_message\_deliver@{t\_message\_deliver}}
+\doxysubsubsection{\texorpdfstring{recipient}{recipient}}
+{\footnotesize\ttfamily struct list\+\_\+head t\+\_\+message\+\_\+deliver\+::recipient}
+
+P\+I\+Ds of threads that have read \textquotesingle{}message\textquotesingle{} \mbox{\Hypertarget{structt__message__deliver_add834d242298b09cb8290fb81ef1355d}\label{structt__message__deliver_add834d242298b09cb8290fb81ef1355d}} 
+\index{t\_message\_deliver@{t\_message\_deliver}!recipient\_lock@{recipient\_lock}}
+\index{recipient\_lock@{recipient\_lock}!t\_message\_deliver@{t\_message\_deliver}}
+\doxysubsubsection{\texorpdfstring{recipient\_lock}{recipient\_lock}}
+{\footnotesize\ttfamily struct rw\+\_\+semaphore t\+\_\+message\+\_\+deliver\+::recipient\+\_\+lock}
+
+Recopient list semaphore 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}

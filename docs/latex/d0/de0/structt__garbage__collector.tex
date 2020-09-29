@@ -1,0 +1,45 @@
+\hypertarget{structt__garbage__collector}{}\doxysection{t\+\_\+garbage\+\_\+collector Struct Reference}
+\label{structt__garbage__collector}\index{t\_garbage\_collector@{t\_garbage\_collector}}
+
+
+Garbage Collector structure.  
+
+
+
+
+{\ttfamily \#include $<$types.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+struct work\+\_\+struct \mbox{\hyperlink{structt__garbage__collector_aaec9f549782d77a03d89a1c59464e232}{work}}
+\item 
+atomic\+\_\+t \mbox{\hyperlink{structt__garbage__collector_a9ba904fe07a94ebdcb54dacf14224e87}{ratio}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Garbage Collector structure. 
+
+The ratio parameter indicates when the garbage collector should starts\+: If the current ratio is higher that the garbage collector ratio, it perform cleaning operation, otherwise it will not start
+
+Ratio is computed by dividing the current storage size with the maximum storage size\+\_\+t and by multiplying it by 10. 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structt__garbage__collector_a9ba904fe07a94ebdcb54dacf14224e87}\label{structt__garbage__collector_a9ba904fe07a94ebdcb54dacf14224e87}} 
+\index{t\_garbage\_collector@{t\_garbage\_collector}!ratio@{ratio}}
+\index{ratio@{ratio}!t\_garbage\_collector@{t\_garbage\_collector}}
+\doxysubsubsection{\texorpdfstring{ratio}{ratio}}
+{\footnotesize\ttfamily atomic\+\_\+t t\+\_\+garbage\+\_\+collector\+::ratio}
+
+Ratio of the garbage collector \mbox{\Hypertarget{structt__garbage__collector_aaec9f549782d77a03d89a1c59464e232}\label{structt__garbage__collector_aaec9f549782d77a03d89a1c59464e232}} 
+\index{t\_garbage\_collector@{t\_garbage\_collector}!work@{work}}
+\index{work@{work}!t\_garbage\_collector@{t\_garbage\_collector}}
+\doxysubsubsection{\texorpdfstring{work}{work}}
+{\footnotesize\ttfamily struct work\+\_\+struct t\+\_\+garbage\+\_\+collector\+::work}
+
+Garbage Collector deferred work 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/types.\+h\end{DoxyCompactItemize}

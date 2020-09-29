@@ -1,0 +1,297 @@
+\hypertarget{group__manager_8c}{}\doxysection{src/group\+\_\+manager.c File Reference}
+\label{group__manager_8c}\index{src/group\_manager.c@{src/group\_manager.c}}
+
+
+Handles all procedures releated to file operation issued on a group device.  
+
+
+{\ttfamily \#include \char`\"{}group\+\_\+manager.\+h\char`\"{}}\newline
+Include dependency graph for group\+\_\+manager.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dd/de5/group__manager_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__manager_8c_a7082099beab072e35bea916cda17ade3}\label{group__manager_8c_a7082099beab072e35bea916cda17ade3}} 
+{\bfseries E\+X\+P\+O\+R\+T\+\_\+\+S\+Y\+M\+B\+OL} (group\+\_\+device\+\_\+class)
+\item 
+int \mbox{\hyperlink{group__manager_8c_a47f8f0bf6b2d3a2275b3c030ed1a38b0}{install\+Group\+Class}} ()
+\begin{DoxyCompactList}\small\item\em Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__manager_8c_a12f1d3f43a4daf53d7a9a0234848c7e8}{is\+Garbage\+Coll\+Enabled}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Checks if the garbage collector is enabled. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}{check\+Garbage\+Ratio}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Check if the garbage collector ratio is lower than the current one. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__manager_8c_a1f1985c8c457af192ae651beb0f2e17d}{init\+Participants}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8c_aaf4c2d92ecd16b379659d6f41e3a90ac}{remove\+Participant}} (struct list\+\_\+head $\ast$participants, pid\+\_\+t \+\_\+pid)
+\begin{DoxyCompactList}\small\item\em Remove an element from the list of participant thread. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8c_a49eacb577d4216746f5a76ce9c60445c}{register\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, const struct device $\ast$parent)
+\begin{DoxyCompactList}\small\item\em register a group device \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__manager_8c_a7a4a1f2ed5563df3defd7477a8f70168}{unregister\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, bool flag)
+\begin{DoxyCompactList}\small\item\em unregister a group device \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__manager_8c_ac15ca96c4cf8bd41fe0c6a4ddcef02d7}{reset\+Sleep\+Flag}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Resets the flag used to wake up threds. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}{sleep\+On\+Barrier}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Put the thread which calles this function on sleep. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__manager_8c_a1792fc5d13522e4cf8975bd293a99ed6}{awake\+Barrier}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Wake up all threads that was put on sleep by the module. \end{DoxyCompactList}\item 
+long int \mbox{\hyperlink{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}{group\+Ioctl}} (struct file $\ast$filep, unsigned int ioctl\+\_\+num, unsigned long ioctl\+\_\+param)
+\begin{DoxyCompactList}\small\item\em Handler of group\textquotesingle{}s ioctls requests. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__manager_8c_a85254d51cfcb185448c7a6258fc394aa}\label{group__manager_8c_a85254d51cfcb185448c7a6258fc394aa}} 
+struct class $\ast$ {\bfseries group\+\_\+device\+\_\+class}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all procedures releated to file operation issued on a group device. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{group__manager_8c_a1792fc5d13522e4cf8975bd293a99ed6}\label{group__manager_8c_a1792fc5d13522e4cf8975bd293a99ed6}} 
+\index{group\_manager.c@{group\_manager.c}!awakeBarrier@{awakeBarrier}}
+\index{awakeBarrier@{awakeBarrier}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{awakeBarrier()}{awakeBarrier()}}
+{\footnotesize\ttfamily void awake\+Barrier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Wake up all threads that was put on sleep by the module. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the main structure of a group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}\label{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}} 
+\index{group\_manager.c@{group\_manager.c}!checkGarbageRatio@{checkGarbageRatio}}
+\index{checkGarbageRatio@{checkGarbageRatio}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{checkGarbageRatio()}{checkGarbageRatio()}}
+{\footnotesize\ttfamily bool check\+Garbage\+Ratio (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Check if the garbage collector ratio is lower than the current one. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group\textquotesingle{}s main data structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & If the current ratio is higher \\
+\hline
+{\em false} & If the current ratio is lower \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}\label{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}} 
+\index{group\_manager.c@{group\_manager.c}!groupIoctl@{groupIoctl}}
+\index{groupIoctl@{groupIoctl}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{groupIoctl()}{groupIoctl()}}
+{\footnotesize\ttfamily long int group\+Ioctl (\begin{DoxyParamCaption}\item[{struct file $\ast$}]{filep,  }\item[{unsigned int}]{ioctl\+\_\+num,  }\item[{unsigned long}]{ioctl\+\_\+param }\end{DoxyParamCaption})}
+
+
+
+Handler of group\textquotesingle{}s ioctls requests. 
+
+Depending on the compile arguments, four ioctl commands are available\+: \begin{DoxyVerb} -IOCTL_SET_SEND_DELAY: set the message delayed
+ -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
+ -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
+ -IOCTL_AWAKE_BARRIER: Awake the sleep queue
+\end{DoxyVerb}
+
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/1} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a1f1985c8c457af192ae651beb0f2e17d}\label{group__manager_8c_a1f1985c8c457af192ae651beb0f2e17d}} 
+\index{group\_manager.c@{group\_manager.c}!initParticipants@{initParticipants}}
+\index{initParticipants@{initParticipants}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{initParticipants()}{initParticipants()}}
+{\footnotesize\ttfamily void init\+Participants (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the device\textquotesingle{}s \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{group__manager_8c_a47f8f0bf6b2d3a2275b3c030ed1a38b0}\label{group__manager_8c_a47f8f0bf6b2d3a2275b3c030ed1a38b0}} 
+\index{group\_manager.c@{group\_manager.c}!installGroupClass@{installGroupClass}}
+\index{installGroupClass@{installGroupClass}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{installGroupClass()}{installGroupClass()}}
+{\footnotesize\ttfamily int install\+Group\+Class (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & if the class already exists \\
+\hline
+{\em C\+L\+A\+S\+S\+\_\+\+E\+RR} & If the class cannot be installed \\
+\hline
+{\em C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS} & If the class already exists \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a12f1d3f43a4daf53d7a9a0234848c7e8}\label{group__manager_8c_a12f1d3f43a4daf53d7a9a0234848c7e8}} 
+\index{group\_manager.c@{group\_manager.c}!isGarbageCollEnabled@{isGarbageCollEnabled}}
+\index{isGarbageCollEnabled@{isGarbageCollEnabled}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{isGarbageCollEnabled()}{isGarbageCollEnabled()}}
+{\footnotesize\ttfamily bool is\+Garbage\+Coll\+Enabled (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Checks if the garbage collector is enabled. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group\textquotesingle{}s main data structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if the garbage collector is enabled \\
+\hline
+{\em false} & if the garbage collector is disabled \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a49eacb577d4216746f5a76ce9c60445c}\label{group__manager_8c_a49eacb577d4216746f5a76ce9c60445c}} 
+\index{group\_manager.c@{group\_manager.c}!registerGroupDevice@{registerGroupDevice}}
+\index{registerGroupDevice@{registerGroupDevice}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{registerGroupDevice()}{registerGroupDevice()}}
+{\footnotesize\ttfamily int register\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{const struct device $\ast$}]{parent }\end{DoxyParamCaption})}
+
+
+
+register a group device 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group data descriptor \\
+\hline
+\mbox{\texttt{ in}}  & {\em parent} & device parent (usually \textquotesingle{}main\+\_\+device\textquotesingle{})\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em C\+H\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR} & If the char device allocation fails \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & If some memory allocation fails \\
+\hline
+{\em D\+E\+V\+\_\+\+C\+R\+E\+A\+T\+I\+O\+N\+\_\+\+E\+RR} & If the char device creation fails \\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+Charter device creation This should be perfomed after all the all the necessary data structures are allocated since, immediately after \textquotesingle{}cdev\+\_\+add\textquotesingle{}, the device becomes live and starts to respond to requests
+\end{DoxyNote}
+\mbox{\Hypertarget{group__manager_8c_aaf4c2d92ecd16b379659d6f41e3a90ac}\label{group__manager_8c_aaf4c2d92ecd16b379659d6f41e3a90ac}} 
+\index{group\_manager.c@{group\_manager.c}!removeParticipant@{removeParticipant}}
+\index{removeParticipant@{removeParticipant}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{removeParticipant()}{removeParticipant()}}
+{\footnotesize\ttfamily int remove\+Participant (\begin{DoxyParamCaption}\item[{struct list\+\_\+head $\ast$}]{participants,  }\item[{pid\+\_\+t}]{\+\_\+pid }\end{DoxyParamCaption})}
+
+
+
+Remove an element from the list of participant thread. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em participants} & Pointer to the list\+\_\+head of participants \\
+\hline
+\mbox{\texttt{ in}}  & {\em \+\_\+pid} & The element to remove\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success E\+M\+P\+T\+Y\+\_\+\+L\+I\+ST if the list is empty, N\+O\+D\+E\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND if the element is not present on the list
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This functions is not thread-\/safe, and should be procected with a lock on the list 
+\end{DoxyNote}
+\mbox{\Hypertarget{group__manager_8c_ac15ca96c4cf8bd41fe0c6a4ddcef02d7}\label{group__manager_8c_ac15ca96c4cf8bd41fe0c6a4ddcef02d7}} 
+\index{group\_manager.c@{group\_manager.c}!resetSleepFlag@{resetSleepFlag}}
+\index{resetSleepFlag@{resetSleepFlag}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{resetSleepFlag()}{resetSleepFlag()}}
+{\footnotesize\ttfamily bool reset\+Sleep\+Flag (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Resets the flag used to wake up threds. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the main structure group\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if the flag was resetted \\
+\hline
+{\em false} & otherwise \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}\label{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}} 
+\index{group\_manager.c@{group\_manager.c}!sleepOnBarrier@{sleepOnBarrier}}
+\index{sleepOnBarrier@{sleepOnBarrier}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{sleepOnBarrier()}{sleepOnBarrier()}}
+{\footnotesize\ttfamily void sleep\+On\+Barrier (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Put the thread which calles this function on sleep. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the main structure of a group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{group__manager_8c_a7a4a1f2ed5563df3defd7477a8f70168}\label{group__manager_8c_a7a4a1f2ed5563df3defd7477a8f70168}} 
+\index{group\_manager.c@{group\_manager.c}!unregisterGroupDevice@{unregisterGroupDevice}}
+\index{unregisterGroupDevice@{unregisterGroupDevice}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{unregisterGroupDevice()}{unregisterGroupDevice()}}
+{\footnotesize\ttfamily void unregister\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{bool}]{flag }\end{DoxyParamCaption})}
+
+
+
+unregister a group device 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group data descriptor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This guarantees that cdev device will no longer be able to be opened, however any cdevs already open will remain and their fops will still be callable even after cdev\+\_\+del returns. For this reason the \textquotesingle{}initialized\textquotesingle{} flag of a group will be set to zero
+\end{DoxyNote}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]\+: Check if this causes starvation \end{DoxyRefDesc}

@@ -45,11 +45,13 @@ bool isDelaySet(const msg_manager_t *manager){
  * extract the 'msg_t' field and write it into the FIFO queue via the 'writeMessage'
  * function.
  * 
+ * @param[in] timer The timer that elasped
+ * @return nothing
  */
 void delayedMessageCallback(struct timer_list *timer){
 
     struct t_message_delayed_deliver *delayed_msg;  //Elasped msg
-    msg_t *msg_deliver;          //Message to add to the queue
+    msg_t *msg_deliver;                             //Message to add to the queue
 
     printk(KERN_INFO "delayedMessageCallback: timer elasped");
 
@@ -96,20 +98,16 @@ void delayedMessageCallback(struct timer_list *timer){
  * @param[in] manager A pointer to the current msg_manager_t of the group
  * 
  * 
- * @return 0 on success, -1 on error
+ * @retval 0 on success
+ * @retval -1 on error
  */
 int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_delayed_deliver *newMessageDeliver;
 
     if(!message || !manager){
         printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
-        BUG();
+        return -1;
     }
-
-
-    printk(KERN_DEBUG "queueDelayedMessage: Queuing a delayed message...");
-
-    debugMsg(*message);
 
     printk(KERN_DEBUG "queueDelayedMessage: Checking size limits...");
 
@@ -126,7 +124,6 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     newMessageDeliver->manager = manager;
 
     printk(KERN_DEBUG "queueDelayedMessage: reading delay...");
-
 
     long delay = atomic_long_read(&manager->message_delay);
 
@@ -156,9 +153,13 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
 
 
 /**
+ * @brief Remove all the delayed message from the queue
+ * @param[in] manager   The message manager of the group
+ * 
+ * @note This function is thread safe with respect to the list of 
+ *          delayed message
  * 
  * @return The number of delayed messages which revoked 
- * 
  */
 int revokeDelayedMessage(msg_manager_t *manager){
 
@@ -193,6 +194,9 @@ int revokeDelayedMessage(msg_manager_t *manager){
 
 
 /**
+ * @brief Set the delay of messages in the delay queue to zero
+ * 
+ * @param[in] manager The group's message manager
  * 
  * @return The number of messages which delay was cancelled
  * 
@@ -230,7 +234,6 @@ int cancelDelay(msg_manager_t *manager){
     printk(KERN_DEBUG "cancelDelay: delayed_lock released");
 
     return count;
-
 }
 
 
@@ -241,12 +244,14 @@ int cancelDelay(msg_manager_t *manager){
 /**
  * @brief Check if the delivery of msg will exceed max sizes
  * @param[in] msg The message to test for
- * @return true if the size limits are respected, false otherwise
+ * @retval true if the size limits are respected
+ * @retval false if the size exceed the limits
  * 
  * @note This function is thread-safe
  */
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
         u_long msg_size;
+        u_long structure_size;
 
         if(!msg || !manager){
             printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
@@ -264,7 +269,11 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
                 goto invalid;
             }
 
-            if(manager->curr_storage_size + msg_size > manager->max_storage_size){
+            //Include both the uppper structure 't_message_deliver' and its recipients
+            //  list that will contain the sender
+            structure_size = sizeof(struct t_message_deliver) + sizeof(group_members_t);
+
+            if(manager->curr_storage_size + msg_size + structure_size > manager->max_storage_size){
                 printk(KERN_DEBUG "Max msg. storage size invalidated!!!");
                 goto invalid;
             }
@@ -318,12 +327,107 @@ void copy_current_participants(struct list_head *dest, struct list_head *source)
 }
 
 /**
+ * @brief Counts the current number of recipient in a message deliver
+ * @param[in] msg_deliver A t_message_deliver structure
+ * 
+ * @note This function is thread-safe with respect to recipients
+ * 
+ * @retval The number of recipients in the list
+ */
+u_int count_recipients_safe(struct t_message_deliver *msg_deliver){
+    struct list_head *cursor;
+    u_int count = 0;
+
+    down_read(&msg_deliver->recipient_lock);
+        list_for_each(cursor, &msg_deliver->recipient){
+            count++;
+        }
+    up_read(&msg_deliver->recipient_lock);
+
+    return count;
+}
+
+/**
+ * @brief Counts the current number of recipient in a message deliver
+ * @param[in] msg_deliver A t_message_deliver structure
+ * 
+ * @note This function is NOT thread-safe with respect to recipients atomic_long_read
+ *          should be called only when the recipient lock is held in read mode.
+ * 
+ * @retval The number of recipients in the list
+ */
+u_int count_recipients(struct t_message_deliver *msg_deliver){
+    struct list_head *cursor;
+    u_int count = 0;
+
+    list_for_each(cursor, &msg_deliver->recipient){
+        count++;
+    }
+
+    return count;
+}
+
+/**
+ * @brief Deallocate the current recipients in a message deliver structure
+ * @param[in] msg_deliver A t_message_deliver structure
+ * 
+ * @note This function is NOT thread-safe with respect to recipients and
+ *          should be called only when the recipient lock is held in read mode. 
+ * 
+ * @retval The number of deallocated recipients in the list
+ */
+int deallocate_recipients(struct t_message_deliver *msg_deliver){
+    struct list_head *cursor, *temp;
+    group_members_t *elem;
+    int count = 0;
+
+    list_for_each_safe(cursor, temp, &msg_deliver->recipient){
+        elem = list_entry(cursor, group_members_t, list);
+        if(!elem)
+            return -1;
+
+        list_del_init(cursor);
+        count++;
+    }
+
+    return count;
+}
+
+/**
+ * @brief Deallocate the current recipients in a message deliver structure
+ * @param[in] msg_deliver A t_message_deliver structure
+ * 
+ * @note This function is thread-safe with respect to recipients list
+ * 
+ * @retval The number of deallocated recipients in the list
+ */
+int deallocate_recipients_safe(struct t_message_deliver *msg_deliver){
+    struct list_head *cursor, *temp;
+    group_members_t *elem;
+    int count = 0;
+
+    down_write(&msg_deliver->recipient_lock);
+        list_for_each_safe(cursor, temp, &msg_deliver->recipient){
+            elem = list_entry(cursor, group_members_t, list);
+            if(!elem)
+                return -1;
+
+            list_del_init(cursor);
+            count++;
+        }
+    up_write(&msg_deliver->recipient_lock);
+    return count;
+}
+
+
+/**
  * @brief Check if a given pid is present in the recepit list
  * 
  * @param[in] recipients The list of recipients of the message to check
  * @param[in] my_pid The PID to check
  * 
- * @return true if the provided pid is present in the recipient list, false otherwise
+ * @retval true if the provided pid is present in the recipient list
+ * @retval false if the pid is not present in the recipient list
  * 
  * @note This function is not thread-safe, so it must be called after locking the recipient list
  * @note A possible improvement would sort the list and return if the current member's
@@ -353,6 +457,9 @@ bool wasDelivered(const struct list_head *recipients, const pid_t my_pid){
  * @param[in] recipients The list_head structure of a 't_message_deliver' struct
  * @param[in] my_pid     The pid to add
  * 
+ * @note This function is NOT thread-safe and must be called while holding a lock to 
+ *          the recipient's list.
+ * 
  * @return nothing
  */
 void setDelivered(struct list_head *recipients, const pid_t my_pid){
@@ -374,9 +481,10 @@ void setDelivered(struct list_head *recipients, const pid_t my_pid){
  * @param[in] recipients The recipients of the message to 'wasDelivered'
  * @param[in] active_member The list of active members to compare
  * 
- * @return true if active members is contained in recipients, false otherwise
+ * @retval true if active members is contained in recipients
+ * @retval false if active members is NOT contained in recipients
  * 
- * @note This function must be called only when there is a reader lock on both active_member
+ * @note This function must be called only when there is a reader lock on the active_member
  *      recipients structure
  */
 bool isDeliveryCompleted(const struct list_head *recipients, const struct list_head *active_member){
@@ -407,14 +515,21 @@ bool isDeliveryCompleted(const struct list_head *recipients, const struct list_h
  *  @param[in] kmsg Kernel-space msg_t
  *  @param[out] umsg User-space buffer 
  *
- *  @return 0 on success, EFAULT if copy fails
+ *  @retval 0 on success
+ *  @retval -EFAULT if the copy fails
+ * 
  *  @todo Check thread-safety of the function 
  *  @note   The umsg structure must be allocated
  */
-int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _size){
+__must_check int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _size){
 
     if(kmsg == NULL || ubuffer == NULL){
         printk(KERN_DEBUG "copy_msg_to_user: NULL pointer provided");
+        return -EFAULT;
+    }
+
+    if(!access_ok(ubuffer, _size)){
+        printk(KERN_DEBUG "copy_msg_to_user: user-space memory access is invalid");
         return -EFAULT;
     }
 
@@ -432,16 +547,24 @@ int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _s
  *  @param[out] kmsg Kernel-space msg_t
  *  @param[in] umsg User-space msg_t 
  *
- *  @return 0 on success, EFAULT if copy fails
+ *  @retval 0 on success
+ *  @retval -EFAULT if the copy fails
+ * 
  *  @todo Check thread-safety of the function
  *  @note The kmsg structure must be allocated
  */
-int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
+__must_check int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
     
     void *kbuffer;
 
     if(kmsg == NULL || umsg == NULL)
         return -EFAULT;
+
+
+    if(!access_ok(umsg, _size)){
+        printk(KERN_DEBUG "copy_msg_from_user: user-space memory access is invalid");
+        return -EFAULT;        
+    }
 
     kbuffer = (int8_t*)kmalloc(sizeof(int8_t) * _size, GFP_KERNEL);
 
@@ -449,8 +572,11 @@ int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
         return MEMORY_ERROR;
 
     // read data from user buffer to my_data->buffer 
-    if (copy_from_user(kbuffer, umsg, sizeof(int8_t)*_size))
+    if (copy_from_user(kbuffer, umsg, sizeof(int8_t)*_size)){
+        kfree(kbuffer);
         return -EFAULT;
+    }
+        
 
     kmsg->size = _size;
     kmsg->buffer = kbuffer;
@@ -465,10 +591,10 @@ int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
  * @param[in] _max_storage_size    Configurable param
  * @param[in] garbageCollectorFunction Pointer to the work_struct responsible for garbage collection 
  * 
- * @return msg_manager_t A pointer to an allocated an initialized 'msg_manager_t' struct, may be 
- *             NULL in case the 'kmalloc' fails
+ * @retval An 'msg_manager_t' pointer to an allocated an initialized 'msg_manager_t' struct
+ * @retval A NULL pointer in case the 'kmalloc' fails
  */
-__must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector){
+__must_check msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbage_collector){
 
     msg_manager_t *manager = (msg_manager_t*)kmalloc(sizeof(msg_manager_t), GFP_KERNEL);
     if(!manager)
@@ -483,7 +609,8 @@ __must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int 
     init_rwsem(&manager->queue_lock);
     init_rwsem(&manager->config_lock);
 
-    INIT_WORK(garbageCollector, queueGarbageCollector);
+    INIT_WORK(&garbage_collector->work, queueGarbageCollector);
+    atomic_set(&garbage_collector->ratio, 2);
 
     #ifndef DISABLE_DELAYED_MSG
         sema_init( &manager->delayed_lock, 1);
@@ -501,12 +628,13 @@ __must_check msg_manager_t *createMessageManager(u_int _max_storage_size, u_int 
  * @param[in] manager   Pointer to the message manager
  * @param[in] recipients    The head of the linked list containing the thread recipients
  * 
- * @return 0 on success, negative number otherwise
+ * @retval 0 on success
+ * @retval STORAGE_SIZE_ERR if the message does not respect the group's size limits
+ * @retval ALLOC_ERR if some allocation fails
  * 
  * @note Must be protected by a write-spinlock to avoid concurrent modification of The
  *          recipient data-structure and manager's message queue
  * 
- * @todo Define clear error code
  */
 int writeMessage(msg_t *message, msg_manager_t *manager){
 
@@ -518,7 +646,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
     if(!isValidSizeLimits(message, manager)){
         printk(KERN_ERR "Message size is invalid");
-        return -1;
+        return STORAGE_SIZE_ERR;
     }
 
 
@@ -543,6 +671,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
         goto cleanup;
     }
 
+    //Add the sender's PID in order to avoid reading its own messages
     sender->pid = current->pid;
     list_add_tail(&sender->list, &newMessageDeliver->recipient);
 
@@ -555,6 +684,18 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     up_write(&manager->queue_lock);
     printk(KERN_DEBUG "writeMessage: queue_lock released");
 
+
+    //Update storage parameters
+    u_long message_size;
+
+    message_size = message->size;
+    message_size += sizeof(struct t_message_deliver);
+
+    down_write(&manager->config_lock);
+        manager->curr_storage_size += message_size;
+    up_write(&manager->config_lock);
+
+
     return ret; 
 
 
@@ -565,7 +706,9 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
 /**
  * @brief Read a message from the corresponding queue
- * @return 0 on success, 1 if no message is present, -1 on critical error
+ * @retval 0 on success
+ * @retval 1 if no message is present
+ * @retval -1 on critical error
  */
 
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
@@ -595,7 +738,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                  * However for unknown reason this does not always happens (especially
                  * if the message is delayed)
                  * 
-                 * TODO: when 'revoke delay' functionality is called, messages trigger
+                 * @bug: when 'revoke delay' functionality is called, messages trigger
                  *  this if and will not be delivered
                  */
                 printk(KERN_DEBUG "Message sent from the reader, skipping...");
@@ -614,6 +757,13 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                 
                 up_read(&manager->queue_lock);
                 printk(KERN_DEBUG "readMessage: queue_lock released");
+
+
+                //Update the current storage size with the recipient's entry in the list
+
+                down_write(&manager->config_lock);
+                    manager->curr_storage_size += sizeof(group_members_t);
+                up_write(&manager->config_lock);
 
                 return 0;
             }
@@ -651,14 +801,39 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 void queueGarbageCollector(struct work_struct *work){
     
     group_data *grp_data;
-    grp_data = container_of(work, group_data, garbage_collector_work);
+    garbage_collector_t *garbage_collector;
+    msg_manager_t *manager;
+    unsigned int deleted_entries;
+    unsigned int deleted_recipients;
+
+    u_long deleted_deliver_size;
+    u_long total_recipients_size;
+    u_long total_msg_size;
+    u_long total_deleted_size;
+
+    int del_recipients;
+
+
+    garbage_collector = container_of(work, garbage_collector_t, work);
+    if(!garbage_collector)
+        return;
+
+    grp_data = container_of(garbage_collector, group_data, garbage_collector);
+    if(!grp_data)
+        return;
+
 
     printk(KERN_DEBUG "Garbage Collector starting...");
 
-    down_read(&grp_data->member_lock);
-    
-        //printk(KERN_DEBUG "Garbage Collector: active members read locked");
+    deleted_entries = 0;
+    deleted_recipients = 0;
 
+    deleted_deliver_size = 0;
+    total_msg_size = 0;
+    total_recipients_size = 0;
+    total_deleted_size = 0;
+
+    down_read(&grp_data->member_lock);
 
         struct list_head *current_member = &grp_data->active_members;
 
@@ -683,10 +858,16 @@ void queueGarbageCollector(struct work_struct *work){
                         printk(KERN_DEBUG "Garbage Collector: deleting entry from queue");
 
                         kfree(entry->message.buffer);  //Message Buffer
+                        total_msg_size += entry->message.size;
 
-                        list_del_init(cursor);
+                        if( (del_recipients = deallocate_recipients(entry)) > 0)
+                            deleted_recipients += del_recipients;
+                        
+                        list_del_init(cursor);  //TODO: check if the recipients list is deallocated
 
                         kfree(entry);   //t_message_deliver 
+
+                        deleted_entries++;
                     }
 
                 up_read(&entry->recipient_lock);                
@@ -695,4 +876,21 @@ void queueGarbageCollector(struct work_struct *work){
         up_write(&grp_data->msg_manager->queue_lock);
 
     up_read(&grp_data->member_lock);
+
+
+    //Update storage parameters
+    manager = grp_data->msg_manager;
+    deleted_deliver_size = deleted_entries * sizeof(struct t_message_deliver);
+    total_recipients_size = deleted_recipients * sizeof(group_members_t);
+
+
+    total_deleted_size = total_msg_size + deleted_deliver_size + total_recipients_size;
+
+    down_write(&manager->config_lock);
+        if(total_deleted_size > manager->curr_storage_size)
+            manager->curr_storage_size = 0;
+        else
+            manager->curr_storage_size -= total_deleted_size;
+    up_write(&manager->config_lock);
+
 }

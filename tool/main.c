@@ -3,46 +3,37 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h> //For sleep()/nanosleep()/getppid()
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <stdbool.h>
 
 
-//IOCTL List
-#define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
-#define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
-#define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
-#define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
-#define IOCTL_AWAKE_BARRIER _IO('Z', 1)
-#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+#include "thread_synch.h"
 #define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+
+
+//Colors
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 
 //Configurations
 #define THREAD_NUM 64
-#define BUFF_SIZE 256
-
-
-//Error Codes
-#define NO_MSG_PRESENT -10
-#define MSG_INVALID_FORMAT -11
-#define MSG_SIZE_ERROR  -12
-#define MEMORY_ERROR -13
-
-
-/**
- * @brief System-wide descriptor of a group
- */
-typedef struct group_t {
-	char *group_name;           //TODO: add name len.
-    size_t name_len;
-} group_t;
-
-
+#define BUFF_SIZE 512
+#define MAX_GROUPS 64
 
 //Global var describing threads
 pthread_t tid[THREAD_NUM];
+
+
+thread_synch_t main_synch;
+thread_group_t *groups[MAX_GROUPS];
+int group_index = 0;
+
+
 
 
 void pause_char(){
@@ -74,193 +65,6 @@ void t_nanosleep(long _nanoseconds){
 }
 
 
-int openGroup(const char *group_path){
-    int *fd;
-    fd = open(group_path, O_RDWR); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    return fd;
-}
-
-int _readGroup(int fd){
-    char buffer[256];
-    char string_buffer[256];
-    unsigned int len = 60;
-
-    int ret = read(fd, &buffer, sizeof(char)*len);
-
-    printf("Read return value %d\n", ret);
-
-    if(ret == 0){
-        printf("[ ] No message is present\n");
-        return 0;
-    }else if(ret == MEMORY_ERROR){
-        printf("[X] Memory Error\n");
-        return -1;
-    }else if(ret > 0){
-
-        strncpy(string_buffer, buffer, ret);
-
-        printf("Buffer content: %s\n", string_buffer);
-        return 1;
-    }
-
-    return -1;
-}
-
-int _writeGroup(int fd, char *buffer, ssize_t len){
-    return write(fd, buffer, sizeof(char)*len);
-}
-
-int _setDelay(int fd, const long delay){
-    return ioctl(fd, IOCTL_SET_SEND_DELAY, delay);
-}
-
-int _revokeDelay(int fd){
-    return ioctl(fd, IOCTL_REVOKE_DELAYED_MESSAGES);
-}
-
-int _sleepOnBarrier(int fd){
-    return ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
-}
-
-
-int _setMaxMsgSize(unsigned long _val){
-
-    int *fd;
-    int ret;
-    fd = open("/sys/class/group_synch/group0/message_param/max_message_size", O_WRONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-
-    const char buff[BUFF_SIZE];
-
-    if(sprintf(buff, "%ld", _val) < 0){
-        printf("Error while converting the paramtere value");
-        return -1;
-    }
-
-    ret = write(fd, buff, sizeof(char)*strlen(buff));
-
-    return ret;
-}
-
-int _setMaxStorageSize(unsigned long _val){
-
-    int *fd;
-    int ret;
-    fd = open("/sys/class/group_synch/group0/message_param/max_storage_size", O_WRONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-
-    const char buff[BUFF_SIZE];
-
-    if(sprintf(buff, "%ld", _val) < 0){
-        printf("Error while converting the paramtere value");
-        return -1;
-    }
-
-    ret = write(fd, buff, sizeof(char)*strlen(buff));
-
-    return ret;
-}
-
-
-int _readMaxMsgSize(unsigned long *_val){
-    FILE *fd;
-    int ret;
-
-    fd = fopen("/sys/class/group_synch/group0/group_parameters/max_message_size", "rt"); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    char buff[BUFF_SIZE];
-
-    printf("Reading param 'max_message_size'");
-    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
-    if(ret < 0){
-        printf("Errror while reading parametersaaa: %d", ret);
-        return -1;
-    }
-
-    *_val = strtoul(buff, NULL, 10);
-
-    fclose(fd);
-
-    return 0;
-}
-
-int _readMaxStorageSize(unsigned long *_val){
-    FILE *fd;
-    int ret;
-
-    fd = fopen("/sys/class/group_synch/group0/group_parameters/max_storage_size", "rt"); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    char buff[BUFF_SIZE];
-
-    printf("Reading param 'max_storage_size'");
-    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
-    if(ret < 0){
-        printf("Errror while reading parameters: %d", ret);
-        return -1;
-    }
-
-
-
-    *_val = strtoul(buff, NULL, 10);
-
-    fclose(fd);
-
-    return 0;
-}
-
-int _readCurrStorageSize(unsigned long *_val){
-    FILE *fd;
-    int ret;
-
-    fd = fopen("/sys/class/group_synch/group0/group_parameters/current_message_size", "rt"); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    char buff[BUFF_SIZE];
-
-    printf("Reading param 'curr_storage_size'");
-    ret = fread(buff, sizeof(char), BUFF_SIZE, fd);
-    if(ret < 0){
-        printf("Errror while reading parameters: %d", ret);
-        return -1;
-    }
-
-    *_val = strtoul(buff, NULL, 10);
-
-    fclose(fd);
-
-    return 0;
-}
-
 int printGroupParams(){
     int ret;
 
@@ -268,7 +72,7 @@ int printGroupParams(){
     unsigned long max_storage_size = 0;
     unsigned long curr_storage_size = 0;
 
-
+    /*
     if(_readMaxMsgSize(&max_message_size) < 0)
         return -1;
     
@@ -277,7 +81,7 @@ int printGroupParams(){
     
     if(_readCurrStorageSize(&curr_storage_size) < 0)
         return -1;
-    
+    */
     printf("\nGroup 0 Data\n\n\tMax message size:  %ld\n\tMax Storage Size: %ld\n\tCurrent storage size: %ld\n\n", max_message_size, max_storage_size, curr_storage_size);
 
     return 0;
@@ -292,78 +96,9 @@ int setStrictMode(int fd, const int _value){
 
     return ioctl(fd, IOCTL_SET_STRICT_MODE, value);
 }
-
 int changeGroupOwner(int fd, uid_t new_owner){
     return ioctl(fd, IOCTL_CHANGE_OWNER, new_owner);
 }
-
-
-int _awakeBarrier(int fd){
-    return ioctl(fd, IOCTL_AWAKE_BARRIER);
-}
-
-int sleepOnBarrier(const char *group_path){
-
-    int fd = openGroup(group_path);
-
-    int ret = ioctl(fd, IOCTL_SLEEP_ON_BARRIER);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-    return ret;
-}
-
-int awakeBarrier(const char *group_path){
-
-    int *fd;
-    fd = open(group_path, O_RDWR); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    int ret = ioctl(fd, IOCTL_AWAKE_BARRIER);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-    return ret;
-}
-
-int setDelay(const char *group_path, const long delay){
-
-    int *fd;
-    fd = open(group_path, O_RDWR); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    int ret = _setDelay(fd, delay);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-    return ret;
-}
-
-int revokeDelay(const char *group_path){
-
-    int *fd;
-    fd = open(group_path, O_RDWR); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    int ret = _revokeDelay(fd);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-    return ret;
-}
-
 int flushMessages(const char *group_path){
 
     FILE *fd;
@@ -385,8 +120,11 @@ int flushMessages(const char *group_path){
 }
 
 void concurrentRead(void *args){
-
+    const char *default_message = "TH-NUM-%lu\0";   
+    char buffer[BUFF_SIZE];   
+    size_t len;
     pthread_t id = pthread_self();
+
     printf("\n[R] Thread N. %ld\n", id);
 
     int *fd;
@@ -403,14 +141,10 @@ void concurrentRead(void *args){
     usleep(sleep_time1);
 
 
-
-    char buffer[256];
-    const unsigned int len = 50;
     int ret = read(fd, &buffer, sizeof(char)*len);
 
     if(!ret){
-        switch (ret)
-        {
+        switch (ret){
         case NO_MSG_PRESENT:
             printf("[T-%ld/R] No msg. present\n", id);
             break;
@@ -433,15 +167,15 @@ void concurrentRead(void *args){
 
 void concurrentWrite(void *args){
 
+    const char *default_message = "TH-NUM-%lu\0";
     pthread_t id = pthread_self();
+    char buffer[BUFF_SIZE];
+    size_t len;
+
     printf("\n[w] Thread N. %ld\n", id);
 
-    char buffer[256];
-
-
-    strcpy(buffer, "PIPPO\0");
-    int len = strlen(buffer);
-    printf("\nLen = %d\n", len);
+    snprintf(buffer, BUFF_SIZE, default_message, id);
+    len = strnlen(buffer, BUFF_SIZE);
 
 
     int *fd;
@@ -452,6 +186,7 @@ void concurrentWrite(void *args){
         return -1;
     }
 
+    printf("\nLen = %d\n", len);
 
     int ret = write(fd, &buffer, sizeof(char)*len);
 
@@ -469,296 +204,322 @@ void concurrentWrite(void *args){
 
 }
 
-int installGroup(const char *main_device_path){
-
-    FILE *fd;
-
-    fd = fopen(main_device_path, "rw"); 
-
-    if(fd == NULL){
-        printf("Error while opening the main_device file\n");
-        return -1;
-    }
 
 
-    int numeric_descriptor = fileno(fd);
+int showLoadedGroups(){
+    int i;
 
+    for(i=0; i<MAX_GROUPS; i++){
 
-    //IOCTL request
+        if(groups[i] == NULL){
+            continue;
+        }else{
 
-    group_t new_group;
-
-    new_group.group_name = "pippo";
-    new_group.name_len = strlen(new_group.group_name);
-
-    int ret = ioctl(numeric_descriptor, IOCTL_INSTALL_GROUP, &new_group);
-
-    printf("\n\nGroup ID : %d\n\n", ret);
-
-
-    fclose(fd);
-
-    return ret;
-}
-
-int readGroup(const char *group_path){
-
-    int *fd;
-    fd = open(group_path, O_RDONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    pause_char();
-
-    _readGroup(fd);
-
-    fflush(stdin);
-
-    pause_char();
-
-    close(fd);
-
-    return 0;
-
-}
-
-int writeGroup(const char *group_path){
-
-    char buffer[256];
-
-    strcpy(buffer, "PIPPO\0");
-
-    int len = strlen(buffer);
-
-
-    int *fd;
-    fd = open(group_path, O_WRONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    pause_char();
-
-    int ret = _writeGroup(fd, &buffer, sizeof(char)*len);
-
-    printf("Totel element written: %ld", ret);
-
-    fflush(stdin);
-
-    pause_char();
-
-    close(fd);
-
-    return;
-}
-
-
-int interactiveSession(const char *group_path){
-
-    int choice;
-    int exit_flag = 0;
-    char *buffer;
-    int ret = 99;
-    long delay;
-    long msg_size;
-    long storage_size;
-    char buff_size[64];
-
-
-    uid_t my_uid = getuid();
-
-    int fd = openGroup(group_path);
-
-    if(fd == -1){
-        printf("\n[X] Unable to open group, exiting...");
-        return -1;
-    }
-
-    do{
-    printf("\n[Group Management] - %d\n", my_uid);
-    printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
-        "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-        "\n -Message Param -\n\t80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n"
-        "Security\n\t91- (Dis)/Enable strict mode\n\t92- Change Owner\n"
-        "99 - Exit\n:");
-
-    scanf(" %d", &choice);
-
-    clear();
-
-
-        switch (choice){
-        case 1:     //Read
-            _readGroup(fd);
-            break;
-        case 2:     //Write
-
-            buffer = (char*)malloc(sizeof(BUFF_SIZE));
-            if(!buffer)
-                return;
-
-            printf("\nContent: ");
-            if(scanf(" %s", buffer) > BUFF_SIZE)
-                return;
-            
-            int len = strlen(buffer);
-            
-            ret = _writeGroup(fd, buffer, (ssize_t)len);
-            break;
-        case 3: //Set Delay
-            printf("\nDelay Value: ");
-            char buff_delay[64];
-            scanf("%s", buff_delay);
-
-            delay = strtol(buff_delay, NULL, 10);
-
-            ret = _setDelay(fd, delay);
-            break;
-        case 4: //Set Delay
-            ret = _revokeDelay(fd);
-            printf("\nDelayed message revoked");
-            break;
-        case 5: //Flush
-            printf("\nUnimplemented");
-            break;
-        case 6: //Sleep on barrier
-            printf("\nThread is going to sleep...");
-            ret = _sleepOnBarrier(fd);
-            printf("\nThread awaken!!!");
-            break;
-        case 7: //Awake barrier
-            ret = _awakeBarrier(fd);
-            printf("\nBarrier Awaked!");
-            break;
-        case 80:
-            if(printGroupParams() < 0)
-                printf("Error while reading parameters");
-            break;
-        case 81:
-            printf("\nMax size value: ");
-
-            scanf("%s", buff_size);
-
-            msg_size = strtol(buff_size, NULL, 10);
-
-            ret = _setMaxMsgSize(msg_size);
-        case 82:
-            printf("\nMax storage value: ");
-
-            scanf("%s", buff_size);
-
-            storage_size = strtol(buff_size, NULL, 10);
-
-            ret = _setMaxStorageSize(storage_size);      
-
-        case 91:
-            printf("Enable strict mode? (1 for enable, 0 for disable\nChoice: ");
-            scanf("%d", &choice);
-
-            ret = setStrictMode(fd, choice);    
-            break;
-        case 92:
-            printf("Enter the PID of new owner: ");
-            scanf("%d", &choice);
-
-            ret = changeGroupOwner(fd, (uid_t)choice);   
-            break;  
-        case 99:
-            printf("\n\nExiting...\n");
-            exit_flag = 1;
-            break;
-        default:
-            printf("\n\nInvalid command\n\n");
-            break;
+            if(groups[i]->descriptor.group_name == NULL)
+                printf("\n[" ANSI_COLOR_YELLOW "%d" ANSI_COLOR_RESET "]\tGroup ID: %d\n", i, groups[i]->group_id);
+            else
+                printf("\n[" ANSI_COLOR_YELLOW "%d" ANSI_COLOR_RESET "]\tGroup name: %s\n", i, groups[i]->descriptor.group_name);
         }
 
-        printf("\nReturn Value: %d\n", ret);
+    }
+
+}
+
+
+
+int groupSubMenu(thread_group_t group){
+    int choice;
+    int exit_flag = 0;
+    int ret = 99;
+    long delay;
+    unsigned long param_value;
+    long storage_size;
+
+    char *buffer;
+    size_t buff_size;
+
+    
+    int ratio;
+
+    if(openGroup(&group) < 0){
+        printf("\nError while opening the group\n");
+        return -1;
+    }
+
+    clear();
+ 
+    do{
+        printf("\n[Group %d Management]\n", group.group_id);
+
+        printf("Current storage size: %lu\n", getCurrentStorageSize(&group));
+        printf("Max storage size: %lu\n", getMaxStorageSize(&group));
+        printf("Max message size: %lu\n", getMaxMessageSize(&group));
+
+        printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
+            "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
+            "\n -Message Param -\n\t 80 - Show Message Param \n\t81 - Set max message size\n\t"
+            "82 - Set max storage size\n\t83 - Set Garbage Collector ratio\n\t"
+            "99 - Exit\n:");
+
+        scanf(" %d", &choice);
+
+        clear();
+
+
+            switch (choice){
+            case 1:     //Read
+
+                printf("\nSize to read: ");
+                scanf("%ud", &buff_size);
+
+                buffer = (char*)malloc(sizeof(char)*buff_size);
+
+                ret = readMessage(buffer, buff_size, &group);
+
+                if(ret < 0){
+                    printf(ANSI_COLOR_RED "\n[X] Error while reading the message\n" ANSI_COLOR_RESET);
+                }else if(ret == 1){
+                    printf(ANSI_COLOR_YELLOW "\nNo message present\n" ANSI_COLOR_RESET);
+                }else{
+                    printf(ANSI_COLOR_YELLOW "\nReaded message\n" ANSI_COLOR_RESET ": %s", buffer);
+                }
+
+                free(buffer);
+
+                break;
+            case 2:     //Write
+
+                buffer = (char*)malloc(sizeof(BUFF_SIZE));
+                if(!buffer)
+                    break;
+
+                printf("\nContent: ");
+                if(scanf(" %s", buffer) > BUFF_SIZE){
+                    printf(ANSI_COLOR_RED "\n[X] Size too large" ANSI_COLOR_RESET);
+                    free(buffer);
+                    break;
+                }
+                
+                buff_size = strlen(buffer);
+                
+                if(writeMessage(buffer, buff_size, &group) < 0)
+                    printf(ANSI_COLOR_RED "\n[X] Error while writing the message" ANSI_COLOR_RESET);
+
+                free(buffer);
+                break;
+            case 3: //Set Delay
+
+                buffer = (char*)malloc(sizeof(BUFF_SIZE));
+                if(!buffer)
+                    break;            
+
+                printf("\nDelay Value: ");
+                if(scanf(" %s", buffer) > BUFF_SIZE){
+                    printf(ANSI_COLOR_RED "\n[X] Size too large" ANSI_COLOR_RESET);
+                    free(buffer);
+                    break;
+                }
+
+                delay = strtol(buffer, NULL, 10);
+
+                if(setDelay(delay, &group) < 0)
+                    printf(ANSI_COLOR_RED "\n[X] Error while setting the delay" ANSI_COLOR_RESET);
+
+                free(buffer);
+
+                break;
+            case 4: //Revoke Delay
+
+                if(revokeDelay(&group) < 0){
+                    printf(ANSI_COLOR_RED "\n[X] Error while revoking the delay" ANSI_COLOR_RESET);
+                }else{
+                    printf("\nDelayed message revoked");
+                }
+                break;
+            case 5: //Flush
+                printf("\nUnimplemented");
+                break;
+            case 6: //Sleep on barrier
+                printf("\nThread is going to sleep...");
+                if(sleepOnBarrier(&group) < 0){
+                    printf(ANSI_COLOR_RED "\n[X] Error while sleeping" ANSI_COLOR_RESET);
+                    break;
+                }
+                printf("\nThread awaken!!!");
+                break;
+            case 7: //Awake barrier
+                if(awakeBarrier(&group) < 0){
+                    printf(ANSI_COLOR_RED "\n[X] Error while awaken threads" ANSI_COLOR_RESET);
+                    break;
+                }
+                printf("\nBarrier Awaked!");
+                break;
+            case 80:
+                if(printGroupParams() < 0)
+                    printf(ANSI_COLOR_RED "[X] Error while reading parameters\n" ANSI_COLOR_RESET);
+                break;
+            case 81:
+                printf("\nMax size value: ");
+                scanf("%lu", &param_value);
+                ret = setMaxMessageSize(&group, param_value);
+                break;
+            case 82:
+                printf("\nMax storage value: ");
+                scanf("%lu", &param_value);
+                ret = setMaxStorageSize(&group, param_value);   
+                break;
+            case 83:
+                printf("\nGarbage collector ratio: ");
+                scanf("%lu", &param_value);
+                ret = setGarbageCollectorRatio(&group, param_value);
+
+                break;        
+            case 99:
+                printf("\n\nExiting...\n");
+                exit_flag = 1;
+                break;
+            default:
+                printf(ANSI_COLOR_RED "\n\nInvalid command\n\n" ANSI_COLOR_RESET);
+                ret = -1;
+                break;
+            }
+
+            printf("Returned Value: %d\n", ret);
 
     }while(exit_flag == 0);
 }
 
 
-int main(int argc, char *argv[]){
 
-    if(argc < 2){
-        printf("Usage: %s interactive group_device\n", argv[0]);
+int interactiveSession(){
 
-        printf("Usage: %s install main_device\n", argv[0]);
-        printf("Usage: %s read group_device\n", argv[0]);
-        printf("Usage: %s wr group_device\n", argv[0]);
-        printf("Usage: %s cwr group_device\n", argv[0]);
-        printf("Usage: %s delay group_device seconds\n", argv[0]);
-        printf("Usage: %s flush group_device\n", argv[0]);
-        printf("Usage: %s revoke group_device\n", argv[0]);
-        printf("Usage: %s sleep group_device\n", argv[0]);
-        printf("Usage: %s awake group_device\n", argv[0]);
+    int exit_flag = 0;
+    int choice;
+    char group_name[256];
+    size_t len;
+    group_t descriptor;
+    thread_group_t *tmp_group;
+    int i;
+
+
+    if(initThreadSycher(&main_synch) < 0){
+        printf("Unable to open main_syncher, exiting...\n");
         return -1;
     }
 
 
-    if(strcmp(argv[1], "install") == 0){
-        installGroup(argv[2]);
-    }else if(strcmp(argv[1], "read") == 0){
-        readGroup(argv[2]);
-    }else if(strcmp(argv[1], "write") == 0){
-        writeGroup(argv[2]);
-    }else if(strcmp(argv[1], "wr") == 0){
-        writeGroup(argv[2]);
-        printf("\nGroup written, waiting for a char to continue...\n");
-        int c = getchar();
-        readGroup(argv[2]);
-    }else if(strcmp(argv[1], "cwr") == 0){
-        int i, err;
-
-        for(i=0; i<THREAD_NUM; i++){
-            
-            if(i%2 == 0)
-                err = pthread_create(&(tid[i]), NULL, &concurrentRead, (void*)argv[2]);
-            else
-                err = pthread_create(&(tid[i]), NULL, &concurrentWrite, (void*)argv[2]);
-
-            if(err < 0){
-                printf("\n[%d] Errror while creating the thread", i);
-            }
-        }
+    for(i=0; i<MAX_GROUPS; i++)
+        groups[i] = NULL;
 
 
-        for(i=0; i<THREAD_NUM; i++){
-            long t_sleep = rand()%10000;
-            t_nanosleep(t_sleep);
-
-            err = pthread_join(tid[i], NULL);
-            if(err < 0){
-                printf("\n[%d] Errror while joining the thread", i);
-            }
-        }
+    do{
+        printf("\n\n1- Install group\n2- Load Group from ID\n"
+        "3- Load group from name\n4- Load group from memory\n99- Exit\n");
         
-        printf("\n\nTerminated\n\n");
+        showLoadedGroups();
+        
+        printf("\n:");
+        scanf(" %d", &choice);
 
-    }else if(strcmp(argv[1], "delay") == 0){
+        switch (choice){
+        case 1: //Install Group
+            printf("\nInsert group name: ");
+            scanf("%s", group_name);
 
-        long _delay = strtol(argv[3], NULL, 10);
+            descriptor.group_name = (char*)malloc(sizeof(char)*strlen(group_name)+1);
 
-        setDelay(argv[2], _delay);
-    }else if(strcmp(argv[1], "flush") == 0){
-        flushMessages(argv[2]);
-    }else if(strcmp(argv[1], "revoke") == 0){
-        revokeDelay(argv[2]);
-    }else if(strcmp(argv[1], "sleep") == 0){
-        sleepOnBarrier(argv[2]);
-    }else if(strcmp(argv[1], "awake") == 0){
-        awakeBarrier(argv[2]);
-    }else if(strcmp(argv[1], "interactive") == 0){
-        interactiveSession(argv[2]);
-    }else{
-        printf("Unimplemented\n\n");
-    }
+            if(!descriptor.group_name){
+                printf("\nAllocation error");
+                break;
+            }
 
+            descriptor.name_len = strlen(group_name);
+            strncpy(descriptor.group_name, group_name, descriptor.name_len);
+            
+            printf("\nInstalling group [%s]...", descriptor.group_name);
+
+            groups[group_index] = installGroup(descriptor, &main_synch);
+
+            printf("\nGroup installed");
+
+            if(!groups[group_index]){
+                printf("\nError while installing the group");
+            }else{
+                printf("\nGroup installed!!\n");
+                
+                groupSubMenu(*groups[group_index]);
+                group_index++;
+
+            }
+            break;
+        
+        case 2: //Load group from ID
+            printf("\nInsert group ID: ");
+            scanf(" %d", &choice);
+
+            groups[group_index] = loadGroupFromID(choice);
+            if(!groups[group_index]){
+                printf("\nUnable to load group");
+                break;
+            }
+
+            printf("\nSuccessfully loaded group");
+            group_index++;
+
+            break;
+        case 3: //Load group from name
+            printf("\nInsert group name: ");
+            scanf("%s", group_name);
+
+            len = strlen(group_name);
+
+            descriptor.group_name = (char*)malloc(sizeof(char)*len);
+
+            strncpy(descriptor.group_name, group_name, len);
+            descriptor.name_len = len;
+
+            groups[group_index] = loadGroupFromDescriptor(&descriptor, &main_synch);
+
+            if(groups[group_index] == NULL)
+                printf("Error while creating the group");
+            else{
+                printf("\nGroup created correctly");
+                group_index++;
+            }
+
+            break;
+        case 4: //Load group from memory
+            printf("\nInsert group index: ");
+            scanf("%d", &choice);
+
+            if(choice > group_index)
+                choice = group_index-1;
+
+            if(groups[choice] == NULL)
+                break;
+
+            groupSubMenu(*groups[choice]);
+
+            break;
+        case 99:
+            exit_flag = 1;
+        default:
+            printf("\nInvalid command\n");
+            break;
+        }
+
+        
+        //readGroupInfo(&main_synch);
+
+    }while(exit_flag == 0);
+
+
+}
+
+
+int main(int argc, char *argv[]){
+
+    interactiveSession();
 
     return 0;
 }

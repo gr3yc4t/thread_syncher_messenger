@@ -16,18 +16,26 @@
 #include "types.h"
 
 
-#define NO_MSG_PRESENT 0
-#define ALLOC_ERR 			-2	 
-#define USER_COPY_ERR		-3
-#define SEM_INIT_ERR        -4  /** @brief Semaphore initialization **/
-#define MSG_INVALID_FORMAT -11
-#define MSG_SIZE_ERROR  -12
-#define MEMORY_ERROR -13
+#define NO_MSG_PRESENT          0
+#define ALLOC_ERR 			    -2	 
+#define USER_COPY_ERR		    -3
+#define SEM_INIT_ERR            -4  /** @brief Semaphore initialization **/
+#define MSG_INVALID_FORMAT      -11
+#define MSG_SIZE_ERROR          -12
+#define MEMORY_ERROR            -13
+#define STORAGE_SIZE_ERR        -14
+#define ALLOC_ERR 		        -2
+#define CLASS_EXISTS		    -10
+#define CLASS_ERR		        -11
+#define DEV_CREATION_ERR        -12
+#define CDEV_ALLOC_ERR		    -13
+#define EMPTY_LIST              -20
+#define NODE_NOT_FOUND          -21
+#define INVALID_IOCTL_COMMAND   -1
+#define CHDEV_ALLOC_ERR         -22
 
 
-
-
-msg_manager_t *createMessageManager(u_int _max_storage_size, u_int _max_message_size, struct work_struct *garbageCollector);
+msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbageCollector);
 
 int writeMessage(msg_t *message, msg_manager_t *manager);
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager);
@@ -39,12 +47,11 @@ void queueGarbageCollector(struct work_struct *work);
 
 
 #ifndef DISABLE_DELAYED_MSG
-
-bool isDelaySet(const msg_manager_t *manager);
-void delayedMessageCallback(struct timer_list *timer);
-int queueDelayedMessage(msg_t *message, msg_manager_t *manager);
-int revokeDelayedMessage(msg_manager_t *manager);
-int cancelDelay(msg_manager_t *manager);
+    bool isDelaySet(const msg_manager_t *manager);
+    void delayedMessageCallback(struct timer_list *timer);
+    int queueDelayedMessage(msg_t *message, msg_manager_t *manager);
+    int revokeDelayedMessage(msg_manager_t *manager);
+    int cancelDelay(msg_manager_t *manager);
 #endif
 
 

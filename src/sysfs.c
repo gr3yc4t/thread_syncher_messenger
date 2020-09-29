@@ -116,7 +116,7 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
                 manager->max_message_size = tmp;
         up_write(&manager->config_lock);
 
-        printk(KERN_DEBUG "Value set to %ld", manager->max_message_size);
+        printk(KERN_DEBUG "Value of 'max_msg_size' set to %ld", manager->max_message_size);
 
         return ret;
 }
@@ -198,7 +198,7 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
                 manager->max_storage_size = tmp;
         up_write(&manager->config_lock);
 
-        printk(KERN_DEBUG "Value set to %ld", manager->max_storage_size);
+        printk(KERN_DEBUG "Value of 'max_storage_size' set to %ld", manager->max_storage_size);
 
         return 0;
 }
@@ -296,6 +296,147 @@ static ssize_t strict_mode_show(struct kobject *kobj, struct kobj_attribute *att
 }
 
 /**
+ * @brief Return the current owner of a group
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t garbage_collector_enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        bool enabled;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_garbage_collector_enabled);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        if(grp_data->flags.garbage_collector_disabled == 1)
+                enabled = false;
+        else
+                enabled = true;
+        
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%d", enabled);
+}
+
+
+/**
+ * @brief Store the 'max_storage_size' param
+ * @param[in] buf The buffer where the string containing the value is readed
+ * 
+ * @return The new parameter value, 0 if the no changes are done
+ */
+static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        int tmp;
+        int ret;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_garbage_collector_enabled);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        ret = sscanf(user_buf, "%d", &tmp);
+
+        if(ret < 0){
+                printk(KERN_DEBUG "Conversion error, exiting...");
+                return -1;
+        }
+
+        if(tmp > 0)
+                grp_data->flags.garbage_collector_disabled = 0;
+        else if(tmp == 0)
+                grp_data->flags.garbage_collector_disabled = 1;
+        else
+                return -1;
+        
+        printk(KERN_DEBUG "Garbage collector flag set to: %d", grp_data->flags.garbage_collector_disabled);
+
+        return 0;
+}
+
+
+
+
+/**
+ * @brief Return the current ratio of a group's garbage collector
+ * @param[out] buffer The buffer where the string containing the owner's PID is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t garbage_collector_ratio_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        int ratio;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_garbage_collector_ratio);
+
+        if(!group_sysfs)
+                return -1;
+
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        ratio = atomic_read(&grp_data->garbage_collector.ratio);
+        
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%d", ratio);
+}
+
+
+/**
+ * @brief Store the 'ratio' param of a grop's garbage collector
+ * @param[in] buf The buffer where the string containing the value is readed
+ * 
+ * @return The new parameter value, 0 if the no changes are done
+ */
+static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        int tmp;
+        int ret;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_garbage_collector_ratio);
+        if(!group_sysfs){
+                return -1;
+        }
+       
+       grp_data = container_of(group_sysfs, group_data, group_sysfs);
+
+        if(!grp_data){
+                printk(KERN_ERR "container_of: error");
+                return -1;
+        }
+
+        ret = sscanf(user_buf, "%d", &tmp);
+
+        if(ret < 0){
+                printk(KERN_DEBUG "Conversion error, exiting...");
+                return -1;
+        }
+
+        atomic_set(&grp_data->garbage_collector.ratio, tmp);
+        
+        printk(KERN_DEBUG "Garbage collector ratio set to: %d", tmp);
+
+        return 0;
+}
+
+
+
+
+
+/**
  * @brief Initialize sysfs attributes
  * @param[in] grp_data Pointer to the main structure of a group
  * 
@@ -344,10 +485,20 @@ int initSysFs(group_data *grp_data){
         sysfs->attr_current_owner.attr.name = "current_owner";
         sysfs->attr_current_owner.attr.mode =  S_IRUGO;
         sysfs->attr_current_owner.show = current_owner_show;
+        sysfs->attr_garbage_collector_enabled.attr.name = "garbage_collector_enabled";
+        sysfs->attr_garbage_collector_enabled.attr.mode =  S_IWUGO | S_IRUGO;
+        sysfs->attr_garbage_collector_enabled.show = garbage_collector_enabled_show;
+        sysfs->attr_garbage_collector_enabled.store = garbage_collector_enabled_store;
 
         sysfs->attr_strict_mode.attr.name = "strict_mode";
         sysfs->attr_strict_mode.attr.mode =  S_IRUGO;
         sysfs->attr_strict_mode.show = strict_mode_show;
+
+        sysfs->attr_garbage_collector_ratio.attr.name = "garbage_collector_ratio";
+        sysfs->attr_garbage_collector_ratio.attr.mode =  S_IWUGO | S_IRUGO;
+        sysfs->attr_garbage_collector_ratio.show = garbage_collector_ratio_show;
+        sysfs->attr_garbage_collector_ratio.store = garbage_collector_ratio_store;
+
 
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_max_message_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_message_size' attribute");
@@ -355,10 +506,14 @@ int initSysFs(group_data *grp_data){
                 printk(KERN_WARNING "Unable to create 'max_storage_size' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_current_size' attribute");        
+                printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'garbage_collector_ratio' attribute");        
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'strict_mode' attribute");   
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'current_owner' attribute");  
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr) < 0)
 
 
         return 0;
@@ -377,7 +532,8 @@ void releaseSysFs(group_sysfs_t *sysfs){
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr);
-
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr);
 
     kobject_put(sysfs->group_kobject);
 

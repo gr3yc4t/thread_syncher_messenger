@@ -26,10 +26,11 @@
 	#include "sysfs.h"
 #endif
 
-#define ALLOC_ERR 			-2	 
-#define USER_COPY_ERR		-3
-#define IDR_ERR				-4
-#define CLASS_EXISTS		-10
+#define ALLOC_ERR 			-2		/**< Returned when a 'kmalloc' fails*/	 
+#define USER_COPY_ERR		-3		/**< Returned when copy_to_user/copy_from_user fails*/
+#define IDR_ERR				-4		/**< Returned when the IDR fails */
+#define MEM_ACCESS_ERR		-5		/**< Returned when 'access_ok' fails */
+#define CLASS_EXISTS		-10		/**< Returned when the class name already exists */
 #define CLASS_ERR			-11
 #define DEV_CREATION_ERR    -12    
 #define CDEV_ALLOC_ERR		-13
@@ -44,41 +45,42 @@
 #define IOCTL_INSTALL_GROUP _IOW('X', 99, group_t*)
 #define IOCTL_GET_GROUP_ID  _IOW('X', 100, group_t*)
 
+
 /*------------------------------------------------------------------------------
 	Defined Macros
 ------------------------------------------------------------------------------*/
-#define D_DEV_NAME		"main_sync"			/**< device name */
-#define D_DEV_MAJOR		(0)					/**< major# */
-#define D_DEV_MINOR		(0)					/**< minor# */
-#define D_DEV_NUM		(1)					/**< number of device */
-#define D_BUF_SIZE		(32)				/**< buffer size (for sample-code) */
+#define D_DEV_NAME		"main_thread_sync"			/**< Main device name */
+#define D_DEV_MAJOR		(0)							/**< Main device major# */
+#define D_DEV_MINOR		(0)							/**< Main device minor# */
+#define D_DEV_NUM		(1)							/**< Number of main device */
 
 
-#define CLASS_NAME		"thread_synch"
+#define CLASS_NAME		"thread_synch"				/**< Main device class name */
 
 
-#define GRP_MIN_ID 		0
-#define GRP_MAX_ID		255
+#define GRP_MIN_ID 		0							/**< Group's min ID */
+#define GRP_MAX_ID		255							/**< Group's max ID */
 
 /*------------------------------------------------------------------------------
 	Type Definition
 ------------------------------------------------------------------------------*/
 
-typedef struct t_groups {
-	group_t group;
-	struct list_head list;
-} group_list_t;
 
-
-/** @brief Main device data */
+/** @brief Main device structure 
+ * 
+ * 	This structure is associated with the 'main_thread_synch' device.
+ *  Apart from containing the device specification, the field 'group_map'
+ * 	employs Linux IDR in order to map group's 'group_data' structure to IDs
+ * 
+*/
 typedef struct t_main_sync {
 	dev_t dev;
-	struct cdev cdev;
+	struct cdev cdev;						/**< Main Charcter device */
 	int minor;								/**< minor# */
 
-	struct idr group_map;
+	struct idr group_map;					/**< IDR that maps group's ID to their structure*/
 
-	struct semaphore sem;
+	struct semaphore sem;					/**< Main device IDR semaphore */ 
 
 } main_sync_t;
 
