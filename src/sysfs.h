@@ -15,6 +15,8 @@
 #include <linux/rwsem.h>
 #include <linux/uaccess.h>   //For copy_to_user/copy_from_user
 
+#include <linux/cred.h>    //For current_uid()
+
 #include "types.h"
 
 

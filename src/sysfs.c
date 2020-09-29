@@ -5,7 +5,7 @@
 
 bool hasStorePrivilege(group_data *grp_data){
 
-        pid_t current_owner;
+        uid_t current_owner;
         bool ret;
 
         //If strict mode is disabled anyone can set parametrs
@@ -13,17 +13,20 @@ bool hasStorePrivilege(group_data *grp_data){
                 return true;
 
         //Otherwise, only the owner can
-        spin_lock(&grp_data->owner_lock);
+        down_read(&grp_data->owner_lock);
 
                 current_owner = grp_data->owner;
 
-                if(current->pid == current_owner){
+                printk(KERN_DEBUG "Current owner: %d", current_owner);
+                printk(KERN_DEBUG "Current thread: %d", current_uid().val );
+
+                if(current_uid().val == current_owner){
                         ret = true;
                 }else{
                         ret = false;
                 }
 
-        spin_unlock(&grp_data->owner_lock);
+        up_read(&grp_data->owner_lock);
 
         return ret;
 }
@@ -50,13 +53,6 @@ static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *at
                 printk(KERN_ERR "container_of: error");
                 return -1;
         }
-
-
-        if(!hasStorePrivilege(grp_data)){
-                printk(KERN_WARNING "Current process does not have privilege to change params");
-                return -1;
-        }
-
 
         manager = grp_data->msg_manager;
 
@@ -96,6 +92,14 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
                 printk(KERN_WARNING "container_of: error");
                 return -1;
         }
+
+
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change param: unauthorized");
+                return -1;
+        }
+
+
         manager = grp_data->msg_manager;
 
         if(!manager)
@@ -173,6 +177,11 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
                 return -1;
         }
 
+        if(!hasStorePrivilege(grp_data)){
+                printk(KERN_ERR "Unable to change param: unauthorized");
+                return -1;
+        }
+
         manager = grp_data->msg_manager;
 
         if(!manager)
@@ -240,7 +249,7 @@ static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attri
 static ssize_t current_owner_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
         group_data *grp_data;
         group_sysfs_t *group_sysfs;
-        pid_t curr_owner;
+        uid_t curr_owner;
 
         group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
         grp_data = container_of(group_sysfs, group_data, group_sysfs);
@@ -251,9 +260,9 @@ static ssize_t current_owner_show(struct kobject *kobj, struct kobj_attribute *a
         }
 
 
-        spin_lock(&grp_data->owner_lock);
+        down_read(&grp_data->owner_lock);
                 curr_owner = grp_data->owner;
-        spin_unlock(&grp_data->owner_lock);
+        up_read(&grp_data->owner_lock);
 
 
         return snprintf(user_buff, ATTR_BUFF_SIZE, "%d", (int)curr_owner);
@@ -366,6 +375,9 @@ void releaseSysFs(group_sysfs_t *sysfs){
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_max_message_size.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_max_storage_size.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_storage_size.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_strict_mode.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr);
+
 
     kobject_put(sysfs->group_kobject);
 

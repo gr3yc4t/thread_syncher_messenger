@@ -17,7 +17,7 @@
 #define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
 #define IOCTL_AWAKE_BARRIER _IO('Z', 1)
 #define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
-#define IOCTL_CHANGE_OWNER _IOW('Q', 102, pid_t)
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
 
 //Configurations
 #define THREAD_NUM 64
@@ -182,7 +182,7 @@ int _readMaxMsgSize(unsigned long *_val){
     FILE *fd;
     int ret;
 
-    fd = fopen("/sys/class/group_synch/group0/message_param/max_message_size", "rt"); 
+    fd = fopen("/sys/class/group_synch/group0/group_parameters/max_message_size", "rt"); 
 
     if(fd < 0){
         printf("Error while opening the group file\n");
@@ -209,7 +209,7 @@ int _readMaxStorageSize(unsigned long *_val){
     FILE *fd;
     int ret;
 
-    fd = fopen("/sys/class/group_synch/group0/message_param/max_storage_size", "rt"); 
+    fd = fopen("/sys/class/group_synch/group0/group_parameters/max_storage_size", "rt"); 
 
     if(fd < 0){
         printf("Error while opening the group file\n");
@@ -238,7 +238,7 @@ int _readCurrStorageSize(unsigned long *_val){
     FILE *fd;
     int ret;
 
-    fd = fopen("/sys/class/group_synch/group0/message_param/current_message_size", "rt"); 
+    fd = fopen("/sys/class/group_synch/group0/group_parameters/current_message_size", "rt"); 
 
     if(fd < 0){
         printf("Error while opening the group file\n");
@@ -283,16 +283,17 @@ int printGroupParams(){
     return 0;
 }
 
-int setStrictMode(int fd, int value){
-    if(value > 1)
+int setStrictMode(int fd, const int _value){
+    int value = 0;
+    if(_value > 1)
         value = 1;
-    if(value < 0)
+    if(_value < 0)
         value = 0;
 
     return ioctl(fd, IOCTL_SET_STRICT_MODE, value);
 }
 
-int changeGroupOwner(int fd, pid_t new_owner){
+int changeGroupOwner(int fd, uid_t new_owner){
     return ioctl(fd, IOCTL_CHANGE_OWNER, new_owner);
 }
 
@@ -569,7 +570,7 @@ int interactiveSession(const char *group_path){
     char buff_size[64];
 
 
-    pid_t my_pid = getppid();
+    uid_t my_uid = getuid();
 
     int fd = openGroup(group_path);
 
@@ -579,7 +580,7 @@ int interactiveSession(const char *group_path){
     }
 
     do{
-    printf("\n[Group Management] - %d\n", my_pid);
+    printf("\n[Group Management] - %d\n", my_uid);
     printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
         "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
         "\n -Message Param -\n\t80 - Show Message Param \n\t81 - Set max message size\n\t82 - Set max storage size\n"
@@ -665,7 +666,7 @@ int interactiveSession(const char *group_path){
             printf("Enter the PID of new owner: ");
             scanf("%d", &choice);
 
-            ret = changeGroupOwner(fd, (pid_t)choice);   
+            ret = changeGroupOwner(fd, (uid_t)choice);   
             break;  
         case 99:
             printf("\n\nExiting...\n");

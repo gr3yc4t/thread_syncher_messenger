@@ -375,8 +375,8 @@ __must_check int installGroup(const group_t new_group_descriptor){
 	memset(&new_group->flags, 0, sizeof(g_flags_t));	//Reset all flags
 
 	new_group->descriptor = new_group_descriptor;
-	new_group->owner = current->pid;
-	spin_lock_init(&new_group->owner_lock);
+	new_group->owner = current_uid().val;
+	init_rwsem(&new_group->owner_lock);
 
 	down(&main_device_data.sem);
 

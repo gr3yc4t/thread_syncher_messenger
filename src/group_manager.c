@@ -54,20 +54,21 @@ int installGroupClass(){
  * @retval false if the current process is not the owner
  */
 bool isOwner(group_data *grp_data){
-    pid_t current_owner;
+    uid_t current_owner;
     bool ret;
 
-    spin_lock(&grp_data->owner_lock);
+    down_read(&grp_data->owner_lock);
 
             current_owner = grp_data->owner;
-
-            if(current->pid == current_owner){
+            printk(KERN_DEBUG "Current owner: %d", current_owner);
+            printk(KERN_DEBUG "Current user: %d", current_uid().val);
+            if(current_uid().val == current_owner){
                     ret = true;
             }else{
                     ret = false;
             }
 
-    spin_unlock(&grp_data->owner_lock);
+    up_read(&grp_data->owner_lock);
 
     return ret;    
 }
@@ -82,9 +83,9 @@ bool isOwner(group_data *grp_data){
  * @retval -1   if the current process is not authorized
  * 
  */ 
-int changeOwner(group_data *grp_data, pid_t new_owner){
+int changeOwner(group_data *grp_data, uid_t new_owner){
 
-    pid_t current_owner;
+    uid_t current_owner;
     int ret;
     bool allowed = false;
 
@@ -93,18 +94,18 @@ int changeOwner(group_data *grp_data, pid_t new_owner){
         allowed = true;
 
 
-    spin_lock(&grp_data->owner_lock);
+    down_write(&grp_data->owner_lock);
 
         current_owner = grp_data->owner;
 
-        if(allowed || current->pid == current_owner){
+        if(allowed || current_uid().val == current_owner){
             grp_data->owner = new_owner;
             ret = 0;
         }else{
             ret = -1;
         }
 
-    spin_unlock(&grp_data->owner_lock);
+    up_write(&grp_data->owner_lock);
 
     return ret;
 }
@@ -230,7 +231,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     
     strncpy(grp_data->descriptor.group_name, device_name, name_len);
 
-    //TODO: test parent behaviour
     grp_data->dev = device_create(group_device_class, parent, grp_data->deviceID, NULL, device_name);
 
     if(IS_ERR(grp_data->dev)){
@@ -617,7 +617,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
     long delay = 0;
     group_data *grp_data;
     bool flag;
-    pid_t new_owner;
+    uid_t new_owner;
 
 
 	switch (ioctl_num){
@@ -665,7 +665,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
             flag = (bool)ioctl_param;
 
-            if(!setStrictMode(grp_data, flag)){
+            if(setStrictMode(grp_data, flag) < 0){
                 printk(KERN_WARNING "Unable set strict mode: unauthorized");
                 ret = -1;
             }else
@@ -677,9 +677,9 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
         case IOCTL_CHANGE_OWNER:
             grp_data = (group_data*) filep->private_data;
 
-            new_owner = (pid_t)ioctl_param;
+            new_owner = (uid_t)ioctl_param;
 
-            if(!changeOwner(grp_data, new_owner)){
+            if(changeOwner(grp_data, new_owner) < 0){
                 printk(KERN_WARNING "Unable to change owner: unauthorized");
                 ret = -1;
             }else
