@@ -1,3 +1,9 @@
+/**
+ * @file		message.h
+ * @brief		Handles all procedures releated to messages of a group device
+ *
+ */
+
 #ifndef MSG_H
 #define MSG_H
 
@@ -33,6 +39,7 @@
 #define NODE_NOT_FOUND          -21
 #define INVALID_IOCTL_COMMAND   -1
 #define CHDEV_ALLOC_ERR         -22
+
 
 
 msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbageCollector);

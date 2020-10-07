@@ -84,14 +84,25 @@ Data Fields</h2></td></tr>
 <tr class="separator:a551fb9f0f2c5b064100ff37e15728803"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf9e90bc7b8769dec99ae595c9c4e79"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/df9/structgroup__flags__t.html#aacf9e90bc7b8769dec99ae595c9c4e79">sysfs_loaded</a>:1</td></tr>
 <tr class="separator:aacf9e90bc7b8769dec99ae595c9c4e79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f64fb4c17adce90e68346e477309c7a"><td class="memItemLeft" align="right" valign="top"><a id="a2f64fb4c17adce90e68346e477309c7a"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>strict_mode</b>:1</td></tr>
+<tr class="separator:a2f64fb4c17adce90e68346e477309c7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6be8461e8bc91736bc8f7ccdd9ddfb6d"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/df9/structgroup__flags__t.html#a6be8461e8bc91736bc8f7ccdd9ddfb6d">garbage_collector_disabled</a>:1</td></tr>
 <tr class="separator:a6be8461e8bc91736bc8f7ccdd9ddfb6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Contains the various flags that represent the status of the module. </p>
 <p>Those flags are useful since it indicates if a module was correctly initialized, in this way when the module must be unloaded, no deallocation is performed on modules that failed.</p>
-<p>-initialized: indicates that a group has loaded all of its structures -thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized -wake_up_flag: to implement -sysfs_loaded: indicate that the 'sysfs' interface is initialized -garbage_collector_disabled: specifies the status of the garbage collector</p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000007">Todo:</a></b></dt><dd>Check the performace impact of "packing" the structure</dd></dl>
+<ul>
+<li>initialized: indicates that a group has loaded all of its structures</li>
+<li>thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized</li>
+<li>wake_up_flag: to implement</li>
+<li>sysfs_loaded: indicate that the 'sysfs' interface is initialized</li>
+<li>garbage_collector_disabled: specifies the status of the garbage collector</li>
+<li>sysfs_loaded: indicate that the 'sysfs' interface is initialized</li>
+<li>strict_mode: 1 if the strict security mode is enabled, 0 otherwise <dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000009">Todo:</a></b></dt><dd>Check the performace impact of "packing" the structure</dd></dl>
+</li>
+</ul>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a6be8461e8bc91736bc8f7ccdd9ddfb6d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6be8461e8bc91736bc8f7ccdd9ddfb6d">&#9670;&nbsp;</a></span>garbage_collector_disabled</h2>

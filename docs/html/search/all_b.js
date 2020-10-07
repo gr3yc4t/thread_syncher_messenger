@@ -1,9 +1,20 @@
 var searchData=
 [
-  ['sem_68',['sem',['../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb',1,'t_main_sync']]],
-  ['setdelivered_69',['setDelivered',['../d0/d6d/message_8c.html#aeae8aca78c8dac257e44d3c282d7c6cb',1,'message.c']]],
-  ['size_70',['size',['../de/d78/structt__message.html#a1484a01fb57d9a96ac894f101ce2d053',1,'t_message']]],
-  ['sleeponbarrier_71',['sleepOnBarrier',['../dc/d22/group__manager_8c.html#ad78d5ba08267ff55fabbf44f62df3f5d',1,'group_manager.c']]],
-  ['sysfs_2eh_72',['sysfs.h',['../d4/dca/sysfs_8h.html',1,'']]],
-  ['sysfs_5floaded_73',['sysfs_loaded',['../d3/df9/structgroup__flags__t.html#aacf9e90bc7b8769dec99ae595c9c4e79',1,'group_flags_t']]]
+  ['main_2ec_64',['main.c',['../d0/dce/src_2main_8c.html',1,'']]],
+  ['main_5fdevice_2eh_65',['main_device.h',['../d2/dac/main__device_8h.html',1,'']]],
+  ['main_5fdevice_5fpath_66',['main_device_path',['../d9/dbf/structT__THREAD__SYNCH.html#a28e9afcdfc9eb90d99a3a559abb70ef4',1,'T_THREAD_SYNCH']]],
+  ['main_5ffile_5fdescriptor_67',['main_file_descriptor',['../d9/dbf/structT__THREAD__SYNCH.html#a76a53a60fd36888dcf83d99051ecaa70',1,'T_THREAD_SYNCH']]],
+  ['mainexit_68',['mainExit',['../d2/dac/main__device_8h.html#a48d8e84c8660710553f0beddd8b95b6a',1,'main_device.c']]],
+  ['maininit_69',['mainInit',['../d2/dac/main__device_8h.html#af4771bd0b385dc4e2cd6fa443e899735',1,'main_device.c']]],
+  ['manager_70',['manager',['../d6/d20/structt__message__delayed__deliver.html#a7025f227cfed9af638a0a24600d7577b',1,'t_message_delayed_deliver']]],
+  ['max_5fmessage_5fsize_71',['max_message_size',['../d3/d75/structt__message__manager.html#a1db68234b14be6ac4a72d80f91a878bc',1,'t_message_manager']]],
+  ['max_5fstorage_5fsize_72',['max_storage_size',['../d3/d75/structt__message__manager.html#a382a84de32f419e305038f9c57de39e1',1,'t_message_manager']]],
+  ['mem_5faccess_5ferr_73',['MEM_ACCESS_ERR',['../d2/dac/main__device_8h.html#ab2d26649d131cdb71d20cc6e5aed12b2',1,'main_device.h']]],
+  ['member_5flock_74',['member_lock',['../d2/d86/structgroup__data.html#ab96fffa3bbc875518685b108a3d09b0c',1,'group_data']]],
+  ['members_5fcount_75',['members_count',['../d2/d86/structgroup__data.html#ac58c9638adc534261d1045d31c1b9deb',1,'group_data']]],
+  ['message_76',['message',['../df/d34/structt__message__deliver.html#a160e8a829051bf086939b7c4c425065c',1,'t_message_deliver::message()'],['../d6/d20/structt__message__delayed__deliver.html#ad5935ae20f8152f301d233360a29fef4',1,'t_message_delayed_deliver::message()']]],
+  ['message_2eh_77',['message.h',['../d2/d0d/message_8h.html',1,'']]],
+  ['message_5fdelay_78',['message_delay',['../d3/d75/structt__message__manager.html#aeeba85d8afb6e996a3914f4daeb2f572',1,'t_message_manager']]],
+  ['minor_79',['minor',['../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471',1,'t_main_sync']]],
+  ['msg_5fmanager_80',['msg_manager',['../d2/d86/structgroup__data.html#ad8685dd352e0d593d4286e0480189c81',1,'group_data']]]
 ];

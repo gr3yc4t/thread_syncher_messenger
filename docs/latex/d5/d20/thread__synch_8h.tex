@@ -1,0 +1,751 @@
+\hypertarget{thread__synch_8h}{}\doxysection{tool/thread\+\_\+synch.h File Reference}
+\label{thread__synch_8h}\index{tool/thread\_synch.h@{tool/thread\_synch.h}}
+
+
+User-\/level library to wrap thread-\/synch kernel-\/level functionalities.  
+
+
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+Include dependency graph for thread\+\_\+synch.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{da/d21/thread__synch_8h__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structt__message}{msg\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Basic structure to represent a message. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em System-\/wide descriptor of a group. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structT__THREAD__SYNCH}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\+S\+Y\+N\+CH}}
+\begin{DoxyCompactList}\small\item\em User-\/level handler of the thread-\/synch main device. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structT__THREAD__GROUP}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\+G\+R\+O\+UP}}
+\begin{DoxyCompactList}\small\item\em User-\/level handler of a group. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a369266c24eacffb87046522897a570d5}\label{thread__synch_8h_a369266c24eacffb87046522897a570d5}} 
+\#define {\bfseries \+\_\+\+G\+N\+U\+\_\+\+S\+O\+U\+R\+CE}~1
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a3ace61138fa8f1acec781501e032b691}\label{thread__synch_8h_a3ace61138fa8f1acec781501e032b691}} 
+\#define {\bfseries A\+T\+T\+R\+\_\+\+B\+U\+F\+F\+\_\+\+S\+I\+ZE}~64
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_a47deb24a48e364f11698874cfae74f41}{D\+E\+V\+I\+C\+E\+\_\+\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}}~64
+\item 
+\mbox{\Hypertarget{thread__synch_8h_ac684c8879cadfe446a9413a6bdc487a9}\label{thread__synch_8h_ac684c8879cadfe446a9413a6bdc487a9}} 
+\#define {\bfseries G\+R\+O\+U\+P\+\_\+\+C\+L\+A\+S\+S\+\_\+\+N\+A\+ME}~\char`\"{}group\+\_\+synch\char`\"{}
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_a79f2713d570c7065f61a160134ea765b}{C\+L\+A\+S\+S\+\_\+\+N\+A\+ME}}~\char`\"{}thread\+\_\+synch\char`\"{}
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_a11e5b1c496994cbf156e7bfaf3035a9a}{D\+\_\+\+D\+E\+V\+\_\+\+N\+A\+ME}}~\char`\"{}main\+\_\+thread\+\_\+sync\char`\"{}
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_a0b86a4dff9e782beb967fab73ed4e2fe}{D\+\_\+\+D\+E\+V\+\_\+\+M\+A\+J\+OR}}~(0)
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_ac3533a6aa49d2dd078b410dabaf5ddee}{D\+\_\+\+D\+E\+V\+\_\+\+M\+I\+N\+OR}}~(0)
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_a27e774c764ed8adabca0614536444d27}{G\+R\+P\+\_\+\+M\+I\+N\+\_\+\+ID}}~0
+\item 
+\#define \mbox{\hyperlink{thread__synch_8h_acba0c94cdc55ce2eadea2e4aca346e98}{G\+R\+P\+\_\+\+M\+A\+X\+\_\+\+ID}}~255
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a5f8b3637206be36636dd1f76d5f9a864}\label{thread__synch_8h_a5f8b3637206be36636dd1f76d5f9a864}} 
+\#define \mbox{\hyperlink{thread__synch_8h_a5f8b3637206be36636dd1f76d5f9a864}{N\+O\+\_\+\+M\+S\+G\+\_\+\+P\+R\+E\+S\+E\+NT}}~1
+\begin{DoxyCompactList}\small\item\em Errors code. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{thread__synch_8h_a341d9ea11c7ed03bca3c5389d45c2c05}\label{thread__synch_8h_a341d9ea11c7ed03bca3c5389d45c2c05}} 
+\#define {\bfseries A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/2
+\item 
+\mbox{\Hypertarget{thread__synch_8h_aa5b435b16787017c5a2c7d05368a056a}\label{thread__synch_8h_aa5b435b16787017c5a2c7d05368a056a}} 
+\#define {\bfseries U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR}~-\/3
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a8546399aa552226729610f5abd159ef4}\label{thread__synch_8h_a8546399aa552226729610f5abd159ef4}} 
+\#define {\bfseries S\+E\+M\+\_\+\+I\+N\+I\+T\+\_\+\+E\+RR}~-\/4  /$\ast$$\ast$ @brief Semaphore initialization $\ast$$\ast$/
+\item 
+\mbox{\Hypertarget{thread__synch_8h_af44b67abea595d0f336c945a4fbe9694}\label{thread__synch_8h_af44b67abea595d0f336c945a4fbe9694}} 
+\#define {\bfseries M\+S\+G\+\_\+\+I\+N\+V\+A\+L\+I\+D\+\_\+\+F\+O\+R\+M\+AT}~-\/11
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a4ffe3881a4ad40483ac903626e8827e0}\label{thread__synch_8h_a4ffe3881a4ad40483ac903626e8827e0}} 
+\#define {\bfseries M\+S\+G\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+R\+R\+OR}~-\/12
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a637db2f9919079c06b987c7595c1411d}\label{thread__synch_8h_a637db2f9919079c06b987c7595c1411d}} 
+\#define {\bfseries M\+E\+M\+O\+R\+Y\+\_\+\+E\+R\+R\+OR}~-\/13
+\item 
+\mbox{\Hypertarget{thread__synch_8h_ad0f7219dee20d955370ee6140e85a94c}\label{thread__synch_8h_ad0f7219dee20d955370ee6140e85a94c}} 
+\#define {\bfseries S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+RR}~-\/14
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a77997dceee4d066c89dbe08e339ebef5}\label{thread__synch_8h_a77997dceee4d066c89dbe08e339ebef5}} 
+\#define {\bfseries T\+S\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND}~-\/50
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a956f5a9417b79cb92a6a94584608b19b}\label{thread__synch_8h_a956f5a9417b79cb92a6a94584608b19b}} 
+\#define {\bfseries T\+S\+\_\+\+O\+P\+E\+N\+\_\+\+E\+RR}~-\/51
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a326a9a923c1a8d5b4e0d3d62801195e8}\label{thread__synch_8h_a326a9a923c1a8d5b4e0d3d62801195e8}} 
+\#define {\bfseries U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED}~-\/52
+\item 
+\mbox{\Hypertarget{thread__synch_8h_aada6cc3431b394cbc040dd1e6ddcabb3}\label{thread__synch_8h_aada6cc3431b394cbc040dd1e6ddcabb3}} 
+\#define {\bfseries P\+E\+R\+M\+I\+S\+S\+I\+O\+N\+\_\+\+E\+RR}~-\/53
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a6c7cd32e1bac137f05e4a752b4ad10af}\label{thread__synch_8h_a6c7cd32e1bac137f05e4a752b4ad10af}} 
+\#define {\bfseries B\+U\+F\+F\+\_\+\+S\+I\+ZE}~512
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}\label{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}} 
+\#define \mbox{\hyperlink{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}{I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+D\+E\+SC}}~\+\_\+\+I\+OR(\textquotesingle{}Q\textquotesingle{}, 1, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\begin{DoxyCompactList}\small\item\em ioctls \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{thread__synch_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}\label{thread__synch_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+E\+N\+D\+\_\+\+D\+E\+L\+AY}~\+\_\+\+I\+OW(\textquotesingle{}Y\textquotesingle{}, 0, long)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}\label{thread__synch_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+R\+E\+V\+O\+K\+E\+\_\+\+D\+E\+L\+A\+Y\+E\+D\+\_\+\+M\+E\+S\+S\+A\+G\+ES}~\+\_\+\+IO(\textquotesingle{}Y\textquotesingle{}, 1)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a09a94889fa4b29893b5b4dfcaa347c93}\label{thread__synch_8h_a09a94889fa4b29893b5b4dfcaa347c93}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+L\+E\+E\+P\+\_\+\+O\+N\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 0)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_ac00821bdb3f7a772f468bbc723166349}\label{thread__synch_8h_ac00821bdb3f7a772f468bbc723166349}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+A\+W\+A\+K\+E\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 1)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a34579e9bf6b3fa6a3ae4dc1771ecee4d}\label{thread__synch_8h_a34579e9bf6b3fa6a3ae4dc1771ecee4d}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+I\+N\+S\+T\+A\+L\+L\+\_\+\+G\+R\+O\+UP}~\+\_\+\+I\+OW(\textquotesingle{}X\textquotesingle{}, 99, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a0cd39f494b7a0df06c6d7d23ea6c7cbe}\label{thread__synch_8h_a0cd39f494b7a0df06c6d7d23ea6c7cbe}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+ID}~\+\_\+\+I\+OW(\textquotesingle{}X\textquotesingle{}, 100, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_aba57ba06508bd505a07b1f1044db6f40}\label{thread__synch_8h_aba57ba06508bd505a07b1f1044db6f40}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+O\+W\+N\+ER}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 102, uid\+\_\+t)
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a85cb8d431a3111bffd162110819524e2}\label{thread__synch_8h_a85cb8d431a3111bffd162110819524e2}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+T\+R\+I\+C\+T\+\_\+\+M\+O\+DE}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 101, bool)
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}{init\+Thread\+Syncher}} (thread\+\_\+synch\+\_\+t $\ast$main\+\_\+syncher)
+\begin{DoxyCompactList}\small\item\em Initialize a \textquotesingle{}thread\+\_\+synch\+\_\+t\textquotesingle{} structure. \end{DoxyCompactList}\item 
+thread\+\_\+group\+\_\+t $\ast$ \mbox{\hyperlink{thread__synch_8h_a67b262ec57be7a16718ab5d0e9489bd0}{install\+Group}} (const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} group\+\_\+descriptor, thread\+\_\+synch\+\_\+t $\ast$main\+\_\+synch)
+\begin{DoxyCompactList}\small\item\em Install a group in the system given a group descriptor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{thread__synch_8h_a29859225b22d588bac8f2ad9ffa4f3d6}\label{thread__synch_8h_a29859225b22d588bac8f2ad9ffa4f3d6}} 
+int {\bfseries read\+Group\+Info} (thread\+\_\+synch\+\_\+t $\ast$main\+\_\+syncher)
+\item 
+int \mbox{\hyperlink{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}{open\+Group}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Open a group, the thread P\+ID is added to group\textquotesingle{}s active members. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_ad9d852d16a5745a7e0e608632d5d38dc}{read\+Message}} (void $\ast$buffer, size\+\_\+t len, thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Read a message from a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a465fac52d66ee286f7ed13318bf0f30c}{write\+Message}} (const void $\ast$buffer, size\+\_\+t len, thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Write a message in a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}{set\+Delay}} (const long \+\_\+delay, thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Set the delay value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}{revoke\+Delay}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Revoke all the delayed messaged on a given group and deliver it. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}{sleep\+On\+Barrier}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Put the process which call this function on sleep. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_afb024938d9cf0b8161752345ef3f65cf}{awake\+Barrier}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Awake all the process present in a wait queue for a given group. \end{DoxyCompactList}\item 
+unsigned long \mbox{\hyperlink{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}{get\+Current\+Storage\+Size}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Get the current storage size value for a given group. \end{DoxyCompactList}\item 
+unsigned long \mbox{\hyperlink{thread__synch_8h_adee40526996678c8f9eaf459c2687083}{get\+Max\+Storage\+Size}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Get the maximum storage size value for a given group. \end{DoxyCompactList}\item 
+unsigned long \mbox{\hyperlink{thread__synch_8h_a6417dc6922a5ea23f0c32186976f2639}{get\+Max\+Message\+Size}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Get the maximum message size value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a34cb66021b147dbcac0d1e1c3da2c3ba}{set\+Max\+Message\+Size}} (thread\+\_\+group\+\_\+t $\ast$group, unsigned long val)
+\begin{DoxyCompactList}\small\item\em Set the maximum message size value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}{set\+Max\+Storage\+Size}} (thread\+\_\+group\+\_\+t $\ast$group, unsigned long val)
+\begin{DoxyCompactList}\small\item\em Set the maximum storage size value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}{set\+Garbage\+Collector\+Ratio}} (thread\+\_\+group\+\_\+t $\ast$group, unsigned long val)
+\begin{DoxyCompactList}\small\item\em Set the garbage collector ratio value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_af75a6962ec9fa6327d67c2a03dd98bf8}{enable\+Strict\+Mode}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Enable strict mode on a group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a5c0bf0d0eb98dec88c8c60e576b05ea1}{disable\+Strict\+Mode}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Disable strict mode on a group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}{change\+Owner}} (thread\+\_\+group\+\_\+t $\ast$group, const uid\+\_\+t new\+\_\+owner)
+\begin{DoxyCompactList}\small\item\em Change the owner of a group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}{become\+Owner}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Change the owner of a group to the calling thread\textquotesingle{}s U\+ID. \end{DoxyCompactList}\item 
+thread\+\_\+group\+\_\+t $\ast$ \mbox{\hyperlink{thread__synch_8h_a0c92afb57aeb28ee3ab2f4b3d944346d}{load\+Group\+From\+Descriptor}} (const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$descriptor, thread\+\_\+synch\+\_\+t $\ast$main\+\_\+syncher)
+\begin{DoxyCompactList}\small\item\em Load a group\textquotesingle{}s structure given a group descriptor. \end{DoxyCompactList}\item 
+thread\+\_\+group\+\_\+t $\ast$ \mbox{\hyperlink{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}{load\+Group\+From\+ID}} (const int group\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Load a group structure given a group ID. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+User-\/level library to wrap thread-\/synch kernel-\/level functionalities. 
+
+Funcions will operate through two types of structures\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{structT__THREAD__SYNCH}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\+S\+Y\+N\+CH}}\+: handles request to the main synch device file
+\item \mbox{\hyperlink{structT__THREAD__GROUP}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\+G\+R\+O\+UP}}\+: handles request to a group device file 
+\end{DoxyItemize}
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{thread__synch_8h_a79f2713d570c7065f61a160134ea765b}\label{thread__synch_8h_a79f2713d570c7065f61a160134ea765b}} 
+\index{thread\_synch.h@{thread\_synch.h}!CLASS\_NAME@{CLASS\_NAME}}
+\index{CLASS\_NAME@{CLASS\_NAME}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{CLASS\_NAME}{CLASS\_NAME}}
+{\footnotesize\ttfamily \#define C\+L\+A\+S\+S\+\_\+\+N\+A\+ME~\char`\"{}thread\+\_\+synch\char`\"{}}
+
+Main device class name \mbox{\Hypertarget{thread__synch_8h_a0b86a4dff9e782beb967fab73ed4e2fe}\label{thread__synch_8h_a0b86a4dff9e782beb967fab73ed4e2fe}} 
+\index{thread\_synch.h@{thread\_synch.h}!D\_DEV\_MAJOR@{D\_DEV\_MAJOR}}
+\index{D\_DEV\_MAJOR@{D\_DEV\_MAJOR}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_MAJOR}{D\_DEV\_MAJOR}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+M\+A\+J\+OR~(0)}
+
+Main device major\# \mbox{\Hypertarget{thread__synch_8h_ac3533a6aa49d2dd078b410dabaf5ddee}\label{thread__synch_8h_ac3533a6aa49d2dd078b410dabaf5ddee}} 
+\index{thread\_synch.h@{thread\_synch.h}!D\_DEV\_MINOR@{D\_DEV\_MINOR}}
+\index{D\_DEV\_MINOR@{D\_DEV\_MINOR}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_MINOR}{D\_DEV\_MINOR}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+M\+I\+N\+OR~(0)}
+
+Main device minor\# \mbox{\Hypertarget{thread__synch_8h_a11e5b1c496994cbf156e7bfaf3035a9a}\label{thread__synch_8h_a11e5b1c496994cbf156e7bfaf3035a9a}} 
+\index{thread\_synch.h@{thread\_synch.h}!D\_DEV\_NAME@{D\_DEV\_NAME}}
+\index{D\_DEV\_NAME@{D\_DEV\_NAME}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_NAME}{D\_DEV\_NAME}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+N\+A\+ME~\char`\"{}main\+\_\+thread\+\_\+sync\char`\"{}}
+
+Main device name \mbox{\Hypertarget{thread__synch_8h_a47deb24a48e364f11698874cfae74f41}\label{thread__synch_8h_a47deb24a48e364f11698874cfae74f41}} 
+\index{thread\_synch.h@{thread\_synch.h}!DEVICE\_NAME\_SIZE@{DEVICE\_NAME\_SIZE}}
+\index{DEVICE\_NAME\_SIZE@{DEVICE\_NAME\_SIZE}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{DEVICE\_NAME\_SIZE}{DEVICE\_NAME\_SIZE}}
+{\footnotesize\ttfamily \#define D\+E\+V\+I\+C\+E\+\_\+\+N\+A\+M\+E\+\_\+\+S\+I\+ZE~64}
+
+Maximum device name lenght \mbox{\Hypertarget{thread__synch_8h_acba0c94cdc55ce2eadea2e4aca346e98}\label{thread__synch_8h_acba0c94cdc55ce2eadea2e4aca346e98}} 
+\index{thread\_synch.h@{thread\_synch.h}!GRP\_MAX\_ID@{GRP\_MAX\_ID}}
+\index{GRP\_MAX\_ID@{GRP\_MAX\_ID}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{GRP\_MAX\_ID}{GRP\_MAX\_ID}}
+{\footnotesize\ttfamily \#define G\+R\+P\+\_\+\+M\+A\+X\+\_\+\+ID~255}
+
+Group\textquotesingle{}s max ID \mbox{\Hypertarget{thread__synch_8h_a27e774c764ed8adabca0614536444d27}\label{thread__synch_8h_a27e774c764ed8adabca0614536444d27}} 
+\index{thread\_synch.h@{thread\_synch.h}!GRP\_MIN\_ID@{GRP\_MIN\_ID}}
+\index{GRP\_MIN\_ID@{GRP\_MIN\_ID}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{GRP\_MIN\_ID}{GRP\_MIN\_ID}}
+{\footnotesize\ttfamily \#define G\+R\+P\+\_\+\+M\+I\+N\+\_\+\+ID~0}
+
+Group\textquotesingle{}s min ID 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{thread__synch_8h_afb024938d9cf0b8161752345ef3f65cf}\label{thread__synch_8h_afb024938d9cf0b8161752345ef3f65cf}} 
+\index{thread\_synch.h@{thread\_synch.h}!awakeBarrier@{awakeBarrier}}
+\index{awakeBarrier@{awakeBarrier}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{awakeBarrier()}{awakeBarrier()}}
+{\footnotesize\ttfamily int awake\+Barrier (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Awake all the process present in a wait queue for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}\label{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}} 
+\index{thread\_synch.h@{thread\_synch.h}!becomeOwner@{becomeOwner}}
+\index{becomeOwner@{becomeOwner}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{becomeOwner()}{becomeOwner()}}
+{\footnotesize\ttfamily int become\+Owner (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Change the owner of a group to the calling thread\textquotesingle{}s U\+ID. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
+\hline
+{\em Negative} & number on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If strict mode is enabled, only the current owner can set a new owner 
+
+If strict mode is enabled, any thread could change the group\textquotesingle{}s owner 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}\label{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}} 
+\index{thread\_synch.h@{thread\_synch.h}!changeOwner@{changeOwner}}
+\index{changeOwner@{changeOwner}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{changeOwner()}{changeOwner()}}
+{\footnotesize\ttfamily int change\+Owner (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group,  }\item[{const uid\+\_\+t}]{new\+\_\+owner }\end{DoxyParamCaption})}
+
+
+
+Change the owner of a group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
+\hline
+{\em Negative} & number on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If strict mode is enabled, only the current owner can set a new owner 
+
+If strict mode is enabled, any thread could change the group\textquotesingle{}s owner 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a5c0bf0d0eb98dec88c8c60e576b05ea1}\label{thread__synch_8h_a5c0bf0d0eb98dec88c8c60e576b05ea1}} 
+\index{thread\_synch.h@{thread\_synch.h}!disableStrictMode@{disableStrictMode}}
+\index{disableStrictMode@{disableStrictMode}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{disableStrictMode()}{disableStrictMode()}}
+{\footnotesize\ttfamily int disable\+Strict\+Mode (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Disable strict mode on a group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
+\hline
+{\em Negative} & number on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If strict mode is enabled, only the owner can disable it 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_af75a6962ec9fa6327d67c2a03dd98bf8}\label{thread__synch_8h_af75a6962ec9fa6327d67c2a03dd98bf8}} 
+\index{thread\_synch.h@{thread\_synch.h}!enableStrictMode@{enableStrictMode}}
+\index{enableStrictMode@{enableStrictMode}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{enableStrictMode()}{enableStrictMode()}}
+{\footnotesize\ttfamily int enable\+Strict\+Mode (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Enable strict mode on a group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
+\hline
+{\em Negative} & number on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If strict mode is disabled, any threads can enable it through this function. If strict mode is enabled, only the owner can disable it 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}\label{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}} 
+\index{thread\_synch.h@{thread\_synch.h}!getCurrentStorageSize@{getCurrentStorageSize}}
+\index{getCurrentStorageSize@{getCurrentStorageSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{getCurrentStorageSize()}{getCurrentStorageSize()}}
+{\footnotesize\ttfamily unsigned long get\+Current\+Storage\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Get the current storage size value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & value of the parameter \\
+\hline
+{\em 0} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a6417dc6922a5ea23f0c32186976f2639}\label{thread__synch_8h_a6417dc6922a5ea23f0c32186976f2639}} 
+\index{thread\_synch.h@{thread\_synch.h}!getMaxMessageSize@{getMaxMessageSize}}
+\index{getMaxMessageSize@{getMaxMessageSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{getMaxMessageSize()}{getMaxMessageSize()}}
+{\footnotesize\ttfamily unsigned long get\+Max\+Message\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Get the maximum message size value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & value of the parameter \\
+\hline
+{\em 0} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_adee40526996678c8f9eaf459c2687083}\label{thread__synch_8h_adee40526996678c8f9eaf459c2687083}} 
+\index{thread\_synch.h@{thread\_synch.h}!getMaxStorageSize@{getMaxStorageSize}}
+\index{getMaxStorageSize@{getMaxStorageSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{getMaxStorageSize()}{getMaxStorageSize()}}
+{\footnotesize\ttfamily unsigned long get\+Max\+Storage\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Get the maximum storage size value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & value of the parameter \\
+\hline
+{\em 0} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}\label{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}} 
+\index{thread\_synch.h@{thread\_synch.h}!initThreadSyncher@{initThreadSyncher}}
+\index{initThreadSyncher@{initThreadSyncher}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{initThreadSyncher()}{initThreadSyncher()}}
+{\footnotesize\ttfamily int init\+Thread\+Syncher (\begin{DoxyParamCaption}\item[{thread\+\_\+synch\+\_\+t $\ast$}]{main\+\_\+syncher }\end{DoxyParamCaption})}
+
+
+
+Initialize a \textquotesingle{}thread\+\_\+synch\+\_\+t\textquotesingle{} structure. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em main\+\_\+syncher} & A pointer to the structure to initialize\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em T\+S\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND} & if the main\+\_\+syncher default file cannot be found \\
+\hline
+{\em T\+S\+\_\+\+O\+P\+E\+N\+\_\+\+E\+RR} & if there was an error while opening the main\+\_\+syncher file \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if there was an error during memory allocation \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a67b262ec57be7a16718ab5d0e9489bd0}\label{thread__synch_8h_a67b262ec57be7a16718ab5d0e9489bd0}} 
+\index{thread\_synch.h@{thread\_synch.h}!installGroup@{installGroup}}
+\index{installGroup@{installGroup}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{installGroup()}{installGroup()}}
+{\footnotesize\ttfamily thread\+\_\+group\+\_\+t$\ast$ install\+Group (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}}]{group\+\_\+descriptor,  }\item[{thread\+\_\+synch\+\_\+t $\ast$}]{main\+\_\+synch }\end{DoxyParamCaption})}
+
+
+
+Install a group in the system given a group descriptor. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em group\+\_\+descriptor} & The new group\textquotesingle{}s descriptor \\
+\hline
+\mbox{\texttt{ in}}  & {\em main\+\_\+synch} & A pointer to an initialized main\+\_\+sych structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em A} & pointer to a group structure \\
+\hline
+{\em N\+U\+LL} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a0c92afb57aeb28ee3ab2f4b3d944346d}\label{thread__synch_8h_a0c92afb57aeb28ee3ab2f4b3d944346d}} 
+\index{thread\_synch.h@{thread\_synch.h}!loadGroupFromDescriptor@{loadGroupFromDescriptor}}
+\index{loadGroupFromDescriptor@{loadGroupFromDescriptor}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{loadGroupFromDescriptor()}{loadGroupFromDescriptor()}}
+{\footnotesize\ttfamily thread\+\_\+group\+\_\+t$\ast$ load\+Group\+From\+Descriptor (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{descriptor,  }\item[{thread\+\_\+synch\+\_\+t $\ast$}]{main\+\_\+syncher }\end{DoxyParamCaption})}
+
+
+
+Load a group\textquotesingle{}s structure given a group descriptor. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$descriptor} & The descritor of the group to load \\
+\hline
+\mbox{\texttt{ in}}  & {\em $\ast$main\+\_\+syncher} & Pointer to a thread\+\_\+synch\+\_\+t main structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em A} & pointer to the group structure of the specified group \\
+\hline
+{\em N\+U\+LL} & on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+The provided group structure is not opened by default 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}\label{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}} 
+\index{thread\_synch.h@{thread\_synch.h}!loadGroupFromID@{loadGroupFromID}}
+\index{loadGroupFromID@{loadGroupFromID}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{loadGroupFromID()}{loadGroupFromID()}}
+{\footnotesize\ttfamily thread\+\_\+group\+\_\+t$\ast$ load\+Group\+From\+ID (\begin{DoxyParamCaption}\item[{const int}]{group\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Load a group structure given a group ID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em group\+\_\+id} & The group ID \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em A} & pointer to the group structure of the specified group \\
+\hline
+{\em N\+U\+LL} & on error\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+On success, the group is not opened 
+\end{DoxyNote}
+\begin{DoxyRefDesc}{Bug}
+\item[\mbox{\hyperlink{bug__bug000003}{Bug}}]The group\textquotesingle{}s descriptor is not loaded, thus the diplayed name will appear as \char`\"{}(null)\char`\"{}\end{DoxyRefDesc}
+\mbox{\Hypertarget{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}\label{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}} 
+\index{thread\_synch.h@{thread\_synch.h}!openGroup@{openGroup}}
+\index{openGroup@{openGroup}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{openGroup()}{openGroup()}}
+{\footnotesize\ttfamily int open\+Group (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Open a group, the thread P\+ID is added to group\textquotesingle{}s active members. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em P\+E\+R\+M\+I\+S\+S\+I\+O\+N\+\_\+\+E\+RR} & on permission Error \\
+\hline
+{\em negative} & number on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_ad9d852d16a5745a7e0e608632d5d38dc}\label{thread__synch_8h_ad9d852d16a5745a7e0e608632d5d38dc}} 
+\index{thread\_synch.h@{thread\_synch.h}!readMessage@{readMessage}}
+\index{readMessage@{readMessage}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{readMessage()}{readMessage()}}
+{\footnotesize\ttfamily int read\+Message (\begin{DoxyParamCaption}\item[{void $\ast$}]{buffer,  }\item[{size\+\_\+t}]{len,  }\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Read a message from a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em buffer} & The buffer where the readed message is stored \\
+\hline
+\mbox{\texttt{ in}}  & {\em len} & The number of bytes to read \\
+\hline
+\mbox{\texttt{ in}}  & {\em group} & A pointer to the group\textquotesingle{}s structure where the msg is readed\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em N\+O\+\_\+\+M\+S\+G\+\_\+\+P\+R\+E\+S\+E\+NT} & if there is no message available \\
+\hline
+{\em negative} & number on error \\
+\hline
+{\em 0} & on success\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+Even if the parameter \textquotesingle{}len\textquotesingle{} is less the the size of the actual message, the message is considered delivered and thus removed from the queue 
+\end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}\label{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}} 
+\index{thread\_synch.h@{thread\_synch.h}!revokeDelay@{revokeDelay}}
+\index{revokeDelay@{revokeDelay}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{revokeDelay()}{revokeDelay()}}
+{\footnotesize\ttfamily int revoke\+Delay (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Revoke all the delayed messaged on a given group and deliver it. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em The} & number of revoked messages on success ($>$= 0) \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}\label{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}} 
+\index{thread\_synch.h@{thread\_synch.h}!setDelay@{setDelay}}
+\index{setDelay@{setDelay}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{setDelay()}{setDelay()}}
+{\footnotesize\ttfamily int set\+Delay (\begin{DoxyParamCaption}\item[{const long}]{\+\_\+delay,  }\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Set the delay value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em \+\_\+delay} & The new delay value \\
+\hline
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}\label{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}} 
+\index{thread\_synch.h@{thread\_synch.h}!setGarbageCollectorRatio@{setGarbageCollectorRatio}}
+\index{setGarbageCollectorRatio@{setGarbageCollectorRatio}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{setGarbageCollectorRatio()}{setGarbageCollectorRatio()}}
+{\footnotesize\ttfamily int set\+Garbage\+Collector\+Ratio (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group,  }\item[{const unsigned long}]{val }\end{DoxyParamCaption})}
+
+
+
+Set the garbage collector ratio value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure \\
+\hline
+\mbox{\texttt{ in}}  & {\em val} & The new value of the parameter\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a34cb66021b147dbcac0d1e1c3da2c3ba}\label{thread__synch_8h_a34cb66021b147dbcac0d1e1c3da2c3ba}} 
+\index{thread\_synch.h@{thread\_synch.h}!setMaxMessageSize@{setMaxMessageSize}}
+\index{setMaxMessageSize@{setMaxMessageSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{setMaxMessageSize()}{setMaxMessageSize()}}
+{\footnotesize\ttfamily int set\+Max\+Message\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group,  }\item[{const unsigned long}]{val }\end{DoxyParamCaption})}
+
+
+
+Set the maximum message size value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure \\
+\hline
+\mbox{\texttt{ in}}  & {\em val} & The new value of the parameter\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}\label{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}} 
+\index{thread\_synch.h@{thread\_synch.h}!setMaxStorageSize@{setMaxStorageSize}}
+\index{setMaxStorageSize@{setMaxStorageSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{setMaxStorageSize()}{setMaxStorageSize()}}
+{\footnotesize\ttfamily int set\+Max\+Storage\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group,  }\item[{const unsigned long}]{val }\end{DoxyParamCaption})}
+
+
+
+Set the maximum storage size value for a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure \\
+\hline
+\mbox{\texttt{ in}}  & {\em val} & The new value of the parameter\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}\label{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}} 
+\index{thread\_synch.h@{thread\_synch.h}!sleepOnBarrier@{sleepOnBarrier}}
+\index{sleepOnBarrier@{sleepOnBarrier}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{sleepOnBarrier()}{sleepOnBarrier()}}
+{\footnotesize\ttfamily int sleep\+On\+Barrier (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Put the process which call this function on sleep. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em -\/1} & on error \\
+\hline
+{\em 0} & on success \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_a465fac52d66ee286f7ed13318bf0f30c}\label{thread__synch_8h_a465fac52d66ee286f7ed13318bf0f30c}} 
+\index{thread\_synch.h@{thread\_synch.h}!writeMessage@{writeMessage}}
+\index{writeMessage@{writeMessage}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{writeMessage()}{writeMessage()}}
+{\footnotesize\ttfamily int write\+Message (\begin{DoxyParamCaption}\item[{const void $\ast$}]{buffer,  }\item[{size\+\_\+t}]{len,  }\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Write a message in a given group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em buffer} & The buffer that contains the message to write \\
+\hline
+\mbox{\texttt{ in}}  & {\em len} & The number of bytes to write \\
+\hline
+\mbox{\texttt{ in}}  & {\em group} & A pointer to the group\textquotesingle{}s structure where the msg is written\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em negative} & number on error \\
+\hline
+{\em The} & number of written bytes on successs \\
+\hline
+\end{DoxyRetVals}

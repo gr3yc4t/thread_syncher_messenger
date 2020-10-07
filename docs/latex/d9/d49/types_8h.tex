@@ -1,0 +1,155 @@
+\hypertarget{types_8h}{}\doxysection{src/types.h File Reference}
+\label{types_8h}\index{src/types.h@{src/types.h}}
+
+
+Defines all structures and global variables needed by the module.  
+
+
+{\ttfamily \#include $<$linux/types.\+h$>$}\newline
+{\ttfamily \#include $<$linux/list.\+h$>$}\newline
+{\ttfamily \#include $<$linux/rwsem.\+h$>$}\newline
+{\ttfamily \#include $<$linux/workqueue.\+h$>$}\newline
+{\ttfamily \#include $<$linux/cdev.\+h$>$}\newline
+{\ttfamily \#include $<$linux/timer.\+h$>$}\newline
+{\ttfamily \#include $<$linux/wait.\+h$>$}\newline
+{\ttfamily \#include $<$linux/sched.\+h$>$}\newline
+Include dependency graph for types.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d2/d1f/types_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=286pt]{dc/d56/types_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structt__message}{msg\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Basic structure to represent a message. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__group__members}{t\+\_\+group\+\_\+members}}
+\begin{DoxyCompactList}\small\item\em Threads that are members of the group device. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__message__deliver}{t\+\_\+message\+\_\+deliver}}
+\begin{DoxyCompactList}\small\item\em Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the relative delivery info. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__message__delayed__deliver}{t\+\_\+message\+\_\+delayed\+\_\+deliver}}
+\begin{DoxyCompactList}\small\item\em Contains a \textquotesingle{}msg\+\_\+t\textquotesingle{} structure and the timer needed to delay the delivery. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__group__sysfs}{t\+\_\+group\+\_\+sysfs}}
+\begin{DoxyCompactList}\small\item\em Contains all the \textquotesingle{}sysfs\textquotesingle{} attrubutes and the group\textquotesingle{}s kobject. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__message__manager}{msg\+\_\+manager\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Manage the message sub-\/system. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em System-\/wide descriptor of a group. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structgroup__flags__t}{group\+\_\+flags\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Contains the various flags that represent the status of the module. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structt__garbage__collector}{t\+\_\+garbage\+\_\+collector}}
+\begin{DoxyCompactList}\small\item\em Garbage Collector structure. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structgroup__data}{group\+\_\+data}}
+\begin{DoxyCompactList}\small\item\em Group device data structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{types_8h_a47deb24a48e364f11698874cfae74f41}{D\+E\+V\+I\+C\+E\+\_\+\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}}~64
+\item 
+\mbox{\Hypertarget{types_8h_ad72dbcf6d0153db1b8d8a58001feed83}\label{types_8h_ad72dbcf6d0153db1b8d8a58001feed83}} 
+\#define {\bfseries D\+E\+B\+UG}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structgroup__flags__t}{group\+\_\+flags\+\_\+t}} \mbox{\hyperlink{types_8h_a0c005c0a22e0c7fd81ee588076782ee5}{\+\_\+\+\_\+attribute\+\_\+\+\_\+}} ((packed)) g\+\_\+flags\+\_\+t
+\begin{DoxyCompactList}\small\item\em Contains the various flags that represent the status of the module. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \mbox{\hyperlink{types_8h_af00a707f65afa5d0f6cf27ec821bb763}{initialized}}
+\item 
+unsigned int \mbox{\hyperlink{types_8h_a240ca81973919c3362007239c7e35356}{thread\+\_\+barrier\+\_\+loaded}}
+\item 
+unsigned int \mbox{\hyperlink{types_8h_ae8232484a731c2ee46cd0e1964e42ba1}{wake\+\_\+up\+\_\+flag}}
+\item 
+unsigned int \mbox{\hyperlink{types_8h_aa9f0a23c08d0920aef18b25f44b33849}{sysfs\+\_\+loaded}}
+\item 
+\mbox{\Hypertarget{types_8h_abd365deb44a28a12f610ba4dd0c85f03}\label{types_8h_abd365deb44a28a12f610ba4dd0c85f03}} 
+unsigned int {\bfseries strict\+\_\+mode}
+\item 
+unsigned int \mbox{\hyperlink{types_8h_a69596af3613250c262fbbb54d5efc4e5}{garbage\+\_\+collector\+\_\+disabled}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Defines all structures and global variables needed by the module. 
+
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{types_8h_a47deb24a48e364f11698874cfae74f41}\label{types_8h_a47deb24a48e364f11698874cfae74f41}} 
+\index{types.h@{types.h}!DEVICE\_NAME\_SIZE@{DEVICE\_NAME\_SIZE}}
+\index{DEVICE\_NAME\_SIZE@{DEVICE\_NAME\_SIZE}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{DEVICE\_NAME\_SIZE}{DEVICE\_NAME\_SIZE}}
+{\footnotesize\ttfamily \#define D\+E\+V\+I\+C\+E\+\_\+\+N\+A\+M\+E\+\_\+\+S\+I\+ZE~64}
+
+Maximum device name lenght 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{types_8h_a0c005c0a22e0c7fd81ee588076782ee5}\label{types_8h_a0c005c0a22e0c7fd81ee588076782ee5}} 
+\index{types.h@{types.h}!\_\_attribute\_\_@{\_\_attribute\_\_}}
+\index{\_\_attribute\_\_@{\_\_attribute\_\_}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{\_\_attribute\_\_()}{\_\_attribute\_\_()}}
+{\footnotesize\ttfamily struct \mbox{\hyperlink{structgroup__flags__t}{group\+\_\+flags\+\_\+t}} \+\_\+\+\_\+attribute\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{(packed)}]{ }\end{DoxyParamCaption})}
+
+
+
+Contains the various flags that represent the status of the module. 
+
+Those flags are useful since it indicates if a module was correctly initialized, in this way when the module must be unloaded, no deallocation is performed on modules that failed.
+
+
+\begin{DoxyItemize}
+\item initialized\+: indicates that a group has loaded all of its structures
+\item thread\+\_\+barrier\+\_\+loaded\+: indicate that the \textquotesingle{}thread barrier\textquotesingle{} submodule is initialized
+\item wake\+\_\+up\+\_\+flag\+: to implement
+\item sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized
+\item garbage\+\_\+collector\+\_\+disabled\+: specifies the status of the garbage collector
+\item sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized
+\item strict\+\_\+mode\+: 1 if the strict security mode is enabled, 0 otherwise \begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000009}{Todo}}]Check the performace impact of \char`\"{}packing\char`\"{} the structure\end{DoxyRefDesc}
+
+\end{DoxyItemize}
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{types_8h_a69596af3613250c262fbbb54d5efc4e5}\label{types_8h_a69596af3613250c262fbbb54d5efc4e5}} 
+\index{types.h@{types.h}!garbage\_collector\_disabled@{garbage\_collector\_disabled}}
+\index{garbage\_collector\_disabled@{garbage\_collector\_disabled}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{garbage\_collector\_disabled}{garbage\_collector\_disabled}}
+{\footnotesize\ttfamily unsigned int garbage\+\_\+collector\+\_\+disabled}
+
+1 if the garbage collector is disabled, zero otherwise \mbox{\Hypertarget{types_8h_af00a707f65afa5d0f6cf27ec821bb763}\label{types_8h_af00a707f65afa5d0f6cf27ec821bb763}} 
+\index{types.h@{types.h}!initialized@{initialized}}
+\index{initialized@{initialized}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{initialized}{initialized}}
+{\footnotesize\ttfamily unsigned int initialized}
+
+Set to 1 when the device driver is fully loaded \mbox{\Hypertarget{types_8h_aa9f0a23c08d0920aef18b25f44b33849}\label{types_8h_aa9f0a23c08d0920aef18b25f44b33849}} 
+\index{types.h@{types.h}!sysfs\_loaded@{sysfs\_loaded}}
+\index{sysfs\_loaded@{sysfs\_loaded}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{sysfs\_loaded}{sysfs\_loaded}}
+{\footnotesize\ttfamily unsigned int sysfs\+\_\+loaded}
+
+1 if the sysfs submodule is initialized correctly \mbox{\Hypertarget{types_8h_a240ca81973919c3362007239c7e35356}\label{types_8h_a240ca81973919c3362007239c7e35356}} 
+\index{types.h@{types.h}!thread\_barrier\_loaded@{thread\_barrier\_loaded}}
+\index{thread\_barrier\_loaded@{thread\_barrier\_loaded}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{thread\_barrier\_loaded}{thread\_barrier\_loaded}}
+{\footnotesize\ttfamily unsigned int thread\+\_\+barrier\+\_\+loaded}
+
+1 if the \textquotesingle{}thread\+\_\+barrier\textquotesingle{} submodule is initialized \mbox{\Hypertarget{types_8h_ae8232484a731c2ee46cd0e1964e42ba1}\label{types_8h_ae8232484a731c2ee46cd0e1964e42ba1}} 
+\index{types.h@{types.h}!wake\_up\_flag@{wake\_up\_flag}}
+\index{wake\_up\_flag@{wake\_up\_flag}!types.h@{types.h}}
+\doxysubsubsection{\texorpdfstring{wake\_up\_flag}{wake\_up\_flag}}
+{\footnotesize\ttfamily unsigned int wake\+\_\+up\+\_\+flag}
+
+Flag used to wake-\/up all thread which slept on barrier 

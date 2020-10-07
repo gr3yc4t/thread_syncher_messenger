@@ -1,0 +1,22 @@
+/*!
+* \mainpage Thread Syncher
+*
+* This module for Linux kernel allows threads to subscribe to a group in order to exchange messages and synchronize between each other. In simple terms, the entire subsystem can be divided into the following sub-modules:
+*   - <b>Messages System</b>: handles the exchanges of messages between threads
+*       - Delayed messages: allows threads to post messages that will become available once a delay is expired
+*       - Garbage Collector: routine that periodically free storage memory by deleting delivered messages
+*   - <b>Synchronization system</b>: allows threads to be descheduled until another thread woke them up.
+*   - <b>Parameter config system</b>: install a sysfs that allows authorized users to config group’s parameter
+*
+*   For user-level library documentaion see \ref user_lib "this" page.<br>
+*   For kernel-level code documentation see \ref kernel_docs "this" page.<br>
+*
+*   \section msg_subsystem Message Subsytem
+*   Messages in a group are delivered to readers in FIFO order. Threads can subscribe to a group’s messages and when they do they become an “active member” of that group.<br>
+*   When a thread reads a message, the module adds its PID to the message’s list of recipients. Later, the garbage collector will traverse the messages FIFO queue and compare the set of message’s recipients with the set of active members: if recipients are a subset of active members, the message is removed and memory is freed.
+*
+*   \section sec_features Security Features
+*   Each group has a field that describes its owner: an owner is represented by an UID that corresponds to the user that installed the group. By default any threads can edit the group’s parameters both through the “parameter config system” and by interacting with the group's facilities. To prevent this, it is possible to set the <b>“strict mode”</b> flag of a group: when this flag is active, only the current owner of a group can modify its internal parameters.
+*
+*
+*/

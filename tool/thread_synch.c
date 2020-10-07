@@ -53,14 +53,14 @@ static int _readMaxMsgSize(unsigned long *_val, const int group_id){
     fd = fopen(param_path, "rt"); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
 
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
-        printf("Errror while reading parameters: %d", ret);
+        printf("[X] Errror while reading parameters: %d\n", ret);
         return -1;
     }
 
@@ -86,14 +86,14 @@ static int _readMaxStorageSize(unsigned long *_val, const int group_id){
     fd = fopen(param_path, "rt"); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
 
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
-        printf("Errror while reading parametersaaa: %d", ret);
+        printf("[X] Errror while reading parameters: %d", ret);
         return -1;
     }
 
@@ -124,14 +124,14 @@ static int _readCurrStorageSize(unsigned long *_val, const int group_id){
     fd = fopen(param_path, "rt"); 
 
     if(!fd){
-        printf("Error while opening the group file: %d\n", errno);
+        printf("[X] Error while opening the group file: %d\n", errno);
         return -1;
     }
 
 
     ret = fread(buffer, sizeof(char), 64, fd);
     if(ferror(fd) != 0){
-        printf("Errror while reading parameters: %d", ret);
+        printf("[X] Errror while reading parameters: %d", ret);
         return -1;
     }
 
@@ -156,14 +156,14 @@ static int _readGroupParameter(unsigned long *_val, const int group_id, const ch
     fd = fopen(param_path, "rt"); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
 
     ret = fread(buffer, sizeof(char), BUFF_SIZE, fd);
     if(ret < 0){
-        printf("Errror while reading parametersaaa: %d", ret);
+        printf("[X] Errror while reading parameters: %d\n", ret);
         return -1;
     }
 
@@ -186,7 +186,7 @@ static int _setMaxMsgSize(const int group_id, const unsigned long _val){
     fd = open(param_path, O_WRONLY); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
@@ -194,7 +194,7 @@ static int _setMaxMsgSize(const int group_id, const unsigned long _val){
     char buff[BUFF_SIZE];
 
     if(sprintf(buff, "%ld", _val) < 0){
-        printf("Error while converting the paramtere value");
+        printf("[X] Error while converting the paramtere value");
         return -1;
     }
 
@@ -214,7 +214,7 @@ static int _setMaxStorageSize(const int group_id, const unsigned long _val){
     fd = open(param_path, O_WRONLY); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
@@ -222,7 +222,7 @@ static int _setMaxStorageSize(const int group_id, const unsigned long _val){
     char buff[BUFF_SIZE];
 
     if(sprintf(buff, "%ld", _val) < 0){
-        printf("Error while converting the paramtere value");
+        printf("[X] Error while converting the paramtere value");
         return -1;
     }
 
@@ -242,7 +242,7 @@ static int _setGarbCollRatio(const int group_id, const unsigned long _val){
     fd = open(param_path, O_WRONLY); 
 
     if(fd < 0){
-        printf("Error while opening the group file\n");
+        printf("[X] Error while opening the group file\n");
         return -1;
     }
 
@@ -250,7 +250,7 @@ static int _setGarbCollRatio(const int group_id, const unsigned long _val){
     char buff[BUFF_SIZE];
 
     if(sprintf(buff, "%ld", _val) < 0){
-        printf("Error while converting the paramtere value");
+        printf("[X] Error while converting the paramtere value");
         return -1;
     }
 
@@ -316,9 +316,9 @@ static int _changeGroupOwner(int fd, const uid_t new_owner){
  *  
  * 
  */
-int initThreadSycher(thread_synch_t *main_syncher){
+int initThreadSyncher(thread_synch_t *main_syncher){
 
-    char *main_device_default_path = "/dev/main_thread_sync0";  //TODO: remove the zero
+    char *main_device_default_path = "/dev/main_thread_synch";
     int path_len;
     char *path;
     int fd;
@@ -367,6 +367,9 @@ int initThreadSycher(thread_synch_t *main_syncher){
 int openGroup(thread_group_t* group){
     int fd;
 
+    if(group == NULL)
+        return -1;
+
     if(group->file_descriptor < 0){
         fd = open(group->group_path, O_RDWR);
 
@@ -403,7 +406,6 @@ thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *mai
     
     thread_group_t *new_group;
     group_t tmp_group;
-    char *default_group_path = "/dev/group%d";
     char buffer[DEVICE_NAME_SIZE];
     char *group_name;
     int group_id;
@@ -427,13 +429,13 @@ thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *mai
 
     new_group->group_id = group_id;
 
-    max_size = strnlen(default_group_path, DEVICE_NAME_SIZE) + 4;   //Max group ID=255
+    max_size = strnlen(group_default_path, DEVICE_NAME_SIZE) + 4;   //Max group ID=255
 
     new_group->group_path = (char*)malloc(sizeof(char)*max_size);
     if(!new_group->group_path)
         goto cleanup1;
 
-    ret = snprintf(new_group->group_path, DEVICE_NAME_SIZE, "/dev/group%d", group_id);
+    ret = snprintf(new_group->group_path, DEVICE_NAME_SIZE, group_default_path, group_id);
 
     if(ret < 0 || ret >= DEVICE_NAME_SIZE)
         goto cleanup2;
@@ -485,7 +487,7 @@ int readMessage(void *buffer, size_t len, thread_group_t *group){
 
     int ret;
 
-    if(group->file_descriptor == -1)
+    if(group == NULL || group->file_descriptor == -1)
         return -1;
 
 
@@ -514,8 +516,8 @@ int writeMessage(const void *buffer, size_t len, thread_group_t *group){
 
     int ret;
     
-    if(group->file_descriptor == -1){
-        printf("Group not opened");
+    if(group == NULL || group->file_descriptor == -1){
+        printf("[X] Group not opened\n");
         return -1;
     }
 
@@ -759,7 +761,17 @@ int setGarbageCollectorRatio(thread_group_t *group, const unsigned long val){
 
 
 
-
+/**
+ * @brief Enable strict mode on a group
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval 0 on success
+ * @retval UNAUTHORIZED if the current user is not authorized to change the param
+ * @retval Negative number on error
+ * 
+ * @note If strict mode is disabled, any threads can enable it through this function. 
+ *       If strict mode is enabled, only the owner can disable it
+ */
 int enableStrictMode(thread_group_t *group){
     int ret = 0;
 
@@ -775,6 +787,16 @@ int enableStrictMode(thread_group_t *group){
     return 0;
 }
 
+/**
+ * @brief Disable strict mode on a group
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval 0 on success
+ * @retval UNAUTHORIZED if the current user is not authorized to change the param
+ * @retval Negative number on error
+ * 
+ * @note If strict mode is enabled, only the owner can disable it
+ */
 int disableStrictMode(thread_group_t *group){
     int ret = 0;
 
@@ -790,7 +812,17 @@ int disableStrictMode(thread_group_t *group){
     return 0;
 }
 
-
+/**
+ * @brief Change the owner of a group
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval 0 on success
+ * @retval UNAUTHORIZED if the current user is not authorized to change the param
+ * @retval Negative number on error
+ * 
+ * @note If strict mode is enabled, only the current owner can set a new owner
+ * @note If strict mode is enabled, any thread could change the group's owner
+ */
 int changeOwner(thread_group_t *group, const uid_t new_owner){
     int ret = 0;
 
@@ -805,6 +837,17 @@ int changeOwner(thread_group_t *group, const uid_t new_owner){
     return 0;
 }
 
+/**
+ * @brief Change the owner of a group to the calling thread's UID
+ * @param[in] *group A pointer to an initialized group structure
+ * 
+ * @retval 0 on success
+ * @retval UNAUTHORIZED if the current user is not authorized to change the param
+ * @retval Negative number on error
+ * 
+ * @note If strict mode is enabled, only the current owner can set a new owner
+ * @note If strict mode is enabled, any thread could change the group's owner
+ */
 int becomeOwner(thread_group_t *group){
     return changeOwner(group, getuid());
 }
@@ -830,11 +873,8 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
 
     if(main_syncher->initialized == 0)
         return NULL;
-    
-
 
     tmp_group.name_len = descriptor->name_len;
-
     tmp_group.group_name = (char*)malloc(sizeof(char)*tmp_group.name_len+1);
 
     if(!tmp_group.group_name)
@@ -843,11 +883,9 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
     strncpy(tmp_group.group_name, descriptor->group_name, tmp_group.name_len);
 
 
-
     group = (thread_group_t*)malloc(sizeof(thread_group_t));
     if(!group)
         goto cleanup1;
-
 
 
     group_id = _getGroupID(&tmp_group, main_syncher);
@@ -859,7 +897,7 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
     group->group_id = group_id;
     
 
-    ret = snprintf(group_path, DEVICE_NAME_SIZE, "/dev/group%d", group_id);
+    ret = snprintf(group_path, DEVICE_NAME_SIZE, group_default_path, group_id);
     if(ret < 0 || ret >= DEVICE_NAME_SIZE)
         goto cleanup2;
 
@@ -872,7 +910,6 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
 
     strncpy(group->group_path, group_path, path_len);
     group->path_len = path_len;
-
     group->file_descriptor = -1;
 
     return group;
@@ -900,7 +937,6 @@ thread_group_t *loadGroupFromDescriptor(const group_t *descriptor, thread_synch_
  * 
  */
 thread_group_t* loadGroupFromID(const int group_id){
-    const char *default_path = "/dev/group%d";
     char group_path[BUFF_SIZE];
     int fd;
     group_t group_descriptor;
@@ -911,13 +947,13 @@ thread_group_t* loadGroupFromID(const int group_id){
         return NULL;
 
 
-    snprintf(group_path, BUFF_SIZE, default_path, group_id);
+    snprintf(group_path, BUFF_SIZE, group_default_path, group_id);
 
 
     fd = open(group_path, O_RDWR);
 
     if(fd < 0){
-        printf("\nUnable to open the file: %d", errno);
+        printf("[X] Unable to open the file: %d\n", errno);
         return NULL;
     }
 
@@ -935,3 +971,16 @@ thread_group_t* loadGroupFromID(const int group_id){
 
     return group;
 }
+
+
+
+/*
+int flushDelayedMsg(thread_group_t *group){
+    int ret;
+
+    if(group->file_descriptor == -1)
+        return -1;
+
+    ret = fflush()    
+
+}*/

@@ -1,1 +1,4 @@
-KERNEL=="group[0-255]*",NAME="synch/group%n", SYMLINK+="group_synch%n", GROUP="synch"
+ACTION=="add", DEVPATH=="/module/final" SUBSYSTEM=="module" RUN+="/bin/mkdir /dev/synch"
+ACTION=="remove", DEVPATH=="/module/final" SUBSYSTEM=="module" RUN+="/bin/rmdir /dev/synch"
+KERNEL=="synch/group[0-9]*", SYMLINK+="group%n_synch_link", GROUP="synch", MODE="0770"
+KERNEL=="main_thread_synch", GROUP="synch", MODE="0770"

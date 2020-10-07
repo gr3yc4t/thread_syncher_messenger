@@ -1,0 +1,53 @@
+/*!
+*   \page user_lib User Level Library
+*
+*
+*   At user-space level, interaction with the kernel device file is done through two types of structures:
+*   - \ref T_THREAD_SYNCH "thread_synch_t": handles request to the main synch device file
+*   - \ref T_THREAD_GROUP "thread_group_t": handles request to a group device file
+*
+*   First of all, an application has to initialize a thread_synch_t structure via initThreadSyncher() in order to interact with the module’s functionalities. At some point the user-level app would interact with a module’s group by obtaining a thread_group_t structure, and this can be done in three ways:
+*   - installGroup(): Installs a group given a group descriptor (group_t)
+*   - loadGroupFromDescriptor(): loads a thread_group_t structure relative to the group identified by the provided ‘group_t’ descriptor.
+*   - loadGroupFromID(): loads a thread_group_t structure relative to the group identified by the provided ID.
+*
+*   Each one  of these functions return a pointer to an initialized \ref T_THREAD_GROUP "thread_group_t" structure (or NULL in case of error) and, with the exception of the last one, they need athread_synch_t structure as parameter.
+*   To correctly use the module subsystems, applications have to open groups to become active members of them via the function openGroup(). In case the library's functions are called with a closed \ref T_THREAD_GROUP "thread_group_t" structure as a parameter they will return -1.
+*
+*   \section msg_subsystem_user Message Subsystem 
+*   The following functions allows to read/write a message on an existing group (specified via the thread_group_t parameter):
+*   - readMessage()
+*   - writeMessage()
+*
+*   Instead, in order to manage message’s delay, these two functions are available:
+*   - setDelay()
+*   - revokeDelay()
+*
+*   \section synch_subsystem_user Synchronization Subsystem
+*   The whole synchronization subsystem at user-level is managed only through two function: the first one put the calling threads on sleep (the thread is descheduled) while the second one awake all the threads of the same group that went on sleep (they are rescheduled)
+*   - sleepOnBarrier()
+*   - awakeBarrier()
+*
+*
+*   \section security_user Security
+*   The following lists of functions are the one that allows to manage the security configurations of a group. The first pair respectively enable/disable the strict mode of a given group. 
+*   The last two functions are instead used to change the owner of a specified group: the first one accepts an UID as parameter as set it as the new owner while the other one set the UID of the current thread as the owner. 
+*   Recall that if ‘strict mode’ is enabled only the owner of the group can disable it and/or change the group’s owner.
+*   
+*   - enableStrictMode()
+*   - disableStrictMode()
+*   - changeOwner()
+*   - becomeOwner()
+*
+*   \section param_user Parameter Configuration
+*   The functions below are instead used to get/set a group’s parameters. Recall that if ‘strict mode’ is enabled only the owner can set a new value for a parameter.
+*   At low-level these functions interact with the sysfs entries of the specified group.
+*   - getMaxMessageSize()
+*   - getMaxStorageSize()
+*   - getCurrentStorageSize()
+*   - setMaxMessageSize()  
+*   - setMaxStorageSize()
+*   - setGarbageCollectorRatio()
+*/  
+
+

@@ -90,7 +90,7 @@ struct cdev&#160;</td><td class="memItemRight" valign="bottom"><b>cdev</b></td><
 <tr class="separator:ad541ac5927dfc8231d17caeacb7c6db1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ecbc103c2904cc2efaa01717b931eda"><td class="memItemLeft" align="right" valign="top"><a id="a3ecbc103c2904cc2efaa01717b931eda"></a>
 struct device *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#a3ecbc103c2904cc2efaa01717b931eda">dev</a></td></tr>
-<tr class="memdesc:a3ecbc103c2904cc2efaa01717b931eda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Characted Device definition <br  />
+<tr class="memdesc:a3ecbc103c2904cc2efaa01717b931eda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Character Device definition <br  />
  <br /></td></tr>
 <tr class="separator:a3ecbc103c2904cc2efaa01717b931eda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44e989778a8f993fd656f9e0b3777b01"><td class="memItemLeft" align="right" valign="top"><a id="a44e989778a8f993fd656f9e0b3777b01"></a>
@@ -103,10 +103,13 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>group_id</b></td></tr>
 <a class="el" href="../../d2/dc2/structgroup__t.html">group_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#adeb4ff99aded485b308604c89bc2784a">descriptor</a></td></tr>
 <tr class="memdesc:adeb4ff99aded485b308604c89bc2784a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unique identifier of a group. Provided by IDR. <br /></td></tr>
 <tr class="separator:adeb4ff99aded485b308604c89bc2784a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0387fa2cfc77f4fda33c26bc00f9adff"><td class="memItemLeft" align="right" valign="top"><a id="a0387fa2cfc77f4fda33c26bc00f9adff"></a>
-pid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#a0387fa2cfc77f4fda33c26bc00f9adff">owner</a></td></tr>
-<tr class="memdesc:a0387fa2cfc77f4fda33c26bc00f9adff"><td class="mdescLeft">&#160;</td><td class="mdescRight">System-wide descriptor of a group. <br /></td></tr>
-<tr class="separator:a0387fa2cfc77f4fda33c26bc00f9adff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafa5544751d6fe681f8231d50c045028"><td class="memItemLeft" align="right" valign="top"><a id="aafa5544751d6fe681f8231d50c045028"></a>
+uid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#aafa5544751d6fe681f8231d50c045028">owner</a></td></tr>
+<tr class="memdesc:aafa5544751d6fe681f8231d50c045028"><td class="mdescLeft">&#160;</td><td class="mdescRight">System-wide descriptor of a group. <br /></td></tr>
+<tr class="separator:aafa5544751d6fe681f8231d50c045028"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac68263e44ba8fb9d43751c23c5ff2aaa"><td class="memItemLeft" align="right" valign="top"><a id="ac68263e44ba8fb9d43751c23c5ff2aaa"></a>
+struct rw_semaphore&#160;</td><td class="memItemRight" valign="bottom"><b>owner_lock</b></td></tr>
+<tr class="separator:ac68263e44ba8fb9d43751c23c5ff2aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0286ca64be7cc5bde20be703ceaac631"><td class="memItemLeft" align="right" valign="top">struct list_head&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#a0286ca64be7cc5bde20be703ceaac631">active_members</a></td></tr>
 <tr class="separator:a0286ca64be7cc5bde20be703ceaac631"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac58c9638adc534261d1045d31c1b9deb"><td class="memItemLeft" align="right" valign="top">atomic_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d86/structgroup__data.html#ac58c9638adc534261d1045d31c1b9deb">members_count</a></td></tr>

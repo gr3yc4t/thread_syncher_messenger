@@ -70,126 +70,136 @@ $(function() {
 <div class="title">main_device.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef MAIN_DEV_H</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define MAIN_DEV_H</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160; </div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;linux/module.h&gt;</span>   <span class="comment">/* MODULE_*, module_* */</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;linux/kernel.h&gt;</span>   <span class="comment">/* We&#39;re doing kernel work */</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;linux/fs.h&gt;</span>       <span class="comment">/* file_operations, alloc_chrdev_region, unregister_chrdev_region */</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;linux/cdev.h&gt;</span>     <span class="comment">/* cdev, dev_init(), cdev_add(), cdev_del() */</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;linux/device.h&gt;</span>   <span class="comment">/* class_create(), class_destroy(), device_create(), device_destroy() */</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;linux/slab.h&gt;</span>     <span class="comment">/* kmalloc(), kfree() */</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;linux/uaccess.h&gt;</span>  <span class="comment">/* copy_from_user(), copy_to_user() */</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;linux/semaphore.h&gt;</span>    <span class="comment">/* used acces to semaphore, process management syncronization behaviour */</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;linux/ioctl.h&gt;</span>    </div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;linux/idr.h&gt;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<a href="../../d2/dac/main__device_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#ifndef MAIN_DEV_H</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#define MAIN_DEV_H</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;linux/module.h&gt;</span>   <span class="comment">/* MODULE_*, module_* */</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;linux/kernel.h&gt;</span>   <span class="comment">/* We&#39;re doing kernel work */</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;linux/fs.h&gt;</span>       <span class="comment">/* file_operations, alloc_chrdev_region, unregister_chrdev_region */</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;linux/cdev.h&gt;</span>     <span class="comment">/* cdev, dev_init(), cdev_add(), cdev_del() */</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;linux/device.h&gt;</span>   <span class="comment">/* class_create(), class_destroy(), device_create(), device_destroy() */</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;linux/slab.h&gt;</span>     <span class="comment">/* kmalloc(), kfree() */</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;linux/uaccess.h&gt;</span>  <span class="comment">/* copy_from_user(), copy_to_user() */</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;linux/semaphore.h&gt;</span>    <span class="comment">/* used acces to semaphore, process management syncronization behaviour */</span></div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;group_manager.h&quot;</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;linux/ioctl.h&gt;</span>    </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;linux/idr.h&gt;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">    Error Codes</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#ifndef DISABLE_SYSFS</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">    #include &quot;<a class="code" href="../../d4/dca/sysfs_8h.html">sysfs.h</a>&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#define ALLOC_ERR           -2      </span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#define USER_COPY_ERR       -3      </span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#define IDR_ERR             -4      </span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#define MEM_ACCESS_ERR      -5      </span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#define CLASS_EXISTS        -10     </span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#define CLASS_ERR           -11</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#define DEV_CREATION_ERR    -12    </span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#define CDEV_ALLOC_ERR      -13</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#define GROUP_EXISTS        -14</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">    IOCTL</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d4/dbe/group__manager_8h.html">group_manager.h</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">    Error Codes</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#ifndef DISABLE_SYSFS</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">    #include &quot;<a class="code" href="../../d4/dca/sysfs_8h.html">sysfs.h</a>&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#define INVALID_IOCTL_COMMAND   -1</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a341d9ea11c7ed03bca3c5389d45c2c05">   35</a></span>&#160;<span class="preprocessor">#define ALLOC_ERR           -2      </span></div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#aa5b435b16787017c5a2c7d05368a056a">   36</a></span>&#160;<span class="preprocessor">#define USER_COPY_ERR       -3      </span></div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a9289476512ce6218adeed79af8068b5d">   37</a></span>&#160;<span class="preprocessor">#define IDR_ERR             -4      </span></div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#ab2d26649d131cdb71d20cc6e5aed12b2">   38</a></span>&#160;<span class="preprocessor">#define MEM_ACCESS_ERR      -5      </span></div>
+<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a4bd8a296d72c36e23aba0ac4a7adc8be">   39</a></span>&#160;<span class="preprocessor">#define CLASS_EXISTS        -10     </span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#define CLASS_ERR           -11</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#define DEV_CREATION_ERR    -12    </span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#define CDEV_ALLOC_ERR      -13</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#define GROUP_EXISTS        -14</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#define IOCTL_INSTALL_GROUP _IOW(&#39;X&#39;, 99, group_t*)</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#define IOCTL_GET_GROUP_ID  _IOW(&#39;X&#39;, 100, group_t*)</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">    Defined Macros</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#define D_DEV_NAME      &quot;main_thread_sync&quot;          </span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#define D_DEV_MAJOR     (0)                         </span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#define D_DEV_MINOR     (0)                         </span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#define D_DEV_NUM       (1)                         </span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#define CLASS_NAME      &quot;thread_synch&quot;              </span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#define GRP_MIN_ID      0                           </span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">#define GRP_MAX_ID      255                         </span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor"></span><span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">    Type Definition</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span><span class="preprocessor"></span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html">   75</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="../../db/dc1/structt__main__sync.html">t_main_sync</a> {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    dev_t dev;</div>
-<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">   77</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">cdev</a> <a class="code" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">cdev</a>;                       </div>
-<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">   78</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">minor</a>;                              </div>
-<div class="line"><a name="l00080"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">   80</a></span>&#160;    <span class="keyword">struct </span>idr <a class="code" href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">group_map</a>;                   </div>
-<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">   82</a></span>&#160;    <span class="keyword">struct </span>semaphore <a class="code" href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">sem</a>;                   </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;} main_sync_t;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">    Prototype Declaration</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="keywordtype">int</span> mainInit(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">void</span> mainExit(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="keywordtype">void</span> initializeMainDevice(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keywordtype">int</span> installGroup(<span class="keyword">const</span> <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> new_group);</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> mainOpen(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filep);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> mainRelease(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filep);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="keyword">static</span> ssize_t mainWrite(<span class="keyword">struct</span> file *filep, <span class="keyword">const</span> <span class="keywordtype">char</span> __user *buf, <span class="keywordtype">size_t</span> count, loff_t *f_pos);</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="keyword">static</span> ssize_t mainRead(<span class="keyword">struct</span> file *filep, <span class="keywordtype">char</span> __user *buf, <span class="keywordtype">size_t</span> count, loff_t *f_pos);</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keyword">static</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mainDeviceIoctl(<span class="keyword">struct</span> file *file, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> ioctl_num, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> ioctl_param);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">    IOCTL</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#define IOCTL_INSTALL_GROUP _IOW(&#39;X&#39;, 99, group_t*)</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#define IOCTL_GET_GROUP_ID  _IOW(&#39;X&#39;, 100, group_t*)</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">    Defined Macros</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a11e5b1c496994cbf156e7bfaf3035a9a">   58</a></span>&#160;<span class="preprocessor">#define D_DEV_NAME      &quot;main_thread_synch&quot;         </span></div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a0b86a4dff9e782beb967fab73ed4e2fe">   59</a></span>&#160;<span class="preprocessor">#define D_DEV_MAJOR     (0)                         </span></div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#ac3533a6aa49d2dd078b410dabaf5ddee">   60</a></span>&#160;<span class="preprocessor">#define D_DEV_MINOR     (0)                         </span></div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#af418910e7d7c88833026b123341844d6">   61</a></span>&#160;<span class="preprocessor">#define D_DEV_NUM       (1)                         </span></div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a79f2713d570c7065f61a160134ea765b">   64</a></span>&#160;<span class="preprocessor">#define CLASS_NAME      &quot;thread_synch&quot;              </span></div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#a27e774c764ed8adabca0614536444d27">   67</a></span>&#160;<span class="preprocessor">#define GRP_MIN_ID      0                           </span></div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="../../d2/dac/main__device_8h.html#acba0c94cdc55ce2eadea2e4aca346e98">   68</a></span>&#160;<span class="preprocessor">#define GRP_MAX_ID      255                         </span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor"></span><span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">    Type Definition</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html">   82</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="../../db/dc1/structt__main__sync.html">t_main_sync</a> {</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    dev_t dev;</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">   84</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">cdev</a> <a class="code" href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">cdev</a>;                       </div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">   85</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">minor</a>;                              </div>
+<div class="line"><a name="l00087"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">   87</a></span>&#160;    <span class="keyword">struct </span>idr <a class="code" href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">group_map</a>;                   </div>
+<div class="line"><a name="l00089"></a><span class="lineno"><a class="line" href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">   89</a></span>&#160;    <span class="keyword">struct </span>semaphore <a class="code" href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">sem</a>;                   </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;} main_sync_t;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">    Prototype Declaration</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d2/dac/main__device_8h.html#af4771bd0b385dc4e2cd6fa443e899735">mainInit</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d2/dac/main__device_8h.html#a48d8e84c8660710553f0beddd8b95b6a">mainExit</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d2/dac/main__device_8h.html#a2310445f7a33019d337e6f336b4c48d9">initializeMainDevice</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d2/dac/main__device_8h.html#a67f3d637fdb8834a96bee2141c523458">installGroup</a>(<span class="keyword">const</span> <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> new_group);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> sRegisterMainDev(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">static</span> <span class="keywordtype">void</span> sUnregisterMainDev(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> mainOpen(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filep);</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> mainRelease(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filep);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">static</span> ssize_t mainWrite(<span class="keyword">struct</span> file *filep, <span class="keyword">const</span> <span class="keywordtype">char</span> __user *buf, <span class="keywordtype">size_t</span> count, loff_t *f_pos);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="keyword">static</span> ssize_t mainRead(<span class="keyword">struct</span> file *filep, <span class="keywordtype">char</span> __user *buf, <span class="keywordtype">size_t</span> count, loff_t *f_pos);</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="keyword">static</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> mainDeviceIoctl(<span class="keyword">struct</span> file *file, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> ioctl_num, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> ioctl_param);</div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">    Global Variables</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>class *main_class;                </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>cdev *main_cdev;          </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> main_dev_major = D_DEV_MAJOR;        </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> main_dev_minor = D_DEV_MINOR;        </div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>device *main_device;              <span class="comment">//Used for &quot;parent&quot; field in device_create; </span></div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">//Main device global pointer </span></div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="keyword">static</span> main_sync_t main_device_data;    <span class="comment">//TODO use an array to manage multiple main device  </span></div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>file_operations main_fops;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="keyword">extern</span> <span class="keyword">struct </span>class *group_device_class;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> sRegisterMainDev(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="keyword">static</span> <span class="keywordtype">void</span> sUnregisterMainDev(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">/*------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">    Global Variables</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">------------------------------------------------------------------------------*/</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>class *main_class;                </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>cdev *main_cdev;          </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> main_dev_major = <a class="code" href="../../d2/dac/main__device_8h.html#a0b86a4dff9e782beb967fab73ed4e2fe">D_DEV_MAJOR</a>;        </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> main_dev_minor = <a class="code" href="../../d2/dac/main__device_8h.html#ac3533a6aa49d2dd078b410dabaf5ddee">D_DEV_MINOR</a>;        </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>device *main_device;              <span class="comment">//Used for &quot;parent&quot; field in device_create; </span></div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="preprocessor">#endif //MAIN_DEV_H</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">//Main device global pointer </span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keyword">static</span> main_sync_t main_device_data;    <span class="comment">//TODO use an array to manage multiple main device  </span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>file_operations main_fops;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="keyword">extern</span> <span class="keyword">struct </span>class *group_device_class;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="preprocessor">#endif //MAIN_DEV_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="astructt__main__sync_html_a915d360164784d5712d90e5a82b4fb48"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">t_main_sync::group_map</a></div><div class="ttdeci">struct idr group_map</div><div class="ttdef"><b>Definition:</b> main_device.h:80</div></div>
+<div class="ttc" id="amain__device_8h_html_a2310445f7a33019d337e6f336b4c48d9"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#a2310445f7a33019d337e6f336b4c48d9">initializeMainDevice</a></div><div class="ttdeci">void initializeMainDevice(void)</div><div class="ttdoc">Init Main Device members.</div><div class="ttdef"><b>Definition:</b> main_device.c:107</div></div>
+<div class="ttc" id="astructt__main__sync_html_a915d360164784d5712d90e5a82b4fb48"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a915d360164784d5712d90e5a82b4fb48">t_main_sync::group_map</a></div><div class="ttdeci">struct idr group_map</div><div class="ttdef"><b>Definition:</b> main_device.h:87</div></div>
+<div class="ttc" id="amain__device_8h_html_af4771bd0b385dc4e2cd6fa443e899735"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#af4771bd0b385dc4e2cd6fa443e899735">mainInit</a></div><div class="ttdeci">int mainInit(void)</div><div class="ttdoc">Kernel Module Init.</div><div class="ttdef"><b>Definition:</b> main_device.c:27</div></div>
 <div class="ttc" id="asysfs_8h_html"><div class="ttname"><a href="../../d4/dca/sysfs_8h.html">sysfs.h</a></div><div class="ttdoc">Setup the required sysfs interfaces for the module.</div></div>
-<div class="ttc" id="astructt__main__sync_html"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html">t_main_sync</a></div><div class="ttdoc">Main device structure.</div><div class="ttdef"><b>Definition:</b> main_device.h:75</div></div>
-<div class="ttc" id="astructt__main__sync_html_a38ea2435e6607d5e89cb4070916d9471"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">t_main_sync::minor</a></div><div class="ttdeci">int minor</div><div class="ttdef"><b>Definition:</b> main_device.h:78</div></div>
-<div class="ttc" id="astructgroup__t_html"><div class="ttname"><a href="../../d2/dc2/structgroup__t.html">group_t</a></div><div class="ttdoc">System-wide descriptor of a group.</div><div class="ttdef"><b>Definition:</b> types.h:130</div></div>
-<div class="ttc" id="astructt__main__sync_html_acb9fb56e2da6df26d72fc3edf3060d2c"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">t_main_sync::cdev</a></div><div class="ttdeci">struct cdev cdev</div><div class="ttdef"><b>Definition:</b> main_device.h:77</div></div>
-<div class="ttc" id="astructt__main__sync_html_a989dd471668d9a94de22b2bcb22c04bb"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">t_main_sync::sem</a></div><div class="ttdeci">struct semaphore sem</div><div class="ttdef"><b>Definition:</b> main_device.h:82</div></div>
+<div class="ttc" id="astructt__main__sync_html"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html">t_main_sync</a></div><div class="ttdoc">Main device structure.</div><div class="ttdef"><b>Definition:</b> main_device.h:82</div></div>
+<div class="ttc" id="amain__device_8h_html_ac3533a6aa49d2dd078b410dabaf5ddee"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#ac3533a6aa49d2dd078b410dabaf5ddee">D_DEV_MINOR</a></div><div class="ttdeci">#define D_DEV_MINOR</div><div class="ttdef"><b>Definition:</b> main_device.h:60</div></div>
+<div class="ttc" id="astructt__main__sync_html_a38ea2435e6607d5e89cb4070916d9471"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a38ea2435e6607d5e89cb4070916d9471">t_main_sync::minor</a></div><div class="ttdeci">int minor</div><div class="ttdef"><b>Definition:</b> main_device.h:85</div></div>
+<div class="ttc" id="amain__device_8h_html_a67f3d637fdb8834a96bee2141c523458"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#a67f3d637fdb8834a96bee2141c523458">installGroup</a></div><div class="ttdeci">int installGroup(const group_t new_group)</div><div class="ttdoc">Install a group for the provided 'group_t' descriptor.</div><div class="ttdef"><b>Definition:</b> main_device.c:389</div></div>
+<div class="ttc" id="amain__device_8h_html_a0b86a4dff9e782beb967fab73ed4e2fe"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#a0b86a4dff9e782beb967fab73ed4e2fe">D_DEV_MAJOR</a></div><div class="ttdeci">#define D_DEV_MAJOR</div><div class="ttdef"><b>Definition:</b> main_device.h:59</div></div>
+<div class="ttc" id="astructgroup__t_html"><div class="ttname"><a href="../../d2/dc2/structgroup__t.html">group_t</a></div><div class="ttdoc">System-wide descriptor of a group.</div><div class="ttdef"><b>Definition:</b> types.h:138</div></div>
+<div class="ttc" id="amain__device_8h_html_a48d8e84c8660710553f0beddd8b95b6a"><div class="ttname"><a href="../../d2/dac/main__device_8h.html#a48d8e84c8660710553f0beddd8b95b6a">mainExit</a></div><div class="ttdeci">void mainExit(void)</div><div class="ttdoc">Kernel Module Exit.</div><div class="ttdef"><b>Definition:</b> main_device.c:55</div></div>
+<div class="ttc" id="agroup__manager_8h_html"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html">group_manager.h</a></div><div class="ttdoc">Handles all procedures releated to file operation issued on a group device.</div></div>
+<div class="ttc" id="astructt__main__sync_html_acb9fb56e2da6df26d72fc3edf3060d2c"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#acb9fb56e2da6df26d72fc3edf3060d2c">t_main_sync::cdev</a></div><div class="ttdeci">struct cdev cdev</div><div class="ttdef"><b>Definition:</b> main_device.h:84</div></div>
+<div class="ttc" id="astructt__main__sync_html_a989dd471668d9a94de22b2bcb22c04bb"><div class="ttname"><a href="../../db/dc1/structt__main__sync.html#a989dd471668d9a94de22b2bcb22c04bb">t_main_sync::sem</a></div><div class="ttdeci">struct semaphore sem</div><div class="ttdef"><b>Definition:</b> main_device.h:89</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

@@ -24,8 +24,8 @@ static void mainStop(void);
 ------------------------------------------------------------------------------*/
 MODULE_AUTHOR("Alessandro Cingolani");
 MODULE_LICENSE("Dual MIT/GPL");
-MODULE_DESCRIPTION("Main module");
-MODULE_VERSION("0.1");
+MODULE_DESCRIPTION("Threads syncher and message exchanger");
+MODULE_VERSION("1.0");
 
 
 module_init(mainStart);

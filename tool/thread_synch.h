@@ -1,3 +1,14 @@
+/**
+ * @file thread_synch.h
+ * 
+ * @brief User-level library to wrap thread-synch kernel-level functionalities
+ * 
+ * Funcions will operate through two types of structures:
+ *      - T_THREAD_SYNCH: handles request to the main synch device file
+ *      - T_THREAD_GROUP: handles request to a group device file
+ */
+
+
 #ifndef THREAD_SYNCH_H
 #define THREAD_SYNCH_H
 
@@ -96,38 +107,42 @@ typedef struct group_t {
 
 
 
-
+/**
+ * @brief User-level handler of the thread-synch main device
+ */
 typedef struct T_THREAD_SYNCH {
-    int main_file_descriptor;
+    int main_file_descriptor;   /**< File descriptor of the /dev/main_synch device */
 
-    char *main_device_path;
-    size_t path_len;     
+    char *main_device_path;     /**< Path to the main syncher file inside /dev directory*/
+    size_t path_len;            /**< Length of the main syncher path */
 
-    short initialized;
+    short initialized;          /**< Flag that specifies if the structure is initialized */
 } thread_synch_t;
 
 
-
+/**
+ * @brief User-level handler of a group
+ */
 typedef struct T_THREAD_GROUP {
 
-    int file_descriptor;
+    int file_descriptor;    /**< File descriptor of the /dev device */
 
-    group_t descriptor;
-    unsigned int group_id;
+    group_t descriptor;     /**< System-wide descriptor of the group */
+    unsigned int group_id;  /**< System-wide group ID */
     
-    char *group_path;
-    size_t path_len; 
+    char *group_path;       /**< Path to the group file inside /dev directory*/
+    size_t path_len;        /**< Length of the group path */
 
 }  thread_group_t;
 
 
 
-static const char *param_default_path = "/sys/class/group_synch/group%d/group_parameters/";
+static const char *param_default_path = "/sys/class/group_synch/synch!group%d/group_parameters/";
+static const char *group_default_path = "/dev/synch/group%d";
 
 
 
-
-int initThreadSycher(thread_synch_t *main_syncher);
+int initThreadSyncher(thread_synch_t *main_syncher);
 thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *main_synch);
 
 int readGroupInfo(thread_synch_t *main_syncher);

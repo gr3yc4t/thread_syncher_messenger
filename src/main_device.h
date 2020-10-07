@@ -1,3 +1,8 @@
+/**
+ * @file main_device.h
+ * @brief Handles all procedures releated to the main synch device file
+ */
+
 #ifndef MAIN_DEV_H
 #define MAIN_DEV_H
 
@@ -26,6 +31,7 @@
 	#include "sysfs.h"
 #endif
 
+#define INVALID_IOCTL_COMMAND   -1
 #define ALLOC_ERR 			-2		/**< Returned when a 'kmalloc' fails*/	 
 #define USER_COPY_ERR		-3		/**< Returned when copy_to_user/copy_from_user fails*/
 #define IDR_ERR				-4		/**< Returned when the IDR fails */
@@ -49,7 +55,7 @@
 /*------------------------------------------------------------------------------
 	Defined Macros
 ------------------------------------------------------------------------------*/
-#define D_DEV_NAME		"main_thread_sync"			/**< Main device name */
+#define D_DEV_NAME		"main_thread_synch"			/**< Main device name */
 #define D_DEV_MAJOR		(0)							/**< Main device major# */
 #define D_DEV_MINOR		(0)							/**< Main device minor# */
 #define D_DEV_NUM		(1)							/**< Number of main device */

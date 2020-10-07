@@ -1,8 +1,3 @@
-/**
- * @file		message.c
- * @brief		Handles all procedures releated to messages releated to a group device
- *
- */
 #include "message.h"
 
 //Internal Prototypes
@@ -13,7 +8,7 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager);
 /**
  *  @brief Print a [msg_t] (\ref msg_t) structure
  *  @param[in] msg The 'msg_t' to print
- *  @return nothign
+ *  @return nothing
  */
 void debugMsg(msg_t msg){
 
@@ -29,13 +24,21 @@ void debugMsg(msg_t msg){
 
 
 #ifndef DISABLE_DELAYED_MSG
+/**
+ * @brief Check if the message delay is greater than zero on a group
+ * 
+ * @param[in] manager A pointer to the message manager of the group
+ * 
+ * @note This function is thread-safe
+ * 
+ * @retval true If the delay is greater than zero
+ * @retval false If the delay is zero
+ */
 bool isDelaySet(const msg_manager_t *manager){
-    printk(KERN_DEBUG "Reading message delay data");
     if(atomic_long_read(&manager->message_delay) != 0)
         return true;
     else
-        return false;
-    
+        return false;  
 }
 
 /**
@@ -51,41 +54,40 @@ bool isDelaySet(const msg_manager_t *manager){
 void delayedMessageCallback(struct timer_list *timer){
 
     struct t_message_delayed_deliver *delayed_msg;  //Elasped msg
-    msg_t *msg_deliver;                             //Message to add to the queue
+    msg_t *msg_deliver;     //Message to add to the queue
+    int ret;                           
 
-    printk(KERN_INFO "delayedMessageCallback: timer elasped");
+    pr_info("delayedMessageCallback: timer elasped");
 
 
     delayed_msg = from_timer(delayed_msg, timer, delayed_timer);
-
     msg_deliver = &delayed_msg->message;
 
 
     if(delayed_msg->manager == NULL){
-        printk(KERN_ERR "Message manager is not allocated, exiting");
+        pr_err("Message manager is not allocated, exiting");
         return;
     }
 
-    printk(KERN_INFO "delayedMessageCallback: Writing message into the FIFO queue");
+    pr_info("delayedMessageCallback: Writing message into the FIFO queue");
 
-    if(!writeMessage(msg_deliver, delayed_msg->manager)){
-        printk(KERN_ERR "delayedMessageCallback: Unable to deliver delayed message");
+    if((ret = writeMessage(msg_deliver, delayed_msg->manager)) < 0){
+        pr_err("delayedMessageCallback: Unable to deliver delayed message: %d", ret);
         return;
     }
 
     //Deallocate structures
-    printk(KERN_DEBUG "delayedMessageCallback: start deallocating structures");
-
     if(del_timer(timer)){
-        printk(KERN_DEBUG "Strange behaviour: timer callback called but timer not elasped...");
+        pr_debug("Strange behaviour: timer callback called but timer not elasped...");
     }
 
-    printk(KERN_INFO "delayedMessageCallback: locking delayed list");
+    pr_debug("delayedMessage: trying to acquire lock");
     down(&delayed_msg->manager->delayed_lock);
+        pr_debug("delayedMessage: lock acquired");
         list_del(&delayed_msg->delayed_list);
         kfree(delayed_msg);
     up(&delayed_msg->manager->delayed_lock);
-    printk(KERN_INFO "delayedMessageCallback: unlocking delayed list");
+    pr_info("delayedMessageCallback: unlocking delayed list after deleting entries");
 
 
     return;
@@ -105,11 +107,11 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_delayed_deliver *newMessageDeliver;
 
     if(!message || !manager){
-        printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
+        pr_err("%s: NULL pointers", __FUNCTION__);
         return -1;
     }
 
-    printk(KERN_DEBUG "queueDelayedMessage: Checking size limits...");
+    pr_debug("queueDelayedMessage: Checking size limits...");
 
     if(!isValidSizeLimits(message, manager)){
         printk(KERN_ERR "Message size is invalid");
@@ -123,29 +125,23 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     newMessageDeliver->message = *message;
     newMessageDeliver->manager = manager;
 
-    printk(KERN_DEBUG "queueDelayedMessage: reading delay...");
 
     long delay = atomic_long_read(&manager->message_delay);
 
-    printk(KERN_DEBUG "queueDelayedMessage: Delay value %ld", delay);
+    pr_debug("queueDelayedMessage: Delay value %ld", delay);
 
-    printk(KERN_DEBUG "queueDelayedMessage: Setting up delayed timer...");
     timer_setup(&newMessageDeliver->delayed_timer, delayedMessageCallback, 0);
-
-    printk(KERN_DEBUG "queueDelayedMessage: Trying to acquire delayed_lock ");
 
     //Add to the msg_manager message queue
     down(&manager->delayed_lock);
-    printk(KERN_DEBUG "queueDelayedMessage: delayed_lock acquired");
         //Queue Critical Section
         list_add(&newMessageDeliver->delayed_list, &manager->delayed_queue);
     up(&manager->delayed_lock);
-    printk(KERN_DEBUG "queueDelayedMessage: delayed_lock released");
 
     //Set delay and start the timer
     newMessageDeliver->delayed_timer.expires = jiffies + delay * HZ;
     add_timer(&newMessageDeliver->delayed_timer);
-    printk(KERN_DEBUG "queueDelayedMessage: Timer started");
+    pr_debug("queueDelayedMessage: Timer started");
 
     return 0;    
 
@@ -163,7 +159,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
  */
 int revokeDelayedMessage(msg_manager_t *manager){
 
-    printk(KERN_DEBUG "Revoking delayed messages...");
+    pr_debug("Revoking delayed messages...");
 
     struct list_head *cursor, *temp;
     struct t_message_delayed_deliver *msgDeliver;
@@ -178,7 +174,7 @@ int revokeDelayedMessage(msg_manager_t *manager){
             if(msgDeliver != NULL){
                 //Stop the timer
                 //TODO: check thread safety with the callback function
-                printk(KERN_DEBUG "Message timer deleted");
+                pr_debug("Message timer deleted");
                 del_timer(&msgDeliver->delayed_timer);
             }
 
@@ -206,15 +202,13 @@ int revokeDelayedMessage(msg_manager_t *manager){
  */
 int cancelDelay(msg_manager_t *manager){
 
-    printk(KERN_DEBUG "cancelDelay: Cancelling delay on messages...");
+    pr_debug("cancelDelay: Cancelling delay on messages...");
 
     struct list_head *cursor, *temp;
     struct t_message_delayed_deliver *msgDeliver;
     int count = 0;
 
-    printk(KERN_DEBUG "cancelDelay: trying to acquire delayed_lock");
     down(&manager->delayed_lock);
-        printk(KERN_DEBUG "cancelDelay: delayed_lock acquired");
 
         list_for_each_safe(cursor, temp, &manager->delayed_queue){
 
@@ -223,15 +217,16 @@ int cancelDelay(msg_manager_t *manager){
             if(msgDeliver != NULL){
                 //Stop the timer
                 //TODO: See notes. Possibly substitute with del_timer_synch
-                printk(KERN_DEBUG "cancelDelay: timer stopped");
+                pr_debug("cancelDelay: timer stopped");
 
                 mod_timer(&msgDeliver->delayed_timer, 0);
+                //del_timer_synch(&msgDeliver->delayed_timer);
                 count++;
             }
         }
 
     up(&manager->delayed_lock);
-    printk(KERN_DEBUG "cancelDelay: delayed_lock released");
+    pr_debug("cancelDelay: delayed queue unlocked");
 
     return count;
 }
@@ -250,42 +245,36 @@ int cancelDelay(msg_manager_t *manager){
  * @note This function is thread-safe
  */
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
+        u_long max_msg_size;
+        u_long max_storage_size;
+        u_long curr_storage_size;
         u_long msg_size;
         u_long structure_size;
 
-        if(!msg || !manager){
-            printk(KERN_ERR "%s: NULL pointers", __FUNCTION__);
-            BUG();
-        }
+        if(!msg || !manager)
+            return false;
+        
 
-        printk(KERN_DEBUG "READ-LOCK: config_lock");
+
+        msg_size = (u_long)msg->size;
+
         down_read(&manager->config_lock);
-            msg_size = (u_long)msg->size;
-
-            printk(KERN_DEBUG "Message size: %ld", msg_size);
-
-            if(msg_size > manager->max_message_size){
-                printk(KERN_DEBUG "Max msg. size invalidated!!!");
-                goto invalid;
-            }
-
-            //Include both the uppper structure 't_message_deliver' and its recipients
-            //  list that will contain the sender
-            structure_size = sizeof(struct t_message_deliver) + sizeof(group_members_t);
-
-            if(manager->curr_storage_size + msg_size + structure_size > manager->max_storage_size){
-                printk(KERN_DEBUG "Max msg. storage size invalidated!!!");
-                goto invalid;
-            }
-
+            max_msg_size = manager->max_message_size;
+            max_storage_size = manager->max_storage_size;
+            curr_storage_size = manager->curr_storage_size;
         up_read(&manager->config_lock);
-        printk(KERN_DEBUG "READ-UNLOCK: config_lock");
+
+        if(msg_size > max_msg_size)
+            return false;
+
+        //Include both the uppper structure 't_message_deliver' and its recipients
+        //  list that will contain the sender
+        structure_size = sizeof(struct t_message_deliver) + sizeof(group_members_t);
+
+        if(curr_storage_size + msg_size + structure_size > max_storage_size)
+            return false;
 
         return true;
-
-    invalid:
-        up_read(&manager->config_lock);
-        return false;
 }
 
 
@@ -642,14 +631,10 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     group_members_t *sender;
     int ret = 0;
 
-    debugMsg(*message);
-
     if(!isValidSizeLimits(message, manager)){
-        printk(KERN_ERR "Message size is invalid");
+        pr_err("Message size is invalid");
         return STORAGE_SIZE_ERR;
     }
-
-
 
     newMessageDeliver = (struct t_message_deliver*)kmalloc(sizeof(struct t_message_deliver), GFP_KERNEL);
     if(!newMessageDeliver)
@@ -795,11 +780,12 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
  * 
  * @return nothing
  * 
+ * @todo Check if size calculation are done correctly
+ * 
  * @note This function has three critical section, therefore it could be a bottleneck of
  *      the module
  */
 void queueGarbageCollector(struct work_struct *work){
-    
     group_data *grp_data;
     garbage_collector_t *garbage_collector;
     msg_manager_t *manager;
@@ -827,7 +813,6 @@ void queueGarbageCollector(struct work_struct *work){
 
     deleted_entries = 0;
     deleted_recipients = 0;
-
     deleted_deliver_size = 0;
     total_msg_size = 0;
     total_recipients_size = 0;

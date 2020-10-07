@@ -1,0 +1,17 @@
+This module for Linux kernel allows threads to subscribe to a group in order to exchange messages and synchronize between each other. In simple terms, the entire subsystem can be divided into the following sub-\/modules\+:
+\begin{DoxyItemize}
+\item {\bfseries{Messages System}}\+: handles the exchanges of messages between threads
+\begin{DoxyItemize}
+\item Delayed messages\+: allows threads to post messages that will become available once a delay is expired
+\item Garbage Collector\+: routine that periodically free storage memory by deleting delivered messages
+\end{DoxyItemize}
+\item {\bfseries{Synchronization system}}\+: allows threads to be descheduled until another thread woke them up.
+\item {\bfseries{Parameter config system}}\+: install a sysfs that allows authorized users to config group’s parameter
+\end{DoxyItemize}
+
+For user-\/level library documentaion see \mbox{\hyperlink{user_lib}{this}} page.~\newline
+ For kernel-\/level code documentation see \mbox{\hyperlink{kernel_docs}{this}} page.~\newline
+\hypertarget{index_msg_subsystem}{}\doxysection{Message Subsytem}\label{index_msg_subsystem}
+Messages in a group are delivered to readers in F\+I\+FO order. Threads can subscribe to a group’s messages and when they do they become an “active member” of that group.~\newline
+ When a thread reads a message, the module adds its P\+ID to the message’s list of recipients. Later, the garbage collector will traverse the messages F\+I\+FO queue and compare the set of message’s recipients with the set of active members\+: if recipients are a subset of active members, the message is removed and memory is freed.\hypertarget{index_sec_features}{}\doxysection{Security Features}\label{index_sec_features}
+Each group has a field that describes its owner\+: an owner is represented by an U\+ID that corresponds to the user that installed the group. By default any threads can edit the group’s parameters both through the “parameter config system” and by interacting with the group\textquotesingle{}s facilities. To prevent this, it is possible to set the {\bfseries{“strict mode”}} flag of a group\+: when this flag is active, only the current owner of a group can modify its internal parameters. 

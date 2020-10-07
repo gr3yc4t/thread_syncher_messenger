@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Thread Synch AOSV 2020: Main Page</title>
+<title>Thread Synch AOSV 2020: Thread Syncher</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,11 +61,31 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Thread Synch AOSV 2020 Documentation</div>  </div>
+<div class="title">Thread Syncher </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p>This module for Linux kernel allows threads to subscribe to a group in order to exchange messages and synchronize between each other. In simple terms, the entire subsystem can be divided into the following sub-modules:</p><ul>
+<li><b>Messages System</b>: handles the exchanges of messages between threads<ul>
+<li>Delayed messages: allows threads to post messages that will become available once a delay is expired</li>
+<li>Garbage Collector: routine that periodically free storage memory by deleting delivered messages</li>
+</ul>
+</li>
+<li><b>Synchronization system</b>: allows threads to be descheduled until another thread woke them up.</li>
+<li><b>Parameter config system</b>: install a sysfs that allows authorized users to config group’s parameter</li>
+</ul>
+<p>For user-level library documentaion see <a class="el" href="db/dc6/user_lib.html">this</a> page.<br  />
+ For kernel-level code documentation see <a class="el" href="df/d1d/kernel_docs.html">this</a> page.<br  />
+</p>
+<h1><a class="anchor" id="msg_subsystem"></a>
+Message Subsytem</h1>
+<p>Messages in a group are delivered to readers in FIFO order. Threads can subscribe to a group’s messages and when they do they become an “active member” of that group.<br  />
+ When a thread reads a message, the module adds its PID to the message’s list of recipients. Later, the garbage collector will traverse the messages FIFO queue and compare the set of message’s recipients with the set of active members: if recipients are a subset of active members, the message is removed and memory is freed.</p>
+<h1><a class="anchor" id="sec_features"></a>
+Security Features</h1>
+<p>Each group has a field that describes its owner: an owner is represented by an UID that corresponds to the user that installed the group. By default any threads can edit the group’s parameters both through the “parameter config system” and by interacting with the group's facilities. To prevent this, it is possible to set the <b>“strict mode”</b> flag of a group: when this flag is active, only the current owner of a group can modify its internal parameters. </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

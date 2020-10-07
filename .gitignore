@@ -123,3 +123,11 @@ dkms.conf
 .vscode/
 
 tool/tool
+
+tool/perf.data.old
+
+*.perf
+
+*.data
+
+warns.txt

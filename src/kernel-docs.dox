@@ -1,0 +1,47 @@
+/*!
+*
+* \page kernel_docs Kernel Code Documentation
+*
+* \section kern_structures Kernel-level Structures
+* Inside the kernel-space, a message is treated as a msg_t structure. The ‘author’ fields represent the PID of the process which sent the message.
+*
+* The FIFO queue at low-level is implemented through a linked-list inside the struct ‘msg_manager_t’. The structure ‘t_message_deliver’ represents an entry of that queue: apart from the message itselfs, another linked list called ‘recipient’ is present and its purpose is to keep track of PIDs of processes that readed the ‘message’. Since this list is one of the most frequently used (an entry is added on every ‘read’ and the garbage collector), a read/write semaphore is used to manage concurrent access to that list.
+*
+* The message subsystem has its own structure inside the module: first of all, the initial variables are used to store the group’s storage configuration, with a read/write semaphore that manages access to these settings. Below, the members ‘queue’ and ‘queue_lock’ represents, respectively, the FIFO queue composed of ‘t_message_deliver’ entries and a read/write semaphore on that list.
+* The last three members of the struct are responsible for managing the delivery of delayed messages. At compile time, it is possible to pass the ‘DISABLE_DELAYED_MESSAGE’ to the compiler to discard this feature from the module’s binary. The structure used for handling delayed messages is very similar to ‘t_message_deliver’, with the exception that the recipients list is replaced with a timer (since the message is not delivered immediately).
+*
+* To conclude, the group_data structure holds all data necessary to handle a group's tasks. The first three members are just used for installing/removing the character device relative to the group on the system and therefore are only employed inside initialization/unloading procedures. 
+* Immediately below, the two members ‘group_id’ and ‘descriptor’ are the two available unique values that can be used to identify a group on a system. The main difference between them resides in the fact that the ID is chosen by Linux IDR whereas the descriptor is user-supplied.
+*
+* The pair of mebmer ‘owner’ and ‘owner_lock’ contains and manages access to the owner of the group. If strict mode is enabled, each time a parameter is changed this value is consulted for checking caller’s authorizations: since the variable is readed more often than edited, a read/write semaphore seems to be a good solution.
+* The group’s structure also contains a linked-list, rw/semaphore and a counter in order to keep track of active members of a group (See Introduction for more detail on active members).
+*
+* The rest of the structure is composed of some self-contained structure responsible to implement a specific task: in fact, both ‘msg_manager’, ‘garbage_collector’, ‘group_sysfs’ and ‘flags’ have their variables enclosed in their respective struct, resulting in a more clean and manageable code.
+* Also there two conditional compiler sections are present: one for the thread-synching functionality and one for the sysfs interface.
+*
+* \section kern_implementation Kernel Implementation
+*
+* \subsection msg_kern Message Subsystem  
+* When a thread calls “readMessage()”, the kernel driver will traverse the FIFO queue present inside the message manager structure while holding the ‘queue_lock’ in read mode. Then, for each message inside the queue, the current PID is searched inside the message’s recipient list through the function ‘wasDelivered()’: if the PID does not appear in the list the message is copied through the user-space (copy_msg_to_user()) and the current PID is added to the message’s recipients list (setDelivered()) . Note that the lock on the FIFO queue is holded in read mode because removing messages will be a Garbage Collector’s task.
+*
+* \subsection garbage_coll_kern Garbage Collector  
+* The garbage collector runs as a deferred work (using workqueue) and can be started when the following actions happens:
+* - A group is closed by a thread (releaseGroup)
+* - A message is readed (readGroupMessage)
+* - A message’s write failed due to the exhausted storage size (writeGroupMessage)
+*
+*In any of these cases the garbage collector is invoked if and only if it is both enabled (via group flags) and the current storage ratio is higher than the garbage collector ratio.
+*The storage ratio is computed by dividing the current storage space by the maximum storage space. For example setting the garbage collector ratio to 8 means that queue memory space will be freed when its size reaches the 80% of the maximum size.
+*In simple terms, the garbage collector’s work (contained in “queueGarbageCollector()”) consists in checking that each message’s recipient list is a subset of the group’s active members through the “isDeliveryCompleted()” function. If some element is freed from memory, the current storage size is recomputed.
+*
+* \section kern_thread_synch Thread Syncher
+* The whole synching functionality is managed inside the kernel by “sleepOnBarrier()”, “awakeBarrier()” functions and the “wake_up_flag”. When a thread calls the user-level API “sleepOnBarrier()”, the thread is inserted into the ‘barrier_queue’ variable present inside the group’s structure: the awakening condition for such threads which are present inside this queue is related to the “wake_up_flag”. In fact, when calling the user-level API “awakeBarrier()”, at kernel level this flag is set to 1 and all threads are awakened via ‘wake_up_all’ function.
+*
+* \section delay_kern Delayed Messages
+* When a message is written in a group while the delay value is greater than zero, the message is added to the delayed message queue instead of on the FIFO queue.
+* Then, inside “queueDelayedMessage” a new “t_message_delayed_deliver” structure is allocated: such structure contains, apart from the message itselfs, a timer that will call “delayedMessageCallback” when it expires. The structure is then added to the delayed queue and the timer is started.
+* Once “delayedMessageCallback” is invoked, it will immediately call “writeMessage()” putting the message inside the FIFO queue and deallocating the “t_message_delayed_deliver” structure.
+*
+* \section security_kern Security
+* Across the module, every administration functionality (such as changing a group's parameter or group’s owner) has a security check implemented via the “hasStorePrivilege()” function. By passing a pointer to the group’s structure, this function will return true only if the current thread has the UID of the current group’s owner. In case strict mode is disabled, this function will always return true
+*/

@@ -1,3 +1,11 @@
+/**
+ * @file types.h
+ * 
+ * @brief Defines all structures and global variables needed by the module
+ * 
+ */
+
+
 #ifndef TYPES_H
 #define TYPES_H
 
@@ -55,7 +63,7 @@ struct t_message_deliver{
     msg_t message;                          /**< The message to deliver */
 
     struct list_head recipient;             /**< PIDs of threads that have read 'message' */
-    struct rw_semaphore recipient_lock;     /**< Recopient list semaphore*/
+    struct rw_semaphore recipient_lock;     /**< Recipient list semaphore*/
 
     struct list_head fifo_list;
 };
@@ -137,18 +145,16 @@ typedef struct group_t {
  * @brief Contains the various flags that represent the status of the module
  * 
  * Those flags are useful since it indicates if a module was correctly initialized, in 
- *  this way when the module must be unloaded, no deallocation is performed on modules
- *  that failed.
+ * this way when the module must be unloaded, no deallocation is performed on modules
+ * that failed.
  * 
- *  -initialized: indicates that a group has loaded all of its structures
- *  -thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized
- *  -wake_up_flag: to implement
- *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
- *  -garbage_collector_disabled: specifies the status of the garbage collector
- * 
- *  -sysfs_loaded: indicate that the 'sysfs' interface is initialized
- * 
- *  -strict_mode: 1 if the strict security mode is enabled, 0 otherwise
+ *  - initialized: indicates that a group has loaded all of its structures
+ *  - thread_barrier_loaded: indicate that the 'thread barrier' submodule is initialized
+ *  - wake_up_flag: to implement
+ *  - sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ *  - garbage_collector_disabled: specifies the status of the garbage collector
+ *  - sysfs_loaded: indicate that the 'sysfs' interface is initialized
+ *  - strict_mode: 1 if the strict security mode is enabled, 0 otherwise
  *  @todo Check the performace impact of "packing" the structure
  * 
  */
@@ -196,7 +202,7 @@ typedef struct t_garbage_collector{
  * 
  */
 typedef struct group_data {
-    struct cdev cdev;           /** @brief Characted Device definition  */
+    struct cdev cdev;           /** @brief Character Device definition  */
     struct device* dev;
     dev_t deviceID;            
     int group_id;               /** @brief Unique identifier of a group. Provided by IDR */

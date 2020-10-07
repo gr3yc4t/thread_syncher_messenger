@@ -19,12 +19,20 @@ Include dependency graph for group\+\_\+manager.\+c\+:\nopagebreak
 \mbox{\Hypertarget{group__manager_8c_a7082099beab072e35bea916cda17ade3}\label{group__manager_8c_a7082099beab072e35bea916cda17ade3}} 
 {\bfseries E\+X\+P\+O\+R\+T\+\_\+\+S\+Y\+M\+B\+OL} (group\+\_\+device\+\_\+class)
 \item 
+int \mbox{\hyperlink{group__manager_8c_a26f90779d7b5d23ba3ff7ff7e27b5a6e}{copy\+\_\+group\+\_\+t\+\_\+to\+\_\+user}} (\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$user\+\_\+group, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$kern\+\_\+group)
+\begin{DoxyCompactList}\small\item\em Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to user space. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{group__manager_8c_a47f8f0bf6b2d3a2275b3c030ed1a38b0}{install\+Group\+Class}} ()
 \begin{DoxyCompactList}\small\item\em Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. \end{DoxyCompactList}\item 
 bool \mbox{\hyperlink{group__manager_8c_a12f1d3f43a4daf53d7a9a0234848c7e8}{is\+Garbage\+Coll\+Enabled}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
 \begin{DoxyCompactList}\small\item\em Checks if the garbage collector is enabled. \end{DoxyCompactList}\item 
 bool \mbox{\hyperlink{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}{check\+Garbage\+Ratio}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
 \begin{DoxyCompactList}\small\item\em Check if the garbage collector ratio is lower than the current one. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__manager_8c_a23d542ee909293c2d1157e307b26a923}{is\+Owner}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Test if the current process is the owner of a group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8c_a780fe5d837bfeaed74b75aa962a51796}{change\+Owner}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, uid\+\_\+t new\+\_\+owner)
+\begin{DoxyCompactList}\small\item\em Change the current owner of a group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8c_a734209fad91aa5312f1070d9eaf32df0}{set\+Strict\+Mode}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, const bool enabled)
+\begin{DoxyCompactList}\small\item\em Change group\textquotesingle{}s \textquotesingle{}strict\textquotesingle{} security flag. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{group__manager_8c_a1f1985c8c457af192ae651beb0f2e17d}{init\+Participants}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
 \begin{DoxyCompactList}\small\item\em Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{group__manager_8c_aaf4c2d92ecd16b379659d6f41e3a90ac}{remove\+Participant}} (struct list\+\_\+head $\ast$participants, pid\+\_\+t \+\_\+pid)
@@ -40,7 +48,9 @@ void \mbox{\hyperlink{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}{sleep
 void \mbox{\hyperlink{group__manager_8c_a1792fc5d13522e4cf8975bd293a99ed6}{awake\+Barrier}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
 \begin{DoxyCompactList}\small\item\em Wake up all threads that was put on sleep by the module. \end{DoxyCompactList}\item 
 long int \mbox{\hyperlink{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}{group\+Ioctl}} (struct file $\ast$filep, unsigned int ioctl\+\_\+num, unsigned long ioctl\+\_\+param)
-\begin{DoxyCompactList}\small\item\em Handler of group\textquotesingle{}s ioctls requests. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Handler of group\textquotesingle{}s ioctls requests. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+must\+\_\+check int \mbox{\hyperlink{group__manager_8c_a8cdd4e522e45cb3aacc2c01ef8aa2c5f}{copy\+\_\+group\+\_\+t\+\_\+from\+\_\+user}} (\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$user\+\_\+group, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$kern\+\_\+group)
+\begin{DoxyCompactList}\small\item\em Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to kernel space. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -73,6 +83,26 @@ Wake up all threads that was put on sleep by the module.
 \begin{DoxyReturn}{Returns}
 nothing 
 \end{DoxyReturn}
+\mbox{\Hypertarget{group__manager_8c_a780fe5d837bfeaed74b75aa962a51796}\label{group__manager_8c_a780fe5d837bfeaed74b75aa962a51796}} 
+\index{group\_manager.c@{group\_manager.c}!changeOwner@{changeOwner}}
+\index{changeOwner@{changeOwner}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{changeOwner()}{changeOwner()}}
+{\footnotesize\ttfamily int change\+Owner (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{uid\+\_\+t}]{new\+\_\+owner }\end{DoxyParamCaption})}
+
+
+
+Change the current owner of a group. 
+
+\begin{DoxyNote}{Note}
+If strict mode is enabled, only the owner of a group can call this function.
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/1} & if the current process is not authorized \\
+\hline
+\end{DoxyRetVals}
 \mbox{\Hypertarget{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}\label{group__manager_8c_a9dc221f28c6ceaf4bcc2233441a03341}} 
 \index{group\_manager.c@{group\_manager.c}!checkGarbageRatio@{checkGarbageRatio}}
 \index{checkGarbageRatio@{checkGarbageRatio}!group\_manager.c@{group\_manager.c}}
@@ -95,6 +125,62 @@ Check if the garbage collector ratio is lower than the current one.
 {\em false} & If the current ratio is lower \\
 \hline
 \end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a8cdd4e522e45cb3aacc2c01ef8aa2c5f}\label{group__manager_8c_a8cdd4e522e45cb3aacc2c01ef8aa2c5f}} 
+\index{group\_manager.c@{group\_manager.c}!copy\_group\_t\_from\_user@{copy\_group\_t\_from\_user}}
+\index{copy\_group\_t\_from\_user@{copy\_group\_t\_from\_user}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{copy\_group\_t\_from\_user()}{copy\_group\_t\_from\_user()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+must\+\_\+check int copy\+\_\+group\+\_\+t\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{user\+\_\+group,  }\item[{\mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{kern\+\_\+group }\end{DoxyParamCaption})}
+
+
+
+Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to kernel space. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em user\+\_\+group} & Pointer to a userspace \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure \\
+\hline
+\mbox{\texttt{ out}}  & {\em kern\+\_\+group} & Destination that will contain the \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR} & if the user memory is not valid for the kernel \\
+\hline
+{\em U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR} & if there was error while copying user data to kernel \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if there was some meory allocation error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a26f90779d7b5d23ba3ff7ff7e27b5a6e}\label{group__manager_8c_a26f90779d7b5d23ba3ff7ff7e27b5a6e}} 
+\index{group\_manager.c@{group\_manager.c}!copy\_group\_t\_to\_user@{copy\_group\_t\_to\_user}}
+\index{copy\_group\_t\_to\_user@{copy\_group\_t\_to\_user}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{copy\_group\_t\_to\_user()}{copy\_group\_t\_to\_user()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+must\+\_\+check int copy\+\_\+group\+\_\+t\+\_\+to\+\_\+user (\begin{DoxyParamCaption}\item[{\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{user\+\_\+group,  }\item[{\mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{kern\+\_\+group }\end{DoxyParamCaption})}
+
+
+
+Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to user space. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em user\+\_\+group} & Pointer to a userspace \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure \\
+\hline
+\mbox{\texttt{ out}}  & {\em kern\+\_\+group} & Destination that will contain the \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR} & if the user memory is not valid for the kernel \\
+\hline
+{\em U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR} & if there was error while copying user data to kernel \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if there was some meory allocation error \\
+\hline
+\end{DoxyRetVals}
 \mbox{\Hypertarget{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}\label{group__manager_8c_a01a78ec1bed527fab05783c0e06721ad}} 
 \index{group\_manager.c@{group\_manager.c}!groupIoctl@{groupIoctl}}
 \index{groupIoctl@{groupIoctl}!group\_manager.c@{group\_manager.c}}
@@ -109,6 +195,9 @@ Depending on the compile arguments, four ioctl commands are available\+: \begin{
  -IOCTL_REVOKE_DELAYED_MESSAGES: revoke delay on all queued messages
  -IOCTL_SLEEP_ON_BARRIER: The invoking thread will sleep until other thread awake the sleep queue
  -IOCTL_AWAKE_BARRIER: Awake the sleep queue
+ -IOCTL_GET_GROUP_DESC: Write a group descriptor into the provided pointer
+ -IOCTL_SET_STRICT_MODE: Set the strict mode flag
+ -IOCTL_CHANGE_OWNER: Change the owner of the group
 \end{DoxyVerb}
 
 
@@ -176,6 +265,31 @@ Checks if the garbage collector is enabled.
 {\em true} & if the garbage collector is enabled \\
 \hline
 {\em false} & if the garbage collector is disabled \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a23d542ee909293c2d1157e307b26a923}\label{group__manager_8c_a23d542ee909293c2d1157e307b26a923}} 
+\index{group\_manager.c@{group\_manager.c}!isOwner@{isOwner}}
+\index{isOwner@{isOwner}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{isOwner()}{isOwner()}}
+{\footnotesize\ttfamily bool is\+Owner (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Test if the current process is the owner of a group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & A group main structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread-\/safe
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & if the current process is the owner \\
+\hline
+{\em false} & if the current process is not the owner \\
 \hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{group__manager_8c_a49eacb577d4216746f5a76ce9c60445c}\label{group__manager_8c_a49eacb577d4216746f5a76ce9c60445c}} 
@@ -252,6 +366,30 @@ Resets the flag used to wake up threds.
 {\em true} & if the flag was resetted \\
 \hline
 {\em false} & otherwise \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8c_a734209fad91aa5312f1070d9eaf32df0}\label{group__manager_8c_a734209fad91aa5312f1070d9eaf32df0}} 
+\index{group\_manager.c@{group\_manager.c}!setStrictMode@{setStrictMode}}
+\index{setStrictMode@{setStrictMode}!group\_manager.c@{group\_manager.c}}
+\doxysubsubsection{\texorpdfstring{setStrictMode()}{setStrictMode()}}
+{\footnotesize\ttfamily int set\+Strict\+Mode (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{const bool}]{enabled }\end{DoxyParamCaption})}
+
+
+
+Change group\textquotesingle{}s \textquotesingle{}strict\textquotesingle{} security flag. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & A group structure where the flag should be set \\
+\hline
+\mbox{\texttt{ in}}  & {\em enabled} & True if the flag must be enabled, false otherwise\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & On success \\
+\hline
+{\em -\/1} & If the current process is unauthorized \\
 \hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}\label{group__manager_8c_ad78d5ba08267ff55fabbf44f62df3f5d}} 

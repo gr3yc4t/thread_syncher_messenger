@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['queuedelayedmessage_124',['queueDelayedMessage',['../d0/d6d/message_8c.html#af58ffeb71713f9051b0e065c1aab6318',1,'message.c']]],
-  ['queuegarbagecollector_125',['queueGarbageCollector',['../d0/d6d/message_8c.html#aba1d8514abde9dfb52f2fb006fd5dbf1',1,'message.c']]]
+  ['enablestrictmode_159',['enableStrictMode',['../d5/d20/thread__synch_8h.html#af75a6962ec9fa6327d67c2a03dd98bf8',1,'thread_synch.c']]]
 ];

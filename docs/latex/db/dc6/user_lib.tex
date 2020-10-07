@@ -1,0 +1,49 @@
+At user-\/space level, interaction with the kernel device file is done through two types of structures\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{structT__THREAD__SYNCH}{thread\+\_\+synch\+\_\+t}}\+: handles request to the main synch device file
+\item \mbox{\hyperlink{structT__THREAD__GROUP}{thread\+\_\+group\+\_\+t}}\+: handles request to a group device file
+\end{DoxyItemize}
+
+First of all, an application has to initialize a thread\+\_\+synch\+\_\+t structure via \mbox{\hyperlink{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}{init\+Thread\+Syncher()}} in order to interact with the module’s functionalities. At some point the user-\/level app would interact with a module’s group by obtaining a thread\+\_\+group\+\_\+t structure, and this can be done in three ways\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{main__device_8h_a67f3d637fdb8834a96bee2141c523458}{install\+Group()}}\+: Installs a group given a group descriptor (\mbox{\hyperlink{structgroup__t}{group\+\_\+t}})
+\item \mbox{\hyperlink{thread__synch_8h_a0c92afb57aeb28ee3ab2f4b3d944346d}{load\+Group\+From\+Descriptor()}}\+: loads a thread\+\_\+group\+\_\+t structure relative to the group identified by the provided ‘group\+\_\+t’ descriptor.
+\item \mbox{\hyperlink{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}{load\+Group\+From\+I\+D()}}\+: loads a thread\+\_\+group\+\_\+t structure relative to the group identified by the provided ID.
+\end{DoxyItemize}
+
+Each one of these functions return a pointer to an initialized \mbox{\hyperlink{structT__THREAD__GROUP}{thread\+\_\+group\+\_\+t}} structure (or N\+U\+LL in case of error) and, with the exception of the last one, they need athread\+\_\+synch\+\_\+t structure as parameter. To correctly use the module subsystems, applications have to open groups to become active members of them via the function \mbox{\hyperlink{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}{open\+Group()}}. In case the library\textquotesingle{}s functions are called with a closed \mbox{\hyperlink{structT__THREAD__GROUP}{thread\+\_\+group\+\_\+t}} structure as a parameter they will return -\/1.\hypertarget{user_lib_msg_subsystem_user}{}\doxysection{Message Subsystem}\label{user_lib_msg_subsystem_user}
+The following functions allows to read/write a message on an existing group (specified via the thread\+\_\+group\+\_\+t parameter)\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}{read\+Message()}}
+\item \mbox{\hyperlink{message_8h_a1ba93a9118165a7e11a1b0865f78da85}{write\+Message()}}
+\end{DoxyItemize}
+
+Instead, in order to manage message’s delay, these two functions are available\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}{set\+Delay()}}
+\item \mbox{\hyperlink{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}{revoke\+Delay()}}
+\end{DoxyItemize}\hypertarget{user_lib_synch_subsystem_user}{}\doxysection{Synchronization Subsystem}\label{user_lib_synch_subsystem_user}
+The whole synchronization subsystem at user-\/level is managed only through two function\+: the first one put the calling threads on sleep (the thread is descheduled) while the second one awake all the threads of the same group that went on sleep (they are rescheduled)
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}{sleep\+On\+Barrier()}}
+\item \mbox{\hyperlink{thread__synch_8h_afb024938d9cf0b8161752345ef3f65cf}{awake\+Barrier()}}
+\end{DoxyItemize}\hypertarget{user_lib_security_user}{}\doxysection{Security}\label{user_lib_security_user}
+The following lists of functions are the one that allows to manage the security configurations of a group. The first pair respectively enable/disable the strict mode of a given group. The last two functions are instead used to change the owner of a specified group\+: the first one accepts an U\+ID as parameter as set it as the new owner while the other one set the U\+ID of the current thread as the owner. Recall that if ‘strict mode’ is enabled only the owner of the group can disable it and/or change the group’s owner.
+
+
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{thread__synch_8h_af75a6962ec9fa6327d67c2a03dd98bf8}{enable\+Strict\+Mode()}}
+\item \mbox{\hyperlink{thread__synch_8h_a5c0bf0d0eb98dec88c8c60e576b05ea1}{disable\+Strict\+Mode()}}
+\item \mbox{\hyperlink{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}{change\+Owner()}}
+\item \mbox{\hyperlink{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}{become\+Owner()}}
+\end{DoxyItemize}\hypertarget{user_lib_param_user}{}\doxysection{Parameter Configuration}\label{user_lib_param_user}
+The functions below are instead used to get/set a group’s parameters. Recall that if ‘strict mode’ is enabled only the owner can set a new value for a parameter. At low-\/level these functions interact with the sysfs entries of the specified group.
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{thread__synch_8h_a6417dc6922a5ea23f0c32186976f2639}{get\+Max\+Message\+Size()}}
+\item \mbox{\hyperlink{thread__synch_8h_adee40526996678c8f9eaf459c2687083}{get\+Max\+Storage\+Size()}}
+\item \mbox{\hyperlink{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}{get\+Current\+Storage\+Size()}}
+\item \mbox{\hyperlink{thread__synch_8h_a34cb66021b147dbcac0d1e1c3da2c3ba}{set\+Max\+Message\+Size()}} ~\newline
+
+\item \mbox{\hyperlink{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}{set\+Max\+Storage\+Size()}}
+\item \mbox{\hyperlink{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}{set\+Garbage\+Collector\+Ratio()}} 
+\end{DoxyItemize}

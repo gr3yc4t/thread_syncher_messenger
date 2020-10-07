@@ -1,0 +1,282 @@
+\hypertarget{main__device_8h}{}\doxysection{src/main\+\_\+device.h File Reference}
+\label{main__device_8h}\index{src/main\_device.h@{src/main\_device.h}}
+
+
+Handles all procedures releated to the main synch device file.  
+
+
+{\ttfamily \#include $<$linux/module.\+h$>$}\newline
+{\ttfamily \#include $<$linux/kernel.\+h$>$}\newline
+{\ttfamily \#include $<$linux/fs.\+h$>$}\newline
+{\ttfamily \#include $<$linux/cdev.\+h$>$}\newline
+{\ttfamily \#include $<$linux/device.\+h$>$}\newline
+{\ttfamily \#include $<$linux/slab.\+h$>$}\newline
+{\ttfamily \#include $<$linux/uaccess.\+h$>$}\newline
+{\ttfamily \#include $<$linux/semaphore.\+h$>$}\newline
+{\ttfamily \#include $<$linux/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$linux/idr.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}group\+\_\+manager.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}sysfs.\+h\char`\"{}}\newline
+Include dependency graph for main\+\_\+device.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{de/d75/main__device_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=185pt]{dc/db7/main__device_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structt__main__sync}{t\+\_\+main\+\_\+sync}}
+\begin{DoxyCompactList}\small\item\em Main device structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main__device_8h_ae3c55ec3c2605319931c8ceab028c84e}\label{main__device_8h_ae3c55ec3c2605319931c8ceab028c84e}} 
+\#define {\bfseries I\+N\+V\+A\+L\+I\+D\+\_\+\+I\+O\+C\+T\+L\+\_\+\+C\+O\+M\+M\+A\+ND}~-\/1
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a341d9ea11c7ed03bca3c5389d45c2c05}{A\+L\+L\+O\+C\+\_\+\+E\+RR}}~-\/2
+\item 
+\#define \mbox{\hyperlink{main__device_8h_aa5b435b16787017c5a2c7d05368a056a}{U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR}}~-\/3
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a9289476512ce6218adeed79af8068b5d}{I\+D\+R\+\_\+\+E\+RR}}~-\/4
+\item 
+\#define \mbox{\hyperlink{main__device_8h_ab2d26649d131cdb71d20cc6e5aed12b2}{M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR}}~-\/5
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}{C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS}}~-\/10
+\item 
+\mbox{\Hypertarget{main__device_8h_a2763801dcd6ebc317c578e813b9d46d2}\label{main__device_8h_a2763801dcd6ebc317c578e813b9d46d2}} 
+\#define {\bfseries C\+L\+A\+S\+S\+\_\+\+E\+RR}~-\/11
+\item 
+\mbox{\Hypertarget{main__device_8h_a794bbb98bbdfc758e3d658c3a3732589}\label{main__device_8h_a794bbb98bbdfc758e3d658c3a3732589}} 
+\#define {\bfseries D\+E\+V\+\_\+\+C\+R\+E\+A\+T\+I\+O\+N\+\_\+\+E\+RR}~-\/12
+\item 
+\mbox{\Hypertarget{main__device_8h_a42b624f0374ac3974af4258411e3691a}\label{main__device_8h_a42b624f0374ac3974af4258411e3691a}} 
+\#define {\bfseries C\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/13
+\item 
+\mbox{\Hypertarget{main__device_8h_a6df2c0fc64a5f7bf3b441b43869b7d6e}\label{main__device_8h_a6df2c0fc64a5f7bf3b441b43869b7d6e}} 
+\#define {\bfseries G\+R\+O\+U\+P\+\_\+\+E\+X\+I\+S\+TS}~-\/14
+\item 
+\mbox{\Hypertarget{main__device_8h_a34579e9bf6b3fa6a3ae4dc1771ecee4d}\label{main__device_8h_a34579e9bf6b3fa6a3ae4dc1771ecee4d}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+I\+N\+S\+T\+A\+L\+L\+\_\+\+G\+R\+O\+UP}~\+\_\+\+I\+OW(\textquotesingle{}X\textquotesingle{}, 99, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\mbox{\Hypertarget{main__device_8h_a0cd39f494b7a0df06c6d7d23ea6c7cbe}\label{main__device_8h_a0cd39f494b7a0df06c6d7d23ea6c7cbe}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+ID}~\+\_\+\+I\+OW(\textquotesingle{}X\textquotesingle{}, 100, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a11e5b1c496994cbf156e7bfaf3035a9a}{D\+\_\+\+D\+E\+V\+\_\+\+N\+A\+ME}}~\char`\"{}main\+\_\+thread\+\_\+synch\char`\"{}
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a0b86a4dff9e782beb967fab73ed4e2fe}{D\+\_\+\+D\+E\+V\+\_\+\+M\+A\+J\+OR}}~(0)
+\item 
+\#define \mbox{\hyperlink{main__device_8h_ac3533a6aa49d2dd078b410dabaf5ddee}{D\+\_\+\+D\+E\+V\+\_\+\+M\+I\+N\+OR}}~(0)
+\item 
+\#define \mbox{\hyperlink{main__device_8h_af418910e7d7c88833026b123341844d6}{D\+\_\+\+D\+E\+V\+\_\+\+N\+UM}}~(1)
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a79f2713d570c7065f61a160134ea765b}{C\+L\+A\+S\+S\+\_\+\+N\+A\+ME}}~\char`\"{}thread\+\_\+synch\char`\"{}
+\item 
+\#define \mbox{\hyperlink{main__device_8h_a27e774c764ed8adabca0614536444d27}{G\+R\+P\+\_\+\+M\+I\+N\+\_\+\+ID}}~0
+\item 
+\#define \mbox{\hyperlink{main__device_8h_acba0c94cdc55ce2eadea2e4aca346e98}{G\+R\+P\+\_\+\+M\+A\+X\+\_\+\+ID}}~255
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{main__device_8h_af4771bd0b385dc4e2cd6fa443e899735}{main\+Init}} (void)
+\begin{DoxyCompactList}\small\item\em Kernel Module Init. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main__device_8h_a48d8e84c8660710553f0beddd8b95b6a}{main\+Exit}} (void)
+\begin{DoxyCompactList}\small\item\em Kernel Module Exit. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main__device_8h_a2310445f7a33019d337e6f336b4c48d9}{initialize\+Main\+Device}} (void)
+\begin{DoxyCompactList}\small\item\em Init Main Device members. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{main__device_8h_a67f3d637fdb8834a96bee2141c523458}{install\+Group}} (const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} new\+\_\+group)
+\begin{DoxyCompactList}\small\item\em Install a group for the provided \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} descriptor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main__device_8h_a85254d51cfcb185448c7a6258fc394aa}\label{main__device_8h_a85254d51cfcb185448c7a6258fc394aa}} 
+struct class $\ast$ {\bfseries group\+\_\+device\+\_\+class}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all procedures releated to the main synch device file. 
+
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{main__device_8h_a341d9ea11c7ed03bca3c5389d45c2c05}\label{main__device_8h_a341d9ea11c7ed03bca3c5389d45c2c05}} 
+\index{main\_device.h@{main\_device.h}!ALLOC\_ERR@{ALLOC\_ERR}}
+\index{ALLOC\_ERR@{ALLOC\_ERR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{ALLOC\_ERR}{ALLOC\_ERR}}
+{\footnotesize\ttfamily \#define A\+L\+L\+O\+C\+\_\+\+E\+RR~-\/2}
+
+Returned when a \textquotesingle{}kmalloc\textquotesingle{} fails \mbox{\Hypertarget{main__device_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}\label{main__device_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}} 
+\index{main\_device.h@{main\_device.h}!CLASS\_EXISTS@{CLASS\_EXISTS}}
+\index{CLASS\_EXISTS@{CLASS\_EXISTS}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{CLASS\_EXISTS}{CLASS\_EXISTS}}
+{\footnotesize\ttfamily \#define C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS~-\/10}
+
+Returned when the class name already exists \mbox{\Hypertarget{main__device_8h_a79f2713d570c7065f61a160134ea765b}\label{main__device_8h_a79f2713d570c7065f61a160134ea765b}} 
+\index{main\_device.h@{main\_device.h}!CLASS\_NAME@{CLASS\_NAME}}
+\index{CLASS\_NAME@{CLASS\_NAME}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{CLASS\_NAME}{CLASS\_NAME}}
+{\footnotesize\ttfamily \#define C\+L\+A\+S\+S\+\_\+\+N\+A\+ME~\char`\"{}thread\+\_\+synch\char`\"{}}
+
+Main device class name \mbox{\Hypertarget{main__device_8h_a0b86a4dff9e782beb967fab73ed4e2fe}\label{main__device_8h_a0b86a4dff9e782beb967fab73ed4e2fe}} 
+\index{main\_device.h@{main\_device.h}!D\_DEV\_MAJOR@{D\_DEV\_MAJOR}}
+\index{D\_DEV\_MAJOR@{D\_DEV\_MAJOR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_MAJOR}{D\_DEV\_MAJOR}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+M\+A\+J\+OR~(0)}
+
+Main device major\# \mbox{\Hypertarget{main__device_8h_ac3533a6aa49d2dd078b410dabaf5ddee}\label{main__device_8h_ac3533a6aa49d2dd078b410dabaf5ddee}} 
+\index{main\_device.h@{main\_device.h}!D\_DEV\_MINOR@{D\_DEV\_MINOR}}
+\index{D\_DEV\_MINOR@{D\_DEV\_MINOR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_MINOR}{D\_DEV\_MINOR}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+M\+I\+N\+OR~(0)}
+
+Main device minor\# \mbox{\Hypertarget{main__device_8h_a11e5b1c496994cbf156e7bfaf3035a9a}\label{main__device_8h_a11e5b1c496994cbf156e7bfaf3035a9a}} 
+\index{main\_device.h@{main\_device.h}!D\_DEV\_NAME@{D\_DEV\_NAME}}
+\index{D\_DEV\_NAME@{D\_DEV\_NAME}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_NAME}{D\_DEV\_NAME}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+N\+A\+ME~\char`\"{}main\+\_\+thread\+\_\+synch\char`\"{}}
+
+Main device name \mbox{\Hypertarget{main__device_8h_af418910e7d7c88833026b123341844d6}\label{main__device_8h_af418910e7d7c88833026b123341844d6}} 
+\index{main\_device.h@{main\_device.h}!D\_DEV\_NUM@{D\_DEV\_NUM}}
+\index{D\_DEV\_NUM@{D\_DEV\_NUM}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{D\_DEV\_NUM}{D\_DEV\_NUM}}
+{\footnotesize\ttfamily \#define D\+\_\+\+D\+E\+V\+\_\+\+N\+UM~(1)}
+
+Number of main device \mbox{\Hypertarget{main__device_8h_acba0c94cdc55ce2eadea2e4aca346e98}\label{main__device_8h_acba0c94cdc55ce2eadea2e4aca346e98}} 
+\index{main\_device.h@{main\_device.h}!GRP\_MAX\_ID@{GRP\_MAX\_ID}}
+\index{GRP\_MAX\_ID@{GRP\_MAX\_ID}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{GRP\_MAX\_ID}{GRP\_MAX\_ID}}
+{\footnotesize\ttfamily \#define G\+R\+P\+\_\+\+M\+A\+X\+\_\+\+ID~255}
+
+Group\textquotesingle{}s max ID \mbox{\Hypertarget{main__device_8h_a27e774c764ed8adabca0614536444d27}\label{main__device_8h_a27e774c764ed8adabca0614536444d27}} 
+\index{main\_device.h@{main\_device.h}!GRP\_MIN\_ID@{GRP\_MIN\_ID}}
+\index{GRP\_MIN\_ID@{GRP\_MIN\_ID}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{GRP\_MIN\_ID}{GRP\_MIN\_ID}}
+{\footnotesize\ttfamily \#define G\+R\+P\+\_\+\+M\+I\+N\+\_\+\+ID~0}
+
+Group\textquotesingle{}s min ID \mbox{\Hypertarget{main__device_8h_a9289476512ce6218adeed79af8068b5d}\label{main__device_8h_a9289476512ce6218adeed79af8068b5d}} 
+\index{main\_device.h@{main\_device.h}!IDR\_ERR@{IDR\_ERR}}
+\index{IDR\_ERR@{IDR\_ERR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{IDR\_ERR}{IDR\_ERR}}
+{\footnotesize\ttfamily \#define I\+D\+R\+\_\+\+E\+RR~-\/4}
+
+Returned when the I\+DR fails \mbox{\Hypertarget{main__device_8h_ab2d26649d131cdb71d20cc6e5aed12b2}\label{main__device_8h_ab2d26649d131cdb71d20cc6e5aed12b2}} 
+\index{main\_device.h@{main\_device.h}!MEM\_ACCESS\_ERR@{MEM\_ACCESS\_ERR}}
+\index{MEM\_ACCESS\_ERR@{MEM\_ACCESS\_ERR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{MEM\_ACCESS\_ERR}{MEM\_ACCESS\_ERR}}
+{\footnotesize\ttfamily \#define M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR~-\/5}
+
+Returned when \textquotesingle{}access\+\_\+ok\textquotesingle{} fails \mbox{\Hypertarget{main__device_8h_aa5b435b16787017c5a2c7d05368a056a}\label{main__device_8h_aa5b435b16787017c5a2c7d05368a056a}} 
+\index{main\_device.h@{main\_device.h}!USER\_COPY\_ERR@{USER\_COPY\_ERR}}
+\index{USER\_COPY\_ERR@{USER\_COPY\_ERR}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{USER\_COPY\_ERR}{USER\_COPY\_ERR}}
+{\footnotesize\ttfamily \#define U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR~-\/3}
+
+Returned when copy\+\_\+to\+\_\+user/copy\+\_\+from\+\_\+user fails 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{main__device_8h_a2310445f7a33019d337e6f336b4c48d9}\label{main__device_8h_a2310445f7a33019d337e6f336b4c48d9}} 
+\index{main\_device.h@{main\_device.h}!initializeMainDevice@{initializeMainDevice}}
+\index{initializeMainDevice@{initializeMainDevice}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{initializeMainDevice()}{initializeMainDevice()}}
+{\footnotesize\ttfamily void initialize\+Main\+Device (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Init Main Device members. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em nothing} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em nothing} & \\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If a new structure is addedd to \textquotesingle{}\mbox{\hyperlink{structt__main__sync}{t\+\_\+main\+\_\+sync}}\textquotesingle{} all init procedures should be perfomed here 
+\end{DoxyNote}
+\mbox{\Hypertarget{main__device_8h_a67f3d637fdb8834a96bee2141c523458}\label{main__device_8h_a67f3d637fdb8834a96bee2141c523458}} 
+\index{main\_device.h@{main\_device.h}!installGroup@{installGroup}}
+\index{installGroup@{installGroup}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{installGroup()}{installGroup()}}
+{\footnotesize\ttfamily int install\+Group (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}}]{new\+\_\+group\+\_\+descriptor }\end{DoxyParamCaption})}
+
+
+
+Install a group for the provided \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} descriptor. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em new\+\_\+group\+\_\+descriptor} & The group descriptor\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em The} & installed group\textquotesingle{}s ID \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if some memory allocation fails \\
+\hline
+{\em I\+D\+R\+\_\+\+E\+RR} & If the I\+DR fails to allocate the ID\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+For error codes meaning see \textquotesingle{}\mbox{\hyperlink{main__device_8h}{main\+\_\+device.\+h}}\textquotesingle{} 
+\end{DoxyNote}
+\mbox{\Hypertarget{main__device_8h_a48d8e84c8660710553f0beddd8b95b6a}\label{main__device_8h_a48d8e84c8660710553f0beddd8b95b6a}} 
+\index{main\_device.h@{main\_device.h}!mainExit@{mainExit}}
+\index{mainExit@{mainExit}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{mainExit()}{mainExit()}}
+{\footnotesize\ttfamily void main\+Exit (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Kernel Module Exit. 
+
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]Check that every structure is correctly deallocated \end{DoxyRefDesc}
+
+\begin{DoxyParams}{Parameters}
+{\em nothing} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em nothing} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main__device_8h_af4771bd0b385dc4e2cd6fa443e899735}\label{main__device_8h_af4771bd0b385dc4e2cd6fa443e899735}} 
+\index{main\_device.h@{main\_device.h}!mainInit@{mainInit}}
+\index{mainInit@{mainInit}!main\_device.h@{main\_device.h}}
+\doxysubsubsection{\texorpdfstring{mainInit()}{mainInit()}}
+{\footnotesize\ttfamily int main\+Init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Kernel Module Init. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em nothing} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & success \\
+\hline
+{\em C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS} & if the class already exists \\
+\hline
+{\em others} & failure \\
+\hline
+\end{DoxyRetVals}

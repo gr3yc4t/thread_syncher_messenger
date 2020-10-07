@@ -26,7 +26,7 @@ struct cdev {\bfseries cdev}
 \item 
 \mbox{\Hypertarget{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}\label{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}} 
 struct device $\ast$ \mbox{\hyperlink{structgroup__data_a3ecbc103c2904cc2efaa01717b931eda}{dev}}
-\begin{DoxyCompactList}\small\item\em Characted Device definition ~\newline
+\begin{DoxyCompactList}\small\item\em Character Device definition ~\newline
  \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{structgroup__data_a44e989778a8f993fd656f9e0b3777b01}\label{structgroup__data_a44e989778a8f993fd656f9e0b3777b01}} 
 dev\+\_\+t {\bfseries device\+ID}
@@ -37,9 +37,12 @@ int {\bfseries group\+\_\+id}
 \mbox{\Hypertarget{structgroup__data_adeb4ff99aded485b308604c89bc2784a}\label{structgroup__data_adeb4ff99aded485b308604c89bc2784a}} 
 \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} \mbox{\hyperlink{structgroup__data_adeb4ff99aded485b308604c89bc2784a}{descriptor}}
 \begin{DoxyCompactList}\small\item\em Unique identifier of a group. Provided by I\+DR. \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}\label{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}} 
-pid\+\_\+t \mbox{\hyperlink{structgroup__data_a0387fa2cfc77f4fda33c26bc00f9adff}{owner}}
+\mbox{\Hypertarget{structgroup__data_aafa5544751d6fe681f8231d50c045028}\label{structgroup__data_aafa5544751d6fe681f8231d50c045028}} 
+uid\+\_\+t \mbox{\hyperlink{structgroup__data_aafa5544751d6fe681f8231d50c045028}{owner}}
 \begin{DoxyCompactList}\small\item\em System-\/wide descriptor of a group. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structgroup__data_ac68263e44ba8fb9d43751c23c5ff2aaa}\label{structgroup__data_ac68263e44ba8fb9d43751c23c5ff2aaa}} 
+struct rw\+\_\+semaphore {\bfseries owner\+\_\+lock}
+\item 
 struct list\+\_\+head \mbox{\hyperlink{structgroup__data_a0286ca64be7cc5bde20be703ceaac631}{active\+\_\+members}}
 \item 
 atomic\+\_\+t \mbox{\hyperlink{structgroup__data_ac58c9638adc534261d1045d31c1b9deb}{members\+\_\+count}}
@@ -116,4 +119,4 @@ Message manager subsytem
 
 The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 
-src/types.\+h\end{DoxyCompactItemize}
+src/\mbox{\hyperlink{types_8h}{types.\+h}}\end{DoxyCompactItemize}

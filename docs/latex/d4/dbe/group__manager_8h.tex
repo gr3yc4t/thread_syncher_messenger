@@ -1,0 +1,250 @@
+\hypertarget{group__manager_8h}{}\doxysection{src/group\+\_\+manager.h File Reference}
+\label{group__manager_8h}\index{src/group\_manager.h@{src/group\_manager.h}}
+
+
+Handles all procedures releated to file operation issued on a group device.  
+
+
+{\ttfamily \#include $<$linux/module.\+h$>$}\newline
+{\ttfamily \#include $<$linux/kernel.\+h$>$}\newline
+{\ttfamily \#include $<$linux/fs.\+h$>$}\newline
+{\ttfamily \#include $<$linux/cdev.\+h$>$}\newline
+{\ttfamily \#include $<$linux/device.\+h$>$}\newline
+{\ttfamily \#include $<$linux/slab.\+h$>$}\newline
+{\ttfamily \#include $<$linux/uaccess.\+h$>$}\newline
+{\ttfamily \#include $<$linux/semaphore.\+h$>$}\newline
+{\ttfamily \#include $<$linux/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$linux/string.\+h$>$}\newline
+{\ttfamily \#include $<$linux/idr.\+h$>$}\newline
+{\ttfamily \#include $<$linux/errno.\+h$>$}\newline
+{\ttfamily \#include $<$linux/cred.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}message.\+h\char`\"{}}\newline
+Include dependency graph for group\+\_\+manager.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d2/d56/group__manager_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=199pt]{d9/da2/group__manager_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__manager_8h_ae3c55ec3c2605319931c8ceab028c84e}\label{group__manager_8h_ae3c55ec3c2605319931c8ceab028c84e}} 
+\#define {\bfseries I\+N\+V\+A\+L\+I\+D\+\_\+\+I\+O\+C\+T\+L\+\_\+\+C\+O\+M\+M\+A\+ND}~-\/1
+\item 
+\mbox{\Hypertarget{group__manager_8h_a341d9ea11c7ed03bca3c5389d45c2c05}\label{group__manager_8h_a341d9ea11c7ed03bca3c5389d45c2c05}} 
+\#define {\bfseries A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/2
+\item 
+\mbox{\Hypertarget{group__manager_8h_ab2d26649d131cdb71d20cc6e5aed12b2}\label{group__manager_8h_ab2d26649d131cdb71d20cc6e5aed12b2}} 
+\#define {\bfseries M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR}~-\/5
+\item 
+\mbox{\Hypertarget{group__manager_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}\label{group__manager_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}} 
+\#define {\bfseries C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS}~-\/10
+\item 
+\mbox{\Hypertarget{group__manager_8h_a2763801dcd6ebc317c578e813b9d46d2}\label{group__manager_8h_a2763801dcd6ebc317c578e813b9d46d2}} 
+\#define {\bfseries C\+L\+A\+S\+S\+\_\+\+E\+RR}~-\/11
+\item 
+\mbox{\Hypertarget{group__manager_8h_a794bbb98bbdfc758e3d658c3a3732589}\label{group__manager_8h_a794bbb98bbdfc758e3d658c3a3732589}} 
+\#define {\bfseries D\+E\+V\+\_\+\+C\+R\+E\+A\+T\+I\+O\+N\+\_\+\+E\+RR}~-\/12
+\item 
+\mbox{\Hypertarget{group__manager_8h_a42b624f0374ac3974af4258411e3691a}\label{group__manager_8h_a42b624f0374ac3974af4258411e3691a}} 
+\#define {\bfseries C\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/13
+\item 
+\mbox{\Hypertarget{group__manager_8h_a08ae9c7badcac2d94f0a59844eb6e6cc}\label{group__manager_8h_a08ae9c7badcac2d94f0a59844eb6e6cc}} 
+\#define {\bfseries E\+M\+P\+T\+Y\+\_\+\+L\+I\+ST}~-\/20
+\item 
+\mbox{\Hypertarget{group__manager_8h_afba4202ece4ed5d7d638c745202fef9e}\label{group__manager_8h_afba4202ece4ed5d7d638c745202fef9e}} 
+\#define {\bfseries N\+O\+D\+E\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND}~-\/21
+\item 
+\mbox{\Hypertarget{group__manager_8h_aaf11ece5e944f4f83bc4847970442ad1}\label{group__manager_8h_aaf11ece5e944f4f83bc4847970442ad1}} 
+\#define {\bfseries C\+H\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/22
+\item 
+\mbox{\Hypertarget{group__manager_8h_ab46583eaa97c6c508369d61435f1b95b}\label{group__manager_8h_ab46583eaa97c6c508369d61435f1b95b}} 
+\#define {\bfseries G\+R\+O\+U\+P\+\_\+\+M\+A\+X\+\_\+\+M\+I\+N\+O\+RS}~255
+\item 
+\mbox{\Hypertarget{group__manager_8h_a47deb24a48e364f11698874cfae74f41}\label{group__manager_8h_a47deb24a48e364f11698874cfae74f41}} 
+\#define {\bfseries D\+E\+V\+I\+C\+E\+\_\+\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}~64
+\item 
+\mbox{\Hypertarget{group__manager_8h_afbd9f3f1670b081aac1d8c6d8269ddbb}\label{group__manager_8h_afbd9f3f1670b081aac1d8c6d8269ddbb}} 
+\#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+M\+S\+G\+\_\+\+S\+I\+ZE}~256
+\item 
+\mbox{\Hypertarget{group__manager_8h_a004e6f8b967a0e16f2cf040912d37830}\label{group__manager_8h_a004e6f8b967a0e16f2cf040912d37830}} 
+\#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}~256
+\item 
+\mbox{\Hypertarget{group__manager_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}\label{group__manager_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+D\+E\+SC}~\+\_\+\+I\+OR(\textquotesingle{}Q\textquotesingle{}, 1, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\mbox{\Hypertarget{group__manager_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}\label{group__manager_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+E\+N\+D\+\_\+\+D\+E\+L\+AY}~\+\_\+\+I\+OW(\textquotesingle{}Y\textquotesingle{}, 0, long)
+\item 
+\mbox{\Hypertarget{group__manager_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}\label{group__manager_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+R\+E\+V\+O\+K\+E\+\_\+\+D\+E\+L\+A\+Y\+E\+D\+\_\+\+M\+E\+S\+S\+A\+G\+ES}~\+\_\+\+IO(\textquotesingle{}Y\textquotesingle{}, 1)
+\item 
+\mbox{\Hypertarget{group__manager_8h_a09a94889fa4b29893b5b4dfcaa347c93}\label{group__manager_8h_a09a94889fa4b29893b5b4dfcaa347c93}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+L\+E\+E\+P\+\_\+\+O\+N\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 0)
+\item 
+\mbox{\Hypertarget{group__manager_8h_ac00821bdb3f7a772f468bbc723166349}\label{group__manager_8h_ac00821bdb3f7a772f468bbc723166349}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+A\+W\+A\+K\+E\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 1)
+\item 
+\mbox{\Hypertarget{group__manager_8h_a85cb8d431a3111bffd162110819524e2}\label{group__manager_8h_a85cb8d431a3111bffd162110819524e2}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+T\+R\+I\+C\+T\+\_\+\+M\+O\+DE}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 101, bool)
+\item 
+\mbox{\Hypertarget{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}\label{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+O\+W\+N\+ER}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 102, uid\+\_\+t)
+\item 
+\mbox{\Hypertarget{group__manager_8h_ac684c8879cadfe446a9413a6bdc487a9}\label{group__manager_8h_ac684c8879cadfe446a9413a6bdc487a9}} 
+\#define {\bfseries G\+R\+O\+U\+P\+\_\+\+C\+L\+A\+S\+S\+\_\+\+N\+A\+ME}~\char`\"{}group\+\_\+synch\char`\"{}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{group__manager_8h_a1f1985c8c457af192ae651beb0f2e17d}{init\+Participants}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8h_af83ff2ff50fd5597cb8e810f5e7588c4}{install\+Group\+Class}} (void)
+\begin{DoxyCompactList}\small\item\em Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}{register\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, const struct device $\ast$parent)
+\begin{DoxyCompactList}\small\item\em register a group device \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__manager_8h_a7a4a1f2ed5563df3defd7477a8f70168}{unregister\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, bool flag)
+\begin{DoxyCompactList}\small\item\em unregister a group device \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{group__manager_8h_a6c41c36721034445a9dd68c598e94480}{copy\+\_\+group\+\_\+t\+\_\+from\+\_\+user}} (\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$user\+\_\+group, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$kern\+\_\+group)
+\begin{DoxyCompactList}\small\item\em Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to kernel space. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__manager_8h_a85254d51cfcb185448c7a6258fc394aa}\label{group__manager_8h_a85254d51cfcb185448c7a6258fc394aa}} 
+struct class $\ast$ {\bfseries group\+\_\+device\+\_\+class}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all procedures releated to file operation issued on a group device. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{group__manager_8h_a6c41c36721034445a9dd68c598e94480}\label{group__manager_8h_a6c41c36721034445a9dd68c598e94480}} 
+\index{group\_manager.h@{group\_manager.h}!copy\_group\_t\_from\_user@{copy\_group\_t\_from\_user}}
+\index{copy\_group\_t\_from\_user@{copy\_group\_t\_from\_user}!group\_manager.h@{group\_manager.h}}
+\doxysubsubsection{\texorpdfstring{copy\_group\_t\_from\_user()}{copy\_group\_t\_from\_user()}}
+{\footnotesize\ttfamily int copy\+\_\+group\+\_\+t\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{\+\_\+\+\_\+user \mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{user\+\_\+group,  }\item[{\mbox{\hyperlink{structgroup__t}{group\+\_\+t}} $\ast$}]{kern\+\_\+group }\end{DoxyParamCaption})}
+
+
+
+Copy a \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure to kernel space. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em user\+\_\+group} & Pointer to a userspace \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure \\
+\hline
+\mbox{\texttt{ out}}  & {\em kern\+\_\+group} & Destination that will contain the \textquotesingle{}\mbox{\hyperlink{structgroup__t}{group\+\_\+t}}\textquotesingle{} structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em M\+E\+M\+\_\+\+A\+C\+C\+E\+S\+S\+\_\+\+E\+RR} & if the user memory is not valid for the kernel \\
+\hline
+{\em U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR} & if there was error while copying user data to kernel \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if there was some meory allocation error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8h_a1f1985c8c457af192ae651beb0f2e17d}\label{group__manager_8h_a1f1985c8c457af192ae651beb0f2e17d}} 
+\index{group\_manager.h@{group\_manager.h}!initParticipants@{initParticipants}}
+\index{initParticipants@{initParticipants}!group\_manager.h@{group\_manager.h}}
+\doxysubsubsection{\texorpdfstring{initParticipants()}{initParticipants()}}
+{\footnotesize\ttfamily void init\+Participants (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & Pointer to the device\textquotesingle{}s \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} structure\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{group__manager_8h_af83ff2ff50fd5597cb8e810f5e7588c4}\label{group__manager_8h_af83ff2ff50fd5597cb8e810f5e7588c4}} 
+\index{group\_manager.h@{group\_manager.h}!installGroupClass@{installGroupClass}}
+\index{installGroupClass@{installGroupClass}!group\_manager.h@{group\_manager.h}}
+\doxysubsubsection{\texorpdfstring{installGroupClass()}{installGroupClass()}}
+{\footnotesize\ttfamily int install\+Group\+Class (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & if the class already exists \\
+\hline
+{\em C\+L\+A\+S\+S\+\_\+\+E\+RR} & If the class cannot be installed \\
+\hline
+{\em C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS} & If the class already exists \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}\label{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}} 
+\index{group\_manager.h@{group\_manager.h}!registerGroupDevice@{registerGroupDevice}}
+\index{registerGroupDevice@{registerGroupDevice}!group\_manager.h@{group\_manager.h}}
+\doxysubsubsection{\texorpdfstring{registerGroupDevice()}{registerGroupDevice()}}
+{\footnotesize\ttfamily int register\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{const struct device $\ast$}]{parent }\end{DoxyParamCaption})}
+
+
+
+register a group device 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group data descriptor \\
+\hline
+\mbox{\texttt{ in}}  & {\em parent} & device parent (usually \textquotesingle{}main\+\_\+device\textquotesingle{})\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em C\+H\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR} & If the char device allocation fails \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & If some memory allocation fails \\
+\hline
+{\em D\+E\+V\+\_\+\+C\+R\+E\+A\+T\+I\+O\+N\+\_\+\+E\+RR} & If the char device creation fails \\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+Charter device creation This should be perfomed after all the all the necessary data structures are allocated since, immediately after \textquotesingle{}cdev\+\_\+add\textquotesingle{}, the device becomes live and starts to respond to requests
+\end{DoxyNote}
+\mbox{\Hypertarget{group__manager_8h_a7a4a1f2ed5563df3defd7477a8f70168}\label{group__manager_8h_a7a4a1f2ed5563df3defd7477a8f70168}} 
+\index{group\_manager.h@{group\_manager.h}!unregisterGroupDevice@{unregisterGroupDevice}}
+\index{unregisterGroupDevice@{unregisterGroupDevice}!group\_manager.h@{group\_manager.h}}
+\doxysubsubsection{\texorpdfstring{unregisterGroupDevice()}{unregisterGroupDevice()}}
+{\footnotesize\ttfamily void unregister\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{bool}]{flag }\end{DoxyParamCaption})}
+
+
+
+unregister a group device 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em grp\+\_\+data} & The group data descriptor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This guarantees that cdev device will no longer be able to be opened, however any cdevs already open will remain and their fops will still be callable even after cdev\+\_\+del returns. For this reason the \textquotesingle{}initialized\textquotesingle{} flag of a group will be set to zero
+\end{DoxyNote}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]\+: Check if this causes starvation \end{DoxyRefDesc}

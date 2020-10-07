@@ -20,6 +20,9 @@ unsigned int \mbox{\hyperlink{structgroup__flags__t_a551fb9f0f2c5b064100ff37e157
 \item 
 unsigned int \mbox{\hyperlink{structgroup__flags__t_aacf9e90bc7b8769dec99ae595c9c4e79}{sysfs\+\_\+loaded}}\+:1
 \item 
+\mbox{\Hypertarget{structgroup__flags__t_a2f64fb4c17adce90e68346e477309c7a}\label{structgroup__flags__t_a2f64fb4c17adce90e68346e477309c7a}} 
+unsigned int {\bfseries strict\+\_\+mode}\+:1
+\item 
 unsigned int \mbox{\hyperlink{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}{garbage\+\_\+collector\+\_\+disabled}}\+:1
 \end{DoxyCompactItemize}
 
@@ -29,11 +32,18 @@ Contains the various flags that represent the status of the module.
 
 Those flags are useful since it indicates if a module was correctly initialized, in this way when the module must be unloaded, no deallocation is performed on modules that failed.
 
--\/initialized\+: indicates that a group has loaded all of its structures -\/thread\+\_\+barrier\+\_\+loaded\+: indicate that the \textquotesingle{}thread barrier\textquotesingle{} submodule is initialized -\/wake\+\_\+up\+\_\+flag\+: to implement -\/sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized -\/garbage\+\_\+collector\+\_\+disabled\+: specifies the status of the garbage collector
 
-\begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000007}{Todo}}]Check the performace impact of \char`\"{}packing\char`\"{} the structure\end{DoxyRefDesc}
+\begin{DoxyItemize}
+\item initialized\+: indicates that a group has loaded all of its structures
+\item thread\+\_\+barrier\+\_\+loaded\+: indicate that the \textquotesingle{}thread barrier\textquotesingle{} submodule is initialized
+\item wake\+\_\+up\+\_\+flag\+: to implement
+\item sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized
+\item garbage\+\_\+collector\+\_\+disabled\+: specifies the status of the garbage collector
+\item sysfs\+\_\+loaded\+: indicate that the \textquotesingle{}sysfs\textquotesingle{} interface is initialized
+\item strict\+\_\+mode\+: 1 if the strict security mode is enabled, 0 otherwise \begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000009}{Todo}}]Check the performace impact of \char`\"{}packing\char`\"{} the structure\end{DoxyRefDesc}
 
+\end{DoxyItemize}
 
 \doxysubsection{Field Documentation}
 \mbox{\Hypertarget{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}\label{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}} 
@@ -70,4 +80,4 @@ Flag used to wake-\/up all thread which slept on barrier
 
 The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 
-src/types.\+h\end{DoxyCompactItemize}
+src/\mbox{\hyperlink{types_8h}{types.\+h}}\end{DoxyCompactItemize}

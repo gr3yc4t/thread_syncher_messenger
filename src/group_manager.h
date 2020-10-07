@@ -1,3 +1,9 @@
+/**
+ * @file		group_manager.h
+ * @brief		Handles all procedures releated to file operation issued on a group device
+ *
+ */
+
 #ifndef GRP_MAN_H
 #define GRP_MAN_H
 
@@ -24,19 +30,16 @@
 /*------------------------------------------------------------------------------
 	Error Codes
 ------------------------------------------------------------------------------*/
-
+#define INVALID_IOCTL_COMMAND   -1
 #define ALLOC_ERR 		        -2
-#define CLASS_EXISTS		-10
+#define MEM_ACCESS_ERR          -5
+#define CLASS_EXISTS		    -10
 #define CLASS_ERR		        -11
 #define DEV_CREATION_ERR        -12
-#define CDEV_ALLOC_ERR		-13
-
-
+#define CDEV_ALLOC_ERR		    -13
 #define EMPTY_LIST              -20
 #define NODE_NOT_FOUND          -21
-#define INVALID_IOCTL_COMMAND   -1
 #define CHDEV_ALLOC_ERR         -22
-#define MEM_ACCESS_ERR          -23
 
 
 

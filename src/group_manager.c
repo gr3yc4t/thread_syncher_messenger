@@ -1,9 +1,3 @@
-/**
- * @file		group_manager.c
- * @brief		Handles all procedures releated to file operation issued on a group device
- *
- */
-
 #include "group_manager.h"
 
 // Global Variables
@@ -25,12 +19,12 @@ int copy_group_t_to_user(__user group_t *user_group, group_t *kern_group);
 int installGroupClass(){
 
 	//Create "group_sync" on the first device creation
-    printk(KERN_DEBUG "Group class not exists, creating...");
+    pr_debug("Group class not exists, creating...");
     group_device_class = class_create(THIS_MODULE, GROUP_CLASS_NAME);
 
 
     if(group_device_class == NULL){
-        printk(KERN_ERR "Unable to create the group device class");
+        pr_err("Unable to create the group device class");
         return CLASS_ERR;
     }
 
@@ -38,10 +32,10 @@ int installGroupClass(){
     if(IS_ERR(group_device_class)){
 
         if(PTR_ERR(group_device_class) == -EEXIST){
-            printk(KERN_INFO "'group_sync' class already exists, skipping class creation");
+            pr_info("'group_sync' class already exists, skipping class creation");
             return CLASS_EXISTS;
         }else{
-            printk(KERN_ERR "Unable to create 'group_sync' class");
+            pr_err("Unable to create 'group_sync' class");
             return CLASS_ERR;
         }
     }
@@ -104,8 +98,8 @@ bool checkGarbageRatio(group_data *grp_data){
     current_ratio = curr_storage * 10;
     current_ratio = current_ratio / max_storage;
 
-    printk(KERN_INFO "Garbage ratio: %hu", ratio);
-    printk(KERN_INFO "Current ratio: %hu", current_ratio);  
+    pr_debug("Garbage ratio: %hu", ratio);
+    pr_debug("Current ratio: %hu", current_ratio);  
 
     if(current_ratio > ratio)
         return true;
@@ -180,12 +174,12 @@ int changeOwner(group_data *grp_data, uid_t new_owner){
         }
 
     up_write(&grp_data->owner_lock);
-
+/*
     if(ret == 0){
-        printk(KERN_DEBUG "New Owner UID: %u", new_owner);
-        printk(KERN_DEBUG "Current owner UID: %u", current_owner);
+        pr_debug("New Owner UID: %u", new_owner);
+        pr_debug("Current owner UID: %u", current_owner);
     }
-
+*/
 
     return ret;
 }
@@ -203,7 +197,7 @@ int changeOwner(group_data *grp_data, uid_t new_owner){
 int setStrictMode(group_data *grp_data, const bool enabled){
 
     if(isOwner(grp_data)){
-        printk(KERN_DEBUG "Authorized to change strict mode to %d", enabled);
+        pr_debug("Authorized to change strict mode to %d", enabled);
         if(enabled)
             grp_data->flags.strict_mode = 1;
         else
@@ -224,9 +218,6 @@ int setStrictMode(group_data *grp_data, const bool enabled){
  * @return nothing
  */
 inline void initParticipants(group_data *grp_data){
-
-    BUG_ON(grp_data == NULL);
-
     INIT_LIST_HEAD(&grp_data->active_members);
     atomic_set(&grp_data->members_count, 0);
     init_rwsem(&grp_data->member_lock);
@@ -249,8 +240,6 @@ int removeParticipant(struct list_head *participants, pid_t _pid){
     struct list_head *temp;
     group_members_t *entry;
 
-
-    BUG_ON(participants == NULL);
 
     if(list_empty(participants)){
         return EMPTY_LIST;
@@ -288,8 +277,8 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     int ret = 0;    //Return value
 
 
-    snprintf(device_name, DEVICE_NAME_SIZE, "group%d", grp_data->group_id);
-    printk(KERN_DEBUG "Device name: %s", device_name);
+    snprintf(device_name, DEVICE_NAME_SIZE, "synch!group%d", grp_data->group_id);
+    pr_debug("Device name: %s", device_name);
 
 
     //Allocate Device Major/Minor
@@ -301,7 +290,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         goto cleanup_region;
     }
 
-    printk(KERN_DEBUG "Device Major/Minor correctly allocated");
+    pr_debug("Device Major/Minor correctly allocated");
 
 
 
@@ -345,13 +334,13 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
     err = cdev_add(&grp_data->cdev, grp_data->deviceID, 1);
     if(err < 0){
-        printk(KERN_ERR "Unable to add char dev. Error %d", err);
+        pr_err("Unable to add char dev. Error %d", err);
         ret = CDEV_ALLOC_ERR;
         goto cleanup;
     }
 
 
-    printk(KERN_INFO "Device correctly added");
+    pr_info("Device correctly added");
 
     return 0;
 
@@ -376,8 +365,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
 
 void unregisterGroupDevice(group_data *grp_data, bool flag){
 
-    printk(KERN_INFO "Cleaning up 'group%d'", grp_data->group_id);
-    
+    pr_debug("Cleaning up 'group%d'", grp_data->group_id);
     
     if(!flag){
         device_destroy(group_device_class, grp_data->deviceID);
@@ -396,7 +384,7 @@ void unregisterGroupDevice(group_data *grp_data, bool flag){
 
     #ifndef DISABLE_THREAD_BARRIER
         //Waking up all the sleeped thread
-        printk(KERN_INFO "Waking up all the sleeped thread 'group%d'", grp_data->group_id);
+       pr_info("Waking up all the sleeped thread 'group%d'", grp_data->group_id);
         grp_data->flags.wake_up_flag = 1;
 
         /** @todo: Check if this causes starvation*/
@@ -526,17 +514,17 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
     grp_data = (group_data*) file->private_data;
 
-    printk(KERN_DEBUG "Reading messages from group%d", grp_data->group_id);
+    pr_debug("Reading messages from group%d", grp_data->group_id);
 
     if(grp_data->flags.initialized == 0){
-        printk(KERN_ERR "Device still not initialized or deallocated, close and reopen the file descriptor");
+        pr_err("Device still not initialized or deallocated, close and reopen the file descriptor");
         return -1;
     }
 
 
     ret = readMessage(&message, grp_data->msg_manager);
     if(ret == 1){
-        printk(KERN_INFO "No message available");
+        pr_info("No message available");
         return NO_MSG_PRESENT;
     }else if(ret == -1){    //Critical Error
         printk(KERN_WARNING "Critical error while processing the message");
@@ -544,7 +532,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
     }
 
 
-    printk(KERN_INFO "A message was available!!");
+    pr_info("A message was available!!");
 
     //If the user-space application request more byte than available, return only available bytes
     if(message.size < _size){
@@ -560,7 +548,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
         return MEMORY_ERROR;
     }
 
-    printk(KERN_INFO "Message copied to user-space");
+    pr_debug("Message copied to user-space");
     
     if(isGarbageCollEnabled(grp_data) && checkGarbageRatio(grp_data)){
         //Start a workqueue for cleaning up message that are completely delivered
@@ -592,7 +580,7 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
 
     if(grp_data->flags.initialized == 0){
-        printk(KERN_ERR "Device still not initialized or deallocated, close and reopen the file descriptor");
+        pr_err("Device still not initialized or deallocated, close and reopen the file descriptor");
         return -1;
     }
 
@@ -623,7 +611,7 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
 
     if(ret == STORAGE_SIZE_ERR && !garbageCollectorRetry){
-        printk(KERN_INFO "Starting garbage collector and retry...");
+        pr_debug("Starting garbage collector and retry...");
         
         schedule_work(&grp_data->garbage_collector.work);
 
@@ -635,11 +623,11 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
 
     if(ret < 0){
-        printk(KERN_ERR "Unable to write the message");
+        pr_err(KERN_ERR "Unable to write the message");
         return -1;
     }
 
-    printk(KERN_INFO "Message for group%d queued", grp_data->group_id);
+    pr_debug("Message for group%d queued", grp_data->group_id);
 
     return ret;
 
@@ -650,7 +638,12 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 }
 
 
-
+/**
+ * @brief Remove all messages from the delay queue and make it immediately available
+ * 
+ * @retval The number of removed messages
+ * @retval Negative number on error
+ */
 static int flushGroupMessage(struct file *filep, fl_owner_t id){
     group_data *grp_data;
     msg_manager_t *manager;
@@ -670,9 +663,10 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
     if(atomic_long_read(&manager->message_delay) == 0)
         return 0;
 
-    //ret = cancelDelay(manager);
+    pr_info("flush: deliver all delayed messages");
+    ret = cancelDelay(manager);
 
-    printk(KERN_INFO "flush: %d elements flushed from the delayed queue", ret);
+    pr_info("flush: %d elements flushed from the delayed queue", ret);
     return ret;
 }
 
@@ -690,7 +684,7 @@ bool resetSleepFlag(group_data *grp_data){
 
     spin_lock(&grp_data->barrier_queue.lock);
         if(!waitqueue_active(&grp_data->barrier_queue)){
-            printk(KERN_INFO "resetSleepFlag: wake_up_flag resetted");
+            pr_debug("resetSleepFlag: wake_up_flag resetted");
             grp_data->flags.wake_up_flag = 0;
             ret_flag = true;
         }
@@ -710,15 +704,15 @@ bool resetSleepFlag(group_data *grp_data){
 void sleepOnBarrier(group_data *grp_data){
     
     if(resetSleepFlag(grp_data)){
-        printk(KERN_INFO "First thread inserted into the queue");
+        pr_debug("First thread inserted into the queue");
     }else{
-        printk(KERN_INFO "Sleep flag already set to 'false'");
+        pr_debug("Sleep flag already set to 'false'");
     }
 
-    printk(KERN_INFO "Putting thread %d to sleep...", current->pid);
+    pr_info("Putting thread %d to sleep...", current->pid);
     wait_event(grp_data->barrier_queue, grp_data->flags.wake_up_flag == 1);
 
-    printk(KERN_INFO "Thread %d woken up!!", current->pid);
+    pr_info("Thread %d woken up!!", current->pid);
     schedule();
 
 }
@@ -731,14 +725,14 @@ void sleepOnBarrier(group_data *grp_data){
  */
 void awakeBarrier(group_data *grp_data){
 
-    printk(KERN_INFO "Waking up threads in the barrier_queue");
+    pr_debug("Waking up threads in the barrier_queue");
 
     grp_data->flags.wake_up_flag = 1;
     wake_up_all(&grp_data->barrier_queue);
 
     //resetSleepFlag(grp_data);
 
-    printk(KERN_INFO "Queue waked up");
+    pr_info("Queue waked up");
 
     return;
 }
@@ -902,7 +896,7 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 		if(!group_name_tmp)
 			return ALLOC_ERR;
 
-		if(ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
+		if( (ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)) < 0){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			
 			kfree(group_name_tmp);
@@ -932,7 +926,6 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
  */
 __must_check int copy_group_t_to_user(__user group_t *user_group, group_t *kern_group){
 		int ret;
-		char *group_name_tmp;
 
         //Check user-space memory access
 		if(!access_ok(user_group, sizeof(group_t))){

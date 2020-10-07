@@ -1,8 +1,6 @@
 #include "main_device.h"
 
 
-
-
 /** file operations */
 static struct file_operations main_fops = {
 	.open    = mainOpen,
@@ -29,7 +27,7 @@ int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group);
 int mainInit(void){
 	int ret;
 
-	printk(KERN_INFO "%s loading ...\n", D_DEV_NAME);
+	pr_info("%s loading ...\n", D_DEV_NAME);
 
 	//Try to install the 'group_device_class'
 	if(installGroupClass() < 0)
@@ -107,7 +105,7 @@ void mainExit(void){
  *  	procedures should be perfomed here
  */
 void initializeMainDevice(void){
-	printk(KERN_DEBUG "Initializing groups list...");
+	pr_debug("Initializing groups list...");
 
 	idr_init(&main_device_data.group_map);	//Init group IDR
 	sema_init(&main_device_data.sem, 1);	//Init main device semaphore
@@ -134,7 +132,6 @@ static int mainOpen(struct inode *inode, struct file *filep){
 	//filep->device_info = main_device_data;
 
 	//Dev should only answare to ioctl request so no private data is needed
-	//Possible improvement: store into 'private_data' the creator of a group
 	
 
 	return 0;
@@ -184,6 +181,8 @@ static ssize_t mainWrite(struct file *filep, const char __user *buf, size_t coun
  * @param [in]		count	read data size
  * @param [in,out]	f_pos	file position
  *
+ * @bug Experimental feature
+ * 
  * @return	number of read byte
  */
 static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff_t *f_pos){
@@ -209,7 +208,7 @@ static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff
 
 	descriptor = grp_data->descriptor;
 
-	len = min(count, descriptor.name_len);
+	len = descriptor.name_len;
 	
 
 	if( copy_to_user(buf, descriptor.group_name, len) > 0){
@@ -231,7 +230,8 @@ static ssize_t mainRead(struct file *filep, char __user *buf, size_t count, loff
  * @retval negative number on failure
  */
 static int sRegisterMainDev(void){
-	int ret, i;
+	int r;
+	int ret;
 
 	/* acquire major#, minor# */
 	if ((ret = alloc_chrdev_region(&main_device_data.dev, D_DEV_MINOR, D_DEV_NUM, D_DEV_NAME)) < 0) {
@@ -253,7 +253,7 @@ static int sRegisterMainDev(void){
 		}
 	}
 
-	main_device = device_create(main_class, NULL, main_device_data.dev, NULL, D_DEV_NAME "%u", main_dev_minor);
+	main_device = device_create(main_class, NULL, main_device_data.dev, NULL, D_DEV_NAME);
 	if(IS_ERR(main_device)){
 		goto cleanup_class;
 	}
@@ -324,10 +324,8 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 	switch (ioctl_num){
 	case IOCTL_INSTALL_GROUP:
 
-		printk(KERN_INFO "INSTALL GROUP ioctl issued");
-
 		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp)){
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
@@ -337,44 +335,39 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 		}
 
 
-		printk(KERN_INFO "Installing group [%s]...", group_tmp.group_name);
+		pr_debug("Installing group [%s]...", group_tmp.group_name);
 		ret = installGroup(group_tmp);
 
 		if(ret < 0){
-			printk(KERN_INFO "Unable to install a group, exiting");
+			pr_err("Unable to install a group, exiting");
 			return ret;
 		}
 
 
-		printk(KERN_INFO "Group installed correctly");
+		pr_info("Group [%s] installed correctly", group_tmp.group_name);
 
 		break;
 	
 
 	case IOCTL_GET_GROUP_ID:
 
-		printk("\nIOCTL: get group ID");
-
 		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp) < 0){
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
-		printk("Group name: %s\nLen: %d", group_tmp.group_name, group_tmp.name_len);
+		pr_debug("Group name: %s\nLen: %d", group_tmp.group_name, group_tmp.name_len);
 
 		ret = getGroupID(group_tmp);
 
-		printk("Fetched Group ID: %d", ret);
-
-		if(ret != -1)
-			printk(KERN_DEBUG "Group found, returning the ID");
+		pr_debug("Fetched Group ID: %d", ret);
 
 		break;
 
 
 	default:
-		printk(KERN_INFO "Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
-		ret = -1;
+		pr_err("Invalid IOCTL command provided: \n\tioctl_num=%u\n\tparam: %lu", ioctl_num, ioctl_param);
+		ret = INVALID_IOCTL_COMMAND;
 		break;
 	}
 
@@ -412,7 +405,7 @@ __must_check int installGroup(const group_t new_group_descriptor){
 	init_rwsem(&new_group->owner_lock);
 
 
-	printk(KERN_DEBUG "Group descriptor: [%s]", new_group->descriptor.group_name);
+	pr_debug("Group descriptor: [%s]", new_group->descriptor.group_name);
 
 
 
@@ -431,7 +424,7 @@ __must_check int installGroup(const group_t new_group_descriptor){
 		goto cleanup;
 	}
 
-	printk(KERN_DEBUG "Registering Group device...");
+	pr_debug("Registering Group device...");
 	ret = registerGroupDevice(new_group, main_device);
 
 	if(ret != 0){
@@ -481,11 +474,11 @@ __must_check int getGroupID(const group_t new_group){
 	down(&main_device_data.sem);
 		idr_for_each_entry(&main_device_data.group_map, curr_group, id_cursor){
 			
-			printk(KERN_DEBUG "Comparing [%s] with [%s]", curr_group->descriptor.group_name, new_group.group_name);
+			pr_debug("Comparing [%s] with [%s]", curr_group->descriptor.group_name, new_group.group_name);
 
 			if(strncmp(curr_group->descriptor.group_name, new_group.group_name, DEVICE_NAME_SIZE) == 0){
 
-				printk(KERN_INFO "Group exists with ID: %d", id_cursor);
+				pr_info("Group exists with ID: %d", id_cursor);
 
 				up(&main_device_data.sem);
 				return id_cursor;
@@ -529,5 +522,5 @@ __must_check int getGroupInfo(unsigned long group_id, group_t *group_dest){
 
 MODULE_AUTHOR("Alessandro Cingolani");
 MODULE_LICENSE("Dual MIT/GPL");
-MODULE_DESCRIPTION("Main Device module");
-MODULE_VERSION("0.1");
+MODULE_DESCRIPTION("Threads syncher and message exchanger");
+MODULE_VERSION("1.0");

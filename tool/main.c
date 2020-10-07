@@ -33,7 +33,7 @@ thread_group_t *groups[MAX_GROUPS];
 int group_index = 0;
 
 
-
+extern int loadConfig(char *config_path, thread_synch_t *main_synch);
 
 void pause_char(){
     printf("\n\nWaiting...\n");
@@ -61,29 +61,6 @@ void t_nanosleep(long _nanoseconds){
 
     nanosleep(&interval, &interval2);
 
-}
-
-
-int printGroupParams(){
-    int ret;
-
-    unsigned long max_message_size = 0;
-    unsigned long max_storage_size = 0;
-    unsigned long curr_storage_size = 0;
-
-    /*
-    if(_readMaxMsgSize(&max_message_size) < 0)
-        return -1;
-    
-    if(_readMaxStorageSize(&max_storage_size) < 0)
-        return -1;
-    
-    if(_readCurrStorageSize(&curr_storage_size) < 0)
-        return -1;
-    */
-    printf("\nGroup 0 Data\n\n\tMax message size:  %ld\n\tMax Storage Size: %ld\n\tCurrent storage size: %ld\n\n", max_message_size, max_storage_size, curr_storage_size);
-
-    return 0;
 }
 
 
@@ -226,19 +203,30 @@ int groupSubMenu(thread_group_t group){
 
     char *buffer;
     size_t buff_size;
-
     
     int ratio;
 
-    if(openGroup(&group) < 0){
-        printf("\nError while opening the group\n");
-        return -1;
+    if( (ret = openGroup(&group)) < 0){
+        if(ret == PERMISSION_ERR){
+            printf("\nudev daemon has not changed permission yet, retrying...\n");
+
+            sleep(1);
+
+            if( (ret = openGroup(&group))){
+                printf("\nUnable to reload the module. Error code: %d\n", ret);
+                return -1;
+            }
+
+        }else{
+            printf("\nError while opening the group. Code: %d\n", ret);
+            return -1;
+        }
     }
 
     clear();
  
     do{
-        printf("\n[Group %d Management]\n", group.group_id);
+        printf(ANSI_COLOR_YELLOW "\n[Group %d Management]\n" ANSI_COLOR_RESET, group.group_id);
 
         printf("Current storage size: %lu\n", getCurrentStorageSize(&group));
         printf("Max storage size: %lu\n", getMaxStorageSize(&group));
@@ -246,7 +234,7 @@ int groupSubMenu(thread_group_t group){
 
         printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
             "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-            "\n -Message Param -\n\t80 - Show Message Param \n\t81 - Set max message size\n\t"
+            "\n -Message Param\n\t81 - Set max message size\n\t"
             "82 - Set max storage size\n\t83 - Set Garbage Collector ratio\n\t"
             "91 - (Dis)Enable strict mode\n\t92 - Change Owner\n\t"
             "99 - Exit\n:");
@@ -327,7 +315,9 @@ int groupSubMenu(thread_group_t group){
                 }
                 break;
             case 5: //Flush
+                
                 printf("\nUnimplemented");
+
                 break;
             case 6: //Sleep on barrier
                 printf("\nThread is going to sleep...");
@@ -344,25 +334,20 @@ int groupSubMenu(thread_group_t group){
                 }
                 printf("\nBarrier Awaked!");
                 break;
-            case 80:
-                if(printGroupParams() < 0)
-                    printf(ANSI_COLOR_RED "[X] Error while reading parameters\n" ANSI_COLOR_RESET);
-                break;
             case 81:
                 printf("\nMax size value: ");
-                scanf("%lu", &param_value);
+                scanf(" %lu ", &param_value);
                 ret = setMaxMessageSize(&group, param_value);
                 break;
             case 82:
                 printf("\nMax storage value: ");
-                scanf("%lu", &param_value);
+                scanf(" %lu ", &param_value);
                 ret = setMaxStorageSize(&group, param_value);   
                 break;
             case 83:    //Set Garbage collector ratio
                 printf("\nGarbage collector ratio: ");
-                scanf("%lu", &param_value);
+                scanf(" %lu ", &param_value);
                 ret = setGarbageCollectorRatio(&group, param_value);
-
                 break;  
             case 91:    //Enable/Disable strict mode
 
@@ -420,12 +405,6 @@ int interactiveSession(){
     group_t descriptor;
     thread_group_t *tmp_group;
     int i;
-
-
-    if(initThreadSycher(&main_synch) < 0){
-        printf("Unable to open main_syncher, exiting...\n");
-        return -1;
-    }
 
 
     for(i=0; i<MAX_GROUPS; i++)
@@ -535,7 +514,16 @@ int interactiveSession(){
 
 int main(int argc, char *argv[]){
 
-    interactiveSession();
+    if(initThreadSyncher(&main_synch) < 0){
+        printf("Unable to open main_syncher, exiting...\n");
+        return -1;
+    }
+
+    if(argc > 1){
+        loadConfig(argv[1], &main_synch);
+    }else{
+        interactiveSession();
+    }
 
     return 0;
 }

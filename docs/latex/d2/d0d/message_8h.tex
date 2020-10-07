@@ -1,0 +1,393 @@
+\hypertarget{message_8h}{}\doxysection{src/message.h File Reference}
+\label{message_8h}\index{src/message.h@{src/message.h}}
+
+
+Handles all procedures releated to messages of a group device.  
+
+
+{\ttfamily \#include $<$linux/init.\+h$>$}\newline
+{\ttfamily \#include $<$linux/module.\+h$>$}\newline
+{\ttfamily \#include $<$linux/kernel.\+h$>$}\newline
+{\ttfamily \#include $<$linux/slab.\+h$>$}\newline
+{\ttfamily \#include $<$linux/uaccess.\+h$>$}\newline
+{\ttfamily \#include $<$linux/semaphore.\+h$>$}\newline
+{\ttfamily \#include $<$linux/proc\+\_\+fs.\+h$>$}\newline
+{\ttfamily \#include $<$linux/mutex.\+h$>$}\newline
+{\ttfamily \#include $<$linux/spinlock.\+h$>$}\newline
+{\ttfamily \#include $<$linux/atomic.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}types.\+h\char`\"{}}\newline
+Include dependency graph for message.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dd/d49/message_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=199pt]{d6/d95/message_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{message_8h_a5f8b3637206be36636dd1f76d5f9a864}\label{message_8h_a5f8b3637206be36636dd1f76d5f9a864}} 
+\#define {\bfseries N\+O\+\_\+\+M\+S\+G\+\_\+\+P\+R\+E\+S\+E\+NT}~0
+\item 
+\mbox{\Hypertarget{message_8h_a341d9ea11c7ed03bca3c5389d45c2c05}\label{message_8h_a341d9ea11c7ed03bca3c5389d45c2c05}} 
+\#define {\bfseries A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/2
+\item 
+\mbox{\Hypertarget{message_8h_aa5b435b16787017c5a2c7d05368a056a}\label{message_8h_aa5b435b16787017c5a2c7d05368a056a}} 
+\#define {\bfseries U\+S\+E\+R\+\_\+\+C\+O\+P\+Y\+\_\+\+E\+RR}~-\/3
+\item 
+\mbox{\Hypertarget{message_8h_a8546399aa552226729610f5abd159ef4}\label{message_8h_a8546399aa552226729610f5abd159ef4}} 
+\#define {\bfseries S\+E\+M\+\_\+\+I\+N\+I\+T\+\_\+\+E\+RR}~-\/4  /$\ast$$\ast$ @brief Semaphore initialization $\ast$$\ast$/
+\item 
+\mbox{\Hypertarget{message_8h_af44b67abea595d0f336c945a4fbe9694}\label{message_8h_af44b67abea595d0f336c945a4fbe9694}} 
+\#define {\bfseries M\+S\+G\+\_\+\+I\+N\+V\+A\+L\+I\+D\+\_\+\+F\+O\+R\+M\+AT}~-\/11
+\item 
+\mbox{\Hypertarget{message_8h_a4ffe3881a4ad40483ac903626e8827e0}\label{message_8h_a4ffe3881a4ad40483ac903626e8827e0}} 
+\#define {\bfseries M\+S\+G\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+R\+R\+OR}~-\/12
+\item 
+\mbox{\Hypertarget{message_8h_a637db2f9919079c06b987c7595c1411d}\label{message_8h_a637db2f9919079c06b987c7595c1411d}} 
+\#define {\bfseries M\+E\+M\+O\+R\+Y\+\_\+\+E\+R\+R\+OR}~-\/13
+\item 
+\mbox{\Hypertarget{message_8h_ad0f7219dee20d955370ee6140e85a94c}\label{message_8h_ad0f7219dee20d955370ee6140e85a94c}} 
+\#define {\bfseries S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+RR}~-\/14
+\item 
+\mbox{\Hypertarget{message_8h_a341d9ea11c7ed03bca3c5389d45c2c05}\label{message_8h_a341d9ea11c7ed03bca3c5389d45c2c05}} 
+\#define {\bfseries A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/2
+\item 
+\mbox{\Hypertarget{message_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}\label{message_8h_a4bd8a296d72c36e23aba0ac4a7adc8be}} 
+\#define {\bfseries C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS}~-\/10
+\item 
+\mbox{\Hypertarget{message_8h_a2763801dcd6ebc317c578e813b9d46d2}\label{message_8h_a2763801dcd6ebc317c578e813b9d46d2}} 
+\#define {\bfseries C\+L\+A\+S\+S\+\_\+\+E\+RR}~-\/11
+\item 
+\mbox{\Hypertarget{message_8h_a794bbb98bbdfc758e3d658c3a3732589}\label{message_8h_a794bbb98bbdfc758e3d658c3a3732589}} 
+\#define {\bfseries D\+E\+V\+\_\+\+C\+R\+E\+A\+T\+I\+O\+N\+\_\+\+E\+RR}~-\/12
+\item 
+\mbox{\Hypertarget{message_8h_a42b624f0374ac3974af4258411e3691a}\label{message_8h_a42b624f0374ac3974af4258411e3691a}} 
+\#define {\bfseries C\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/13
+\item 
+\mbox{\Hypertarget{message_8h_a08ae9c7badcac2d94f0a59844eb6e6cc}\label{message_8h_a08ae9c7badcac2d94f0a59844eb6e6cc}} 
+\#define {\bfseries E\+M\+P\+T\+Y\+\_\+\+L\+I\+ST}~-\/20
+\item 
+\mbox{\Hypertarget{message_8h_afba4202ece4ed5d7d638c745202fef9e}\label{message_8h_afba4202ece4ed5d7d638c745202fef9e}} 
+\#define {\bfseries N\+O\+D\+E\+\_\+\+N\+O\+T\+\_\+\+F\+O\+U\+ND}~-\/21
+\item 
+\mbox{\Hypertarget{message_8h_ae3c55ec3c2605319931c8ceab028c84e}\label{message_8h_ae3c55ec3c2605319931c8ceab028c84e}} 
+\#define {\bfseries I\+N\+V\+A\+L\+I\+D\+\_\+\+I\+O\+C\+T\+L\+\_\+\+C\+O\+M\+M\+A\+ND}~-\/1
+\item 
+\mbox{\Hypertarget{message_8h_aaf11ece5e944f4f83bc4847970442ad1}\label{message_8h_aaf11ece5e944f4f83bc4847970442ad1}} 
+\#define {\bfseries C\+H\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/22
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+msg\+\_\+manager\+\_\+t $\ast$ \mbox{\hyperlink{message_8h_ae4d4d5142721632ab642b71b7bbdc440}{create\+Message\+Manager}} (const u\+\_\+int \+\_\+max\+\_\+storage\+\_\+size, const u\+\_\+int \+\_\+max\+\_\+message\+\_\+size, garbage\+\_\+collector\+\_\+t $\ast$garbage\+Collector)
+\begin{DoxyCompactList}\small\item\em Allocate and initialize all the members of a \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_a1ba93a9118165a7e11a1b0865f78da85}{write\+Message}} (msg\+\_\+t $\ast$message, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em write message on a group queue \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}{read\+Message}} (msg\+\_\+t $\ast$dest\+\_\+buffer, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Read a message from the corresponding queue. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}{copy\+\_\+msg\+\_\+from\+\_\+user}} (msg\+\_\+t $\ast$kmsg, const int8\+\_\+t $\ast$umsg, const ssize\+\_\+t \+\_\+size)
+\begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from user-\/space to kernel-\/space \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}{copy\+\_\+msg\+\_\+to\+\_\+user}} (const msg\+\_\+t $\ast$kmsg, \+\_\+\+\_\+user int8\+\_\+t $\ast$ubuffer, const ssize\+\_\+t \+\_\+size)
+\begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from kernel-\/space to user-\/space \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{message_8h_aba1d8514abde9dfb52f2fb006fd5dbf1}{queue\+Garbage\+Collector}} (struct work\+\_\+struct $\ast$work)
+\begin{DoxyCompactList}\small\item\em Remove a message from the queue when it was completely delivered. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{message_8h_abe680d2cb4664ed30117bea22d4733a0}{is\+Delay\+Set}} (const msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Check if the message delay is greater than zero on a group. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{message_8h_a39ccede09c258649eb302c9eae019bfd}{delayed\+Message\+Callback}} (struct timer\+\_\+list $\ast$timer)
+\begin{DoxyCompactList}\small\item\em Called when a timer for a delayed message expires. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_af58ffeb71713f9051b0e065c1aab6318}{queue\+Delayed\+Message}} (msg\+\_\+t $\ast$message, msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Insert a delayed message into the pending queue. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_a0205d35a68e74d35bab2858e077865ae}{revoke\+Delayed\+Message}} (msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Remove all the delayed message from the queue. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{message_8h_a03e27c8961ac14bd4453f9d64bf2ae43}{cancel\+Delay}} (msg\+\_\+manager\+\_\+t $\ast$manager)
+\begin{DoxyCompactList}\small\item\em Set the delay of messages in the delay queue to zero. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all procedures releated to messages of a group device. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{message_8h_a03e27c8961ac14bd4453f9d64bf2ae43}\label{message_8h_a03e27c8961ac14bd4453f9d64bf2ae43}} 
+\index{message.h@{message.h}!cancelDelay@{cancelDelay}}
+\index{cancelDelay@{cancelDelay}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{cancelDelay()}{cancelDelay()}}
+{\footnotesize\ttfamily int cancel\+Delay (\begin{DoxyParamCaption}\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Set the delay of messages in the delay queue to zero. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em manager} & The group\textquotesingle{}s message manager\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The number of messages which delay was cancelled
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+At the moment the function locks the delayed queue, set all timers to zero and unlock the queue. This means that while the function loops through the queue, timer\textquotesingle{}s callback will wait since the queue is locked. 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}\label{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}} 
+\index{message.h@{message.h}!copy\_msg\_from\_user@{copy\_msg\_from\_user}}
+\index{copy\_msg\_from\_user@{copy\_msg\_from\_user}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{copy\_msg\_from\_user()}{copy\_msg\_from\_user()}}
+{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{kmsg,  }\item[{const int8\+\_\+t $\ast$}]{umsg,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+copy a msg\+\_\+t structure from user-\/space to kernel-\/space 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em kmsg} & Kernel-\/space msg\+\_\+t \\
+\hline
+\mbox{\texttt{ in}}  & {\em umsg} & User-\/space msg\+\_\+t\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/\+E\+F\+A\+U\+LT} & if the copy fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000006}{Todo}}]Check thread-\/safety of the function \end{DoxyRefDesc}
+\begin{DoxyNote}{Note}
+The kmsg structure must be allocated 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}\label{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}} 
+\index{message.h@{message.h}!copy\_msg\_to\_user@{copy\_msg\_to\_user}}
+\index{copy\_msg\_to\_user@{copy\_msg\_to\_user}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{copy\_msg\_to\_user()}{copy\_msg\_to\_user()}}
+{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+to\+\_\+user (\begin{DoxyParamCaption}\item[{const msg\+\_\+t $\ast$}]{kmsg,  }\item[{\+\_\+\+\_\+user int8\+\_\+t $\ast$}]{ubuffer,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+copy a msg\+\_\+t structure from kernel-\/space to user-\/space 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em kmsg} & Kernel-\/space msg\+\_\+t \\
+\hline
+\mbox{\texttt{ out}}  & {\em umsg} & User-\/space buffer\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/\+E\+F\+A\+U\+LT} & if the copy fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]Check thread-\/safety of the function \end{DoxyRefDesc}
+\begin{DoxyNote}{Note}
+The umsg structure must be allocated 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8h_ae4d4d5142721632ab642b71b7bbdc440}\label{message_8h_ae4d4d5142721632ab642b71b7bbdc440}} 
+\index{message.h@{message.h}!createMessageManager@{createMessageManager}}
+\index{createMessageManager@{createMessageManager}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{createMessageManager()}{createMessageManager()}}
+{\footnotesize\ttfamily msg\+\_\+manager\+\_\+t$\ast$ create\+Message\+Manager (\begin{DoxyParamCaption}\item[{const u\+\_\+int}]{\+\_\+max\+\_\+storage\+\_\+size,  }\item[{const u\+\_\+int}]{\+\_\+max\+\_\+message\+\_\+size,  }\item[{garbage\+\_\+collector\+\_\+t $\ast$}]{garbage\+\_\+collector }\end{DoxyParamCaption})}
+
+
+
+Allocate and initialize all the members of a \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em \+\_\+max\+\_\+message\+\_\+size} & Configurable param \\
+\hline
+\mbox{\texttt{ in}}  & {\em \+\_\+max\+\_\+storage\+\_\+size} & Configurable param \\
+\hline
+\mbox{\texttt{ in}}  & {\em garbage\+Collector\+Function} & Pointer to the work\+\_\+struct responsible for garbage collection\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em An} & \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} pointer to an allocated an initialized \textquotesingle{}msg\+\_\+manager\+\_\+t\textquotesingle{} struct \\
+\hline
+{\em A} & N\+U\+LL pointer in case the \textquotesingle{}kmalloc\textquotesingle{} fails \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8h_a39ccede09c258649eb302c9eae019bfd}\label{message_8h_a39ccede09c258649eb302c9eae019bfd}} 
+\index{message.h@{message.h}!delayedMessageCallback@{delayedMessageCallback}}
+\index{delayedMessageCallback@{delayedMessageCallback}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{delayedMessageCallback()}{delayedMessageCallback()}}
+{\footnotesize\ttfamily void delayed\+Message\+Callback (\begin{DoxyParamCaption}\item[{struct timer\+\_\+list $\ast$}]{timer }\end{DoxyParamCaption})}
+
+
+
+Called when a timer for a delayed message expires. 
+
+The function simply take the existing \textquotesingle{}\mbox{\hyperlink{structt__message__delayed__deliver}{t\+\_\+message\+\_\+delayed\+\_\+deliver}}\textquotesingle{} structure, extract the \textquotesingle{}msg\+\_\+t\textquotesingle{} field and write it into the F\+I\+FO queue via the \textquotesingle{}write\+Message\textquotesingle{} function.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em timer} & The timer that elasped \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8h_abe680d2cb4664ed30117bea22d4733a0}\label{message_8h_abe680d2cb4664ed30117bea22d4733a0}} 
+\index{message.h@{message.h}!isDelaySet@{isDelaySet}}
+\index{isDelaySet@{isDelaySet}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{isDelaySet()}{isDelaySet()}}
+{\footnotesize\ttfamily bool is\+Delay\+Set (\begin{DoxyParamCaption}\item[{const msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Check if the message delay is greater than zero on a group. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em manager} & A pointer to the message manager of the group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread-\/safe
+\end{DoxyNote}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & If the delay is greater than zero \\
+\hline
+{\em false} & If the delay is zero \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8h_af58ffeb71713f9051b0e065c1aab6318}\label{message_8h_af58ffeb71713f9051b0e065c1aab6318}} 
+\index{message.h@{message.h}!queueDelayedMessage@{queueDelayedMessage}}
+\index{queueDelayedMessage@{queueDelayedMessage}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{queueDelayedMessage()}{queueDelayedMessage()}}
+{\footnotesize\ttfamily int queue\+Delayed\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{message,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Insert a delayed message into the pending queue. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em message} & The message to insert into the queue \\
+\hline
+\mbox{\texttt{ in}}  & {\em manager} & A pointer to the current msg\+\_\+manager\+\_\+t of the group\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em -\/1} & on error \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{message_8h_aba1d8514abde9dfb52f2fb006fd5dbf1}\label{message_8h_aba1d8514abde9dfb52f2fb006fd5dbf1}} 
+\index{message.h@{message.h}!queueGarbageCollector@{queueGarbageCollector}}
+\index{queueGarbageCollector@{queueGarbageCollector}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{queueGarbageCollector()}{queueGarbageCollector()}}
+{\footnotesize\ttfamily void queue\+Garbage\+Collector (\begin{DoxyParamCaption}\item[{struct work\+\_\+struct $\ast$}]{work }\end{DoxyParamCaption})}
+
+
+
+Remove a message from the queue when it was completely delivered. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em work} & The work struct contained inside \char`\"{}msg\+\_\+manager\+\_\+t\char`\"{}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+nothing
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000007}{Todo}}]Check if size calculation are done correctly\end{DoxyRefDesc}
+
+
+\begin{DoxyNote}{Note}
+This function has three critical section, therefore it could be a bottleneck of the module 
+\end{DoxyNote}
+\mbox{\Hypertarget{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}\label{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}} 
+\index{message.h@{message.h}!readMessage@{readMessage}}
+\index{readMessage@{readMessage}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{readMessage()}{readMessage()}}
+{\footnotesize\ttfamily int read\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{dest\+\_\+buffer,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Read a message from the corresponding queue. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em 1} & if no message is present \\
+\hline
+{\em -\/1} & on critical error \\
+\hline
+\end{DoxyRetVals}
+This should\textquotesingle{}t be necessary since the message\textquotesingle{}s sender is automatically added in the list of recipients and, consequently, the \textquotesingle{}was\+Delivered\textquotesingle{} function should skip it. However for unknown reason this does not always happens (especially if the message is delayed)
+
+\begin{DoxyRefDesc}{Bug}
+\item[\mbox{\hyperlink{bug__bug000002}{Bug}}]\+: when \textquotesingle{}revoke delay\textquotesingle{} functionality is called, messages trigger this if and will not be delivered \end{DoxyRefDesc}
+\mbox{\Hypertarget{message_8h_a0205d35a68e74d35bab2858e077865ae}\label{message_8h_a0205d35a68e74d35bab2858e077865ae}} 
+\index{message.h@{message.h}!revokeDelayedMessage@{revokeDelayedMessage}}
+\index{revokeDelayedMessage@{revokeDelayedMessage}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{revokeDelayedMessage()}{revokeDelayedMessage()}}
+{\footnotesize\ttfamily int revoke\+Delayed\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+Remove all the delayed message from the queue. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em manager} & The message manager of the group\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This function is thread safe with respect to the list of delayed message
+\end{DoxyNote}
+\begin{DoxyReturn}{Returns}
+The number of delayed messages which revoked 
+\end{DoxyReturn}
+\mbox{\Hypertarget{message_8h_a1ba93a9118165a7e11a1b0865f78da85}\label{message_8h_a1ba93a9118165a7e11a1b0865f78da85}} 
+\index{message.h@{message.h}!writeMessage@{writeMessage}}
+\index{writeMessage@{writeMessage}!message.h@{message.h}}
+\doxysubsubsection{\texorpdfstring{writeMessage()}{writeMessage()}}
+{\footnotesize\ttfamily int write\+Message (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{message,  }\item[{msg\+\_\+manager\+\_\+t $\ast$}]{manager }\end{DoxyParamCaption})}
+
+
+
+write message on a group queue 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em message} & The data pointed must never be deallocatated \\
+\hline
+\mbox{\texttt{ in}}  & {\em manager} & Pointer to the message manager \\
+\hline
+\mbox{\texttt{ in}}  & {\em recipients} & The head of the linked list containing the thread recipients\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+Z\+E\+\_\+\+E\+RR} & if the message does not respect the group\textquotesingle{}s size limits \\
+\hline
+{\em A\+L\+L\+O\+C\+\_\+\+E\+RR} & if some allocation fails\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+Must be protected by a write-\/spinlock to avoid concurrent modification of The recipient data-\/structure and manager\textquotesingle{}s message queue 
+\end{DoxyNote}
