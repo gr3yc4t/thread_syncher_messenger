@@ -14,8 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      working-directory: /
       run: make
     - name: make tool
-      working-directory: tool/
+      working-directory: ./tool
       run: make
