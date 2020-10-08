@@ -1,6 +1,6 @@
 # Makefile for LKM
-obj-m := final.o
-final-objs := ./src/main.o ./src/main_device.o ./src/sysfs.o ./src/group_manager.o ./src/message.o ./src/sysfs.o
+obj-m := aosv2020.o
+aosv2020-objs := ./src/main.o ./src/main_device.o ./src/sysfs.o ./src/group_manager.o ./src/message.o ./src/sysfs.o
 
 KDIR=/lib/modules/$(shell uname -r)/build
 
@@ -12,7 +12,7 @@ CFLAGS_main.o := -DDEBUG
 CFLAGS_sysfs.o := -DDEBUG
 
 all:
-	make -C $(KDIR) M=$(shell pwd)  modules 
+	make CFLAGS="-fanalyzer -Wextra -g3 " -C $(KDIR) M=$(shell pwd) modules 
 
 clean:
 	make -C $(KDIR) M=$(shell pwd) clean # from lkmpg

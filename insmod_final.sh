@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo insmod final.ko
+sudo insmod aosv2020.ko

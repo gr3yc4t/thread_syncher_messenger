@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo rmmod final
+sudo rmmod aosv2020

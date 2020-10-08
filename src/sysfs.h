@@ -30,6 +30,8 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
 static ssize_t max_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf);
 static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count);
 static ssize_t current_storage_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf);
+static ssize_t garbage_collector_ratio_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff);
+static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count);
 
 
 

@@ -48,12 +48,13 @@
 #define DEVICE_NAME_SIZE    64
 
 #define DEFAULT_MSG_SIZE 256
-#define DEFAULT_STORAGE_SIZE 256
+#define DEFAULT_STORAGE_SIZE 1024
 
 //IOCTLS
 
 #define IOCTL_GET_GROUP_DESC _IOR('Q', 1, group_t*)
-
+#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
+#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
 
 
 #ifndef DISABLE_DELAYED_MSG
@@ -70,8 +71,7 @@
 
 #endif
 
-#define IOCTL_SET_STRICT_MODE _IOW('Q', 101, bool)
-#define IOCTL_CHANGE_OWNER _IOW('Q', 102, uid_t)
+
 
 
 
@@ -85,6 +85,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t count, loff_t *f_pos);
 static long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long ioctl_param);
 static int flushGroupMessage(struct file *filep, fl_owner_t id);
+
 
 inline void initParticipants(group_data *grp_data);
 int installGroupClass(void);
@@ -102,7 +103,7 @@ static struct file_operations group_operation = {
 
 extern struct class *group_device_class;
 
-int registerGroupDevice(group_data *grp_data, const struct device* parent);
+int registerGroupDevice(group_data *grp_data, struct device* parent);
 void unregisterGroupDevice(group_data *grp_data, bool flag);
 int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group);
 

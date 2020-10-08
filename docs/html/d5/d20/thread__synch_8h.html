@@ -80,6 +80,7 @@ $(function() {
 <div class="textblock"><code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;sys/ioctl.h&gt;</code><br />
 <code>#include &lt;sys/stat.h&gt;</code><br />
+<code>#include &lt;sys/poll.h&gt;</code><br />
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -91,16 +92,17 @@ Include dependency graph for thread_synch.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../da/d21/thread__synch_8h__incl.png" border="0" usemap="#tool_2thread__synch_8h" alt=""/></div>
 <map name="tool_2thread__synch_8h" id="tool_2thread__synch_8h">
-<area shape="rect" title="User&#45;level library to wrap thread&#45;synch kernel&#45;level functionalities." alt="" coords="403,5,554,32"/>
+<area shape="rect" title="User&#45;level library to wrap thread&#45;synch kernel&#45;level functionalities." alt="" coords="465,5,615,32"/>
 <area shape="rect" title=" " alt="" coords="5,80,101,107"/>
 <area shape="rect" title=" " alt="" coords="125,80,213,107"/>
 <area shape="rect" title=" " alt="" coords="237,80,323,107"/>
-<area shape="rect" title=" " alt="" coords="347,80,421,107"/>
-<area shape="rect" title=" " alt="" coords="445,80,512,107"/>
-<area shape="rect" title=" " alt="" coords="537,80,607,107"/>
-<area shape="rect" title=" " alt="" coords="631,80,694,107"/>
-<area shape="rect" title=" " alt="" coords="718,80,789,107"/>
-<area shape="rect" title=" " alt="" coords="813,80,896,107"/>
+<area shape="rect" title=" " alt="" coords="347,80,431,107"/>
+<area shape="rect" title=" " alt="" coords="456,80,531,107"/>
+<area shape="rect" title=" " alt="" coords="555,80,621,107"/>
+<area shape="rect" title=" " alt="" coords="646,80,717,107"/>
+<area shape="rect" title=" " alt="" coords="741,80,803,107"/>
+<area shape="rect" title=" " alt="" coords="827,80,898,107"/>
+<area shape="rect" title=" " alt="" coords="923,80,1005,107"/>
 </map>
 </div>
 </div>
@@ -183,9 +185,18 @@ Macros</h2></td></tr>
 <tr class="memitem:aada6cc3431b394cbc040dd1e6ddcabb3"><td class="memItemLeft" align="right" valign="top"><a id="aada6cc3431b394cbc040dd1e6ddcabb3"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>PERMISSION_ERR</b>&#160;&#160;&#160;-53</td></tr>
 <tr class="separator:aada6cc3431b394cbc040dd1e6ddcabb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65bce0dceddd14cd62c0f4efd5c92076"><td class="memItemLeft" align="right" valign="top"><a id="a65bce0dceddd14cd62c0f4efd5c92076"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>GROUP_CLOSED</b>&#160;&#160;&#160;-54</td></tr>
+<tr class="separator:a65bce0dceddd14cd62c0f4efd5c92076"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c7cd32e1bac137f05e4a752b4ad10af"><td class="memItemLeft" align="right" valign="top"><a id="a6c7cd32e1bac137f05e4a752b4ad10af"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>BUFF_SIZE</b>&#160;&#160;&#160;512</td></tr>
 <tr class="separator:a6c7cd32e1bac137f05e4a752b4ad10af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9301f41bfe2a17a4add6f0dc7f239487"><td class="memItemLeft" align="right" valign="top"><a id="a9301f41bfe2a17a4add6f0dc7f239487"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>POLL_TIMEOUT</b>&#160;&#160;&#160;5</td></tr>
+<tr class="separator:a9301f41bfe2a17a4add6f0dc7f239487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af49fdcd6be7c20b885829fcd36405ddf"><td class="memItemLeft" align="right" valign="top"><a id="af49fdcd6be7c20b885829fcd36405ddf"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PARAM_NUMBER</b>&#160;&#160;&#160;3</td></tr>
+<tr class="separator:af49fdcd6be7c20b885829fcd36405ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eabf7d3f87fe6d52748a22ea0c3124b"><td class="memItemLeft" align="right" valign="top"><a id="a7eabf7d3f87fe6d52748a22ea0c3124b"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a7eabf7d3f87fe6d52748a22ea0c3124b">IOCTL_GET_GROUP_DESC</a>&#160;&#160;&#160;_IOR('Q', 1, <a class="el" href="../../d2/dc2/structgroup__t.html">group_t</a>*)</td></tr>
 <tr class="memdesc:a7eabf7d3f87fe6d52748a22ea0c3124b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ioctls <br /></td></tr>
@@ -241,6 +252,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>readGroupInfo</b> (thr
 <tr class="memitem:a2ec2da5085c32cbab0f0025c62d6a402"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a2ec2da5085c32cbab0f0025c62d6a402">revokeDelay</a> (thread_group_t *group)</td></tr>
 <tr class="memdesc:a2ec2da5085c32cbab0f0025c62d6a402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revoke all the delayed messaged on a given group and deliver it.  <a href="../../d5/d20/thread__synch_8h.html#a2ec2da5085c32cbab0f0025c62d6a402">More...</a><br /></td></tr>
 <tr class="separator:a2ec2da5085c32cbab0f0025c62d6a402"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eb98503afc6d9f48abd20944fe65b01"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a7eb98503afc6d9f48abd20944fe65b01">flushDelayedMsg</a> (thread_group_t *group)</td></tr>
+<tr class="memdesc:a7eb98503afc6d9f48abd20944fe65b01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deliver immediately all delayed messages.  <a href="../../d5/d20/thread__synch_8h.html#a7eb98503afc6d9f48abd20944fe65b01">More...</a><br /></td></tr>
+<tr class="separator:a7eb98503afc6d9f48abd20944fe65b01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a30aa9ea940e7e4a48ddc23000ad0abe9">sleepOnBarrier</a> (thread_group_t *group)</td></tr>
 <tr class="memdesc:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put the process which call this function on sleep.  <a href="../../d5/d20/thread__synch_8h.html#a30aa9ea940e7e4a48ddc23000ad0abe9">More...</a><br /></td></tr>
 <tr class="separator:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -265,6 +279,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>readGroupInfo</b> (thr
 <tr class="memitem:aba1f7570253ade80a90308b3974d3e12"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#aba1f7570253ade80a90308b3974d3e12">setGarbageCollectorRatio</a> (thread_group_t *group, unsigned long val)</td></tr>
 <tr class="memdesc:aba1f7570253ade80a90308b3974d3e12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the garbage collector ratio value for a given group.  <a href="../../d5/d20/thread__synch_8h.html#aba1f7570253ade80a90308b3974d3e12">More...</a><br /></td></tr>
 <tr class="separator:aba1f7570253ade80a90308b3974d3e12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab24f9c7cab742faf5087acb626fd24dd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#ab24f9c7cab742faf5087acb626fd24dd">includeStructureSize</a> (thread_group_t *group, const bool value)</td></tr>
+<tr class="memdesc:ab24f9c7cab742faf5087acb626fd24dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a flag to count also supporting structure size in storage calculation.  <a href="../../d5/d20/thread__synch_8h.html#ab24f9c7cab742faf5087acb626fd24dd">More...</a><br /></td></tr>
+<tr class="separator:ab24f9c7cab742faf5087acb626fd24dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af75a6962ec9fa6327d67c2a03dd98bf8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#af75a6962ec9fa6327d67c2a03dd98bf8">enableStrictMode</a> (thread_group_t *group)</td></tr>
 <tr class="memdesc:af75a6962ec9fa6327d67c2a03dd98bf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable strict mode on a group.  <a href="../../d5/d20/thread__synch_8h.html#af75a6962ec9fa6327d67c2a03dd98bf8">More...</a><br /></td></tr>
 <tr class="separator:af75a6962ec9fa6327d67c2a03dd98bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -424,6 +441,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>readGroupInfo</b> (thr
   <table class="retval">
     <tr><td class="paramname">-1</td><td>on error </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -504,7 +522,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">0</td><td>on success </td></tr>
     <tr><td class="paramname">UNAUTHORIZED</td><td>if the current user is not authorized to change the param </td></tr>
-    <tr><td class="paramname">Negative</td><td>number on error</td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed</td></tr>
   </table>
   </dd>
 </dl>
@@ -541,7 +559,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">0</td><td>on success </td></tr>
     <tr><td class="paramname">UNAUTHORIZED</td><td>if the current user is not authorized to change the param </td></tr>
-    <tr><td class="paramname">Negative</td><td>number on error</td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed</td></tr>
   </table>
   </dd>
 </dl>
@@ -576,11 +594,46 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">0</td><td>on success </td></tr>
     <tr><td class="paramname">UNAUTHORIZED</td><td>if the current user is not authorized to change the param </td></tr>
-    <tr><td class="paramname">Negative</td><td>number on error</td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>If strict mode is disabled, any threads can enable it through this function. If strict mode is enabled, only the owner can disable it </dd></dl>
+
+</div>
+</div>
+<a id="a7eb98503afc6d9f48abd20944fe65b01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7eb98503afc6d9f48abd20944fe65b01">&#9670;&nbsp;</a></span>flushDelayedMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int flushDelayedMsg </td>
+          <td>(</td>
+          <td class="paramtype">thread_group_t *&#160;</td>
+          <td class="paramname"><em>group</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deliver immediately all delayed messages. </p>
+<p>When a group's device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">*group</td><td>A pointer to a group's structure</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group structure is closed </td></tr>
+    <tr><td class="paramname">negative</td><td>number on error (the number represent the 'errno' value) </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -607,6 +660,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   </table>
   </dd>
 </dl>
+<dl class="bug"><dt><b><a class="el" href="../../de/da5/bug.html#_bug000003">Bug:</a></b></dt><dd>Sometimes this function will return the incorrect value "0", when this happens a subsequent call of the function will return the correct value</dd></dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
     <tr><td class="paramname">The</td><td>value of the parameter </td></tr>
@@ -680,6 +734,52 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ab24f9c7cab742faf5087acb626fd24dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab24f9c7cab742faf5087acb626fd24dd">&#9670;&nbsp;</a></span>includeStructureSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int includeStructureSize </td>
+          <td>(</td>
+          <td class="paramtype">thread_group_t *&#160;</td>
+          <td class="paramname"><em>group</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set a flag to count also supporting structure size in storage calculation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">*group</td><td>A pointer to an initialized group structure </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>The value the flag will be set to</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">UNAUTHORIZED</td><td>if the current user is not authorized to change the param </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>If strict mode is enabled, only the owner can disable it </dd></dl>
 
 </div>
 </div>
@@ -838,7 +938,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>On success, the group is not opened </dd></dl>
-<dl class="bug"><dt><b><a class="el" href="../../de/da5/bug.html#_bug000003">Bug:</a></b></dt><dd>The group's descriptor is not loaded, thus the diplayed name will appear as "(null)"</dd></dl>
+<dl class="bug"><dt><b><a class="el" href="../../de/da5/bug.html#_bug000004">Bug:</a></b></dt><dd>The group's descriptor is not loaded, thus the diplayed name will appear as "(null)"</dd></dl>
 
 </div>
 </div>
@@ -914,6 +1014,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
     <tr><td class="paramname">NO_MSG_PRESENT</td><td>if there is no message available </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
     <tr><td class="paramname">negative</td><td>number on error </td></tr>
     <tr><td class="paramname">0</td><td>on success</td></tr>
   </table>
@@ -948,8 +1049,9 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">-1</td><td>on error </td></tr>
+    <tr><td class="paramname">Negative</td><td>number on error </td></tr>
     <tr><td class="paramname">The</td><td>number of revoked messages on success (&gt;= 0) </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -994,6 +1096,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">-1</td><td>on error </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -1037,6 +1140,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
     <tr><td class="paramname">-1</td><td>on error </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
   </table>
   </dd>
@@ -1082,6 +1186,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">-1</td><td>on error </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -1126,6 +1231,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">-1</td><td>on error </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -1157,8 +1263,9 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">-1</td><td>on error </td></tr>
+    <tr><td class="paramname">Negative</td><td>number on error </td></tr>
     <tr><td class="paramname">0</td><td>on success </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>
@@ -1210,6 +1317,7 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   <table class="retval">
     <tr><td class="paramname">negative</td><td>number on error </td></tr>
     <tr><td class="paramname">The</td><td>number of written bytes on successs </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group is closed </td></tr>
   </table>
   </dd>
 </dl>

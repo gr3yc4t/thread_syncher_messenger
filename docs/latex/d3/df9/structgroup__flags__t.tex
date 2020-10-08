@@ -24,6 +24,8 @@ unsigned int \mbox{\hyperlink{structgroup__flags__t_aacf9e90bc7b8769dec99ae595c9
 unsigned int {\bfseries strict\+\_\+mode}\+:1
 \item 
 unsigned int \mbox{\hyperlink{structgroup__flags__t_a6be8461e8bc91736bc8f7ccdd9ddfb6d}{garbage\+\_\+collector\+\_\+disabled}}\+:1
+\item 
+unsigned int \mbox{\hyperlink{structgroup__flags__t_aa602d61f6610c290aa76e2fe7c5dcad9}{gc\+\_\+include\+\_\+struct}}\+:1
 \end{DoxyCompactItemize}
 
 
@@ -52,7 +54,13 @@ Those flags are useful since it indicates if a module was correctly initialized,
 \doxysubsubsection{\texorpdfstring{garbage\_collector\_disabled}{garbage\_collector\_disabled}}
 {\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::garbage\+\_\+collector\+\_\+disabled}
 
-1 if the garbage collector is disabled, zero otherwise \mbox{\Hypertarget{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}\label{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}} 
+1 if the garbage collector is disabled, zero otherwise \mbox{\Hypertarget{structgroup__flags__t_aa602d61f6610c290aa76e2fe7c5dcad9}\label{structgroup__flags__t_aa602d61f6610c290aa76e2fe7c5dcad9}} 
+\index{group\_flags\_t@{group\_flags\_t}!gc\_include\_struct@{gc\_include\_struct}}
+\index{gc\_include\_struct@{gc\_include\_struct}!group\_flags\_t@{group\_flags\_t}}
+\doxysubsubsection{\texorpdfstring{gc\_include\_struct}{gc\_include\_struct}}
+{\footnotesize\ttfamily unsigned int group\+\_\+flags\+\_\+t\+::gc\+\_\+include\+\_\+struct}
+
+1 if the structure related to a message should be included in the size count \mbox{\Hypertarget{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}\label{structgroup__flags__t_ae1fecf78ec3877c7c51a9c2cb5c63a50}} 
 \index{group\_flags\_t@{group\_flags\_t}!initialized@{initialized}}
 \index{initialized@{initialized}!group\_flags\_t@{group\_flags\_t}}
 \doxysubsubsection{\texorpdfstring{initialized}{initialized}}
