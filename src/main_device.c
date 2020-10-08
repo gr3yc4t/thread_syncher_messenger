@@ -527,4 +527,4 @@ __must_check int getGroupInfo(unsigned long group_id, group_t *group_dest){
 MODULE_AUTHOR("Alessandro Cingolani");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_DESCRIPTION("Threads syncher and message exchanger");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
