@@ -24,8 +24,8 @@ bool hasStorePrivilege(group_data *grp_data){
 
                 current_owner = grp_data->owner;
 
-                printk(KERN_DEBUG "Current owner: %d", current_owner);
-                printk(KERN_DEBUG "Current thread: %d", current_uid().val );
+                pr_debug("Current owner: %d", current_owner);
+                pr_debug("Current thread: %d", current_uid().val );
 
                 if(current_uid().val == current_owner){
                         ret = true;
@@ -68,11 +68,11 @@ static ssize_t max_msg_size_show(struct kobject *kobj, struct kobj_attribute *at
                 return -1;
         }
 
-        printk(KERN_DEBUG "Locking config");
+        pr_debug("Locking config");
         down_read(&manager->config_lock);
                 max_msg_size = manager->max_message_size;
         up_read(&manager->config_lock);
-        printk(KERN_DEBUG "Unlocking config");
+        pr_debug("Unlocking config");
 
         
         return snprintf(user_buff, ATTR_BUFF_SIZE,"%ld", max_msg_size);
@@ -115,7 +115,7 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
         ret = sscanf(user_buf, "%ld", &tmp);
 
         if(ret < 0){
-                printk(KERN_DEBUG "Conversion error, exiting...");
+                pr_debug("Conversion error, exiting...");
                 return -1;
         }
 
@@ -123,7 +123,7 @@ static ssize_t max_msg_size_store(struct kobject *kobj, struct kobj_attribute *a
                 manager->max_message_size = tmp;
         up_write(&manager->config_lock);
 
-        printk(KERN_DEBUG "Value of 'max_msg_size' set to %ld", manager->max_message_size);
+        pr_debug("Value of 'max_msg_size' set to %ld", manager->max_message_size);
 
         return ret;
 }
@@ -197,7 +197,7 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
         ret = sscanf(user_buf, "%ld", &tmp);
 
         if(ret < 0){
-                printk(KERN_DEBUG "Conversion error, exiting...");
+                pr_debug("Conversion error, exiting...");
                 return -1;
         }
 
@@ -205,7 +205,7 @@ static ssize_t max_storage_size_store(struct kobject *kobj, struct kobj_attribut
                 manager->max_storage_size = tmp;
         up_write(&manager->config_lock);
 
-        printk(KERN_DEBUG "Value of 'max_storage_size' set to %ld", manager->max_storage_size);
+        pr_debug("Value of 'max_storage_size' set to %ld", manager->max_storage_size);
 
         return 0;
 }
@@ -346,12 +346,12 @@ static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj
         grp_data = container_of(group_sysfs, group_data, group_sysfs);
 
         if(!grp_data){
-                printk(KERN_ERR "container_of: error");
+                pr_err("container_of: error");
                 return -1;
         }
 
         if(!hasStorePrivilege(grp_data)){
-                printk(KERN_ERR "Unable to change parameter: unauthorized");
+                pr_err("Unable to change parameter: unauthorized");
                 return -1;
         }
 
@@ -359,7 +359,7 @@ static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj
         ret = sscanf(user_buf, "%d", &tmp);
 
         if(ret < 0){
-                printk(KERN_DEBUG "Conversion error, exiting...");
+                pr_debug("Conversion error, exiting...");
                 return -1;
         }
 
@@ -370,7 +370,7 @@ static ssize_t garbage_collector_enabled_store(struct kobject *kobj, struct kobj
         else
                 return -1;
         
-        printk(KERN_DEBUG "Garbage collector flag set to: %d", grp_data->flags.garbage_collector_disabled);
+        pr_debug("Garbage collector flag set to: %d", grp_data->flags.garbage_collector_disabled);
 
         return 0;
 }
@@ -440,17 +440,92 @@ static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_a
         ret = sscanf(user_buf, "%d", &tmp);
 
         if(ret < 0){
-                printk(KERN_DEBUG "Conversion error, exiting...");
+                pr_debug("Conversion error, exiting...");
                 return -1;
         }
 
         atomic_set(&grp_data->garbage_collector.ratio, tmp);
         
-        printk(KERN_DEBUG "Garbage collector ratio set to: %d", tmp);
+        pr_debug("Garbage collector ratio set to: %d", tmp);
 
         return 0;
 }
 
+
+
+/**
+ * @brief Return the value of the flag used to include supporting structures in msg. size
+ * @param[out] buffer The buffer where the string containing flag's value is written
+ * 
+ * @return The number of element written
+ */
+static ssize_t include_struct_size_show(struct kobject *kobj, struct kobj_attribute *attr, char *user_buff){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        bool enabled;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_current_storage_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+        
+        if(!grp_data){
+                pr_err("container_of: error");
+                return -1;
+        }
+
+        if(grp_data->flags.gc_include_struct == 1)
+                enabled = true;
+        else
+                enabled = false;
+        
+        return snprintf(user_buff, ATTR_BUFF_SIZE,"%d", enabled);
+}
+
+
+
+/**
+ * @brief Set the value of the messages size flag
+ * @param[in] buffer The buffer containing the new flag value
+ * 
+ * @return The number of element written
+ */
+static ssize_t include_struct_size_store(struct kobject *kobj, struct kobj_attribute *attr, const char *user_buf, size_t count){
+        group_data *grp_data;
+        group_sysfs_t *group_sysfs;
+        int tmp;
+        int ret;
+
+        group_sysfs = container_of(attr, group_sysfs_t, attr_include_struct_size);
+        grp_data = container_of(group_sysfs, group_data, group_sysfs);
+
+        if(!grp_data){
+                pr_err("container_of: error");
+                return -1;
+        }
+
+        if(!hasStorePrivilege(grp_data)){
+                pr_err("Unable to change parameter: unauthorized");
+                return -1;
+        }
+
+
+        ret = sscanf(user_buf, "%d", &tmp);
+
+        if(ret < 0){
+                pr_debug("Conversion error, exiting...");
+                return -1;
+        }
+
+        if(tmp > 0)
+                grp_data->flags.gc_include_struct = 0;
+        else if(tmp == 0)
+                grp_data->flags.gc_include_struct = 1;
+        else
+                return -1;
+        
+        pr_debug("Structure message size flag set to: %d", grp_data->flags.garbage_collector_disabled);
+
+        return 0;
+}
 
 
 
@@ -464,11 +539,15 @@ static ssize_t garbage_collector_ratio_store(struct kobject *kobj, struct kobj_a
  * @return 0 on success, negative number on error
  */
 int initSysFs(group_data *grp_data){
+        struct kobject *group_device;
+        group_sysfs_t *sysfs;
 
         if(!grp_data)
                 return -1;
 
-        struct kobject *group_device = &grp_data->dev->kobj;   
+
+        
+        group_device = &grp_data->dev->kobj;   
 
         if(group_device == NULL){
                 printk(KERN_WARNING "sysfs: kobject parent is NULL, trying alternative");
@@ -476,12 +555,12 @@ int initSysFs(group_data *grp_data){
         }
 
 
-        group_sysfs_t *sysfs = &grp_data->group_sysfs;
+        sysfs = &grp_data->group_sysfs;
 
         sysfs->group_kobject = kobject_create_and_add("group_parameters", group_device);
 
         if(sysfs->group_kobject == NULL){
-                printk(KERN_ERR "sysfs: Unable to create kobject");
+                pr_err("sysfs: Unable to create kobject");
                 return -1;
         }
         
@@ -520,6 +599,12 @@ int initSysFs(group_data *grp_data){
         sysfs->attr_garbage_collector_ratio.store = garbage_collector_ratio_store;
 
 
+        sysfs->attr_include_struct_size.attr.name = "include_struct_size";
+        sysfs->attr_include_struct_size.attr.mode =  S_IWUGO | S_IRUGO;
+        sysfs->attr_include_struct_size.show = include_struct_size_show;
+        sysfs->attr_include_struct_size.store = include_struct_size_store;
+;
+
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_max_message_size.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'max_message_size' attribute");
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_max_storage_size.attr) < 0)
@@ -534,6 +619,8 @@ int initSysFs(group_data *grp_data){
                 printk(KERN_WARNING "Unable to create 'current_owner' attribute");  
         if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr) < 0)
                 printk(KERN_WARNING "Unable to create 'garbage_collector_enabled' attribute");        
+        if(sysfs_create_file(sysfs->group_kobject, &sysfs->attr_include_struct_size.attr) < 0)
+                printk(KERN_WARNING "Unable to create 'include_struct_size' attribute");        
 
 
 
@@ -555,8 +642,10 @@ void releaseSysFs(group_sysfs_t *sysfs){
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_current_owner.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_enabled.attr);
     sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_garbage_collector_ratio.attr);
+    sysfs_remove_file(sysfs->group_kobject, &sysfs->attr_include_struct_size.attr);
+
 
     kobject_put(sysfs->group_kobject);
 
-    printk(KERN_DEBUG "syfs released");
+    pr_debug("syfs released");
 }

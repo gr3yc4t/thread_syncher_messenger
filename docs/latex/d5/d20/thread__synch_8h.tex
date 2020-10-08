@@ -8,6 +8,7 @@ User-\/level library to wrap thread-\/synch kernel-\/level functionalities.
 {\ttfamily \#include $<$sys/types.\+h$>$}\newline
 {\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
 {\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$sys/poll.\+h$>$}\newline
 {\ttfamily \#include $<$unistd.\+h$>$}\newline
 {\ttfamily \#include $<$stdio.\+h$>$}\newline
 {\ttfamily \#include $<$stdlib.\+h$>$}\newline
@@ -94,8 +95,17 @@ struct \mbox{\hyperlink{structT__THREAD__GROUP}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\
 \mbox{\Hypertarget{thread__synch_8h_aada6cc3431b394cbc040dd1e6ddcabb3}\label{thread__synch_8h_aada6cc3431b394cbc040dd1e6ddcabb3}} 
 \#define {\bfseries P\+E\+R\+M\+I\+S\+S\+I\+O\+N\+\_\+\+E\+RR}~-\/53
 \item 
+\mbox{\Hypertarget{thread__synch_8h_a65bce0dceddd14cd62c0f4efd5c92076}\label{thread__synch_8h_a65bce0dceddd14cd62c0f4efd5c92076}} 
+\#define {\bfseries G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED}~-\/54
+\item 
 \mbox{\Hypertarget{thread__synch_8h_a6c7cd32e1bac137f05e4a752b4ad10af}\label{thread__synch_8h_a6c7cd32e1bac137f05e4a752b4ad10af}} 
 \#define {\bfseries B\+U\+F\+F\+\_\+\+S\+I\+ZE}~512
+\item 
+\mbox{\Hypertarget{thread__synch_8h_a9301f41bfe2a17a4add6f0dc7f239487}\label{thread__synch_8h_a9301f41bfe2a17a4add6f0dc7f239487}} 
+\#define {\bfseries P\+O\+L\+L\+\_\+\+T\+I\+M\+E\+O\+UT}~5
+\item 
+\mbox{\Hypertarget{thread__synch_8h_af49fdcd6be7c20b885829fcd36405ddf}\label{thread__synch_8h_af49fdcd6be7c20b885829fcd36405ddf}} 
+\#define {\bfseries P\+A\+R\+A\+M\+\_\+\+N\+U\+M\+B\+ER}~3
 \item 
 \mbox{\Hypertarget{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}\label{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}} 
 \#define \mbox{\hyperlink{thread__synch_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}{I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+D\+E\+SC}}~\+\_\+\+I\+OR(\textquotesingle{}Q\textquotesingle{}, 1, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
@@ -144,6 +154,8 @@ int \mbox{\hyperlink{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}{set\+De
 \begin{DoxyCompactList}\small\item\em Set the delay value for a given group. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}{revoke\+Delay}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Revoke all the delayed messaged on a given group and deliver it. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}{flush\+Delayed\+Msg}} (thread\+\_\+group\+\_\+t $\ast$group)
+\begin{DoxyCompactList}\small\item\em Deliver immediately all delayed messages. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}{sleep\+On\+Barrier}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Put the process which call this function on sleep. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_afb024938d9cf0b8161752345ef3f65cf}{awake\+Barrier}} (thread\+\_\+group\+\_\+t $\ast$group)
@@ -160,6 +172,8 @@ int \mbox{\hyperlink{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}{set\+Ma
 \begin{DoxyCompactList}\small\item\em Set the maximum storage size value for a given group. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}{set\+Garbage\+Collector\+Ratio}} (thread\+\_\+group\+\_\+t $\ast$group, unsigned long val)
 \begin{DoxyCompactList}\small\item\em Set the garbage collector ratio value for a given group. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{thread__synch_8h_ab24f9c7cab742faf5087acb626fd24dd}{include\+Structure\+Size}} (thread\+\_\+group\+\_\+t $\ast$group, const bool value)
+\begin{DoxyCompactList}\small\item\em Set a flag to count also supporting structure size in storage calculation. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_af75a6962ec9fa6327d67c2a03dd98bf8}{enable\+Strict\+Mode}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Enable strict mode on a group. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_a5c0bf0d0eb98dec88c8c60e576b05ea1}{disable\+Strict\+Mode}} (thread\+\_\+group\+\_\+t $\ast$group)
@@ -250,6 +264,8 @@ Awake all the process present in a wait queue for a given group.
 \hline
 {\em 0} & on success \\
 \hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
+\hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}\label{thread__synch_8h_aefdb2522256f335e20f44142c011efa2}} 
 \index{thread\_synch.h@{thread\_synch.h}!becomeOwner@{becomeOwner}}
@@ -301,7 +317,7 @@ Change the owner of a group.
 \hline
 {\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
 \hline
-{\em Negative} & number on error\\
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed\\
 \hline
 \end{DoxyRetVals}
 \begin{DoxyNote}{Note}
@@ -330,7 +346,7 @@ Disable strict mode on a group.
 \hline
 {\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
 \hline
-{\em Negative} & number on error\\
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed\\
 \hline
 \end{DoxyRetVals}
 \begin{DoxyNote}{Note}
@@ -357,12 +373,38 @@ Enable strict mode on a group.
 \hline
 {\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
 \hline
-{\em Negative} & number on error\\
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed\\
 \hline
 \end{DoxyRetVals}
 \begin{DoxyNote}{Note}
 If strict mode is disabled, any threads can enable it through this function. If strict mode is enabled, only the owner can disable it 
 \end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}\label{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}} 
+\index{thread\_synch.h@{thread\_synch.h}!flushDelayedMsg@{flushDelayedMsg}}
+\index{flushDelayedMsg@{flushDelayedMsg}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{flushDelayedMsg()}{flushDelayedMsg()}}
+{\footnotesize\ttfamily int flush\+Delayed\+Msg (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Deliver immediately all delayed messages. 
+
+When a group\textquotesingle{}s device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to a group\textquotesingle{}s structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group structure is closed \\
+\hline
+{\em negative} & number on error (the number represent the \textquotesingle{}errno\textquotesingle{} value) \\
+\hline
+\end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}\label{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}} 
 \index{thread\_synch.h@{thread\_synch.h}!getCurrentStorageSize@{getCurrentStorageSize}}
 \index{getCurrentStorageSize@{getCurrentStorageSize}!thread\_synch.h@{thread\_synch.h}}
@@ -378,6 +420,10 @@ Get the current storage size value for a given group.
 \mbox{\texttt{ in}}  & {\em $\ast$group} & T A pointer to an initialized group structure\\
 \hline
 \end{DoxyParams}
+\begin{DoxyRefDesc}{Bug}
+\item[\mbox{\hyperlink{bug__bug000003}{Bug}}]Sometimes this function will return the incorrect value \char`\"{}0\char`\"{}, when this happens a subsequent call of the function will return the correct value\end{DoxyRefDesc}
+
+
 
 \begin{DoxyRetVals}{Return values}
 {\em The} & value of the parameter \\
@@ -429,6 +475,35 @@ Get the maximum storage size value for a given group.
 {\em 0} & on error \\
 \hline
 \end{DoxyRetVals}
+\mbox{\Hypertarget{thread__synch_8h_ab24f9c7cab742faf5087acb626fd24dd}\label{thread__synch_8h_ab24f9c7cab742faf5087acb626fd24dd}} 
+\index{thread\_synch.h@{thread\_synch.h}!includeStructureSize@{includeStructureSize}}
+\index{includeStructureSize@{includeStructureSize}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{includeStructureSize()}{includeStructureSize()}}
+{\footnotesize\ttfamily int include\+Structure\+Size (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group,  }\item[{const bool}]{value }\end{DoxyParamCaption})}
+
+
+
+Set a flag to count also supporting structure size in storage calculation. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to an initialized group structure \\
+\hline
+\mbox{\texttt{ in}}  & {\em value} & The value the flag will be set to\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success \\
+\hline
+{\em U\+N\+A\+U\+T\+H\+O\+R\+I\+Z\+ED} & if the current user is not authorized to change the param \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed\\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+If strict mode is enabled, only the owner can disable it 
+\end{DoxyNote}
 \mbox{\Hypertarget{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}\label{thread__synch_8h_a0b9a508c4355883d84619d4472c4e0a3}} 
 \index{thread\_synch.h@{thread\_synch.h}!initThreadSyncher@{initThreadSyncher}}
 \index{initThreadSyncher@{initThreadSyncher}!thread\_synch.h@{thread\_synch.h}}
@@ -532,7 +607,7 @@ Load a group structure given a group ID.
 On success, the group is not opened 
 \end{DoxyNote}
 \begin{DoxyRefDesc}{Bug}
-\item[\mbox{\hyperlink{bug__bug000003}{Bug}}]The group\textquotesingle{}s descriptor is not loaded, thus the diplayed name will appear as \char`\"{}(null)\char`\"{}\end{DoxyRefDesc}
+\item[\mbox{\hyperlink{bug__bug000004}{Bug}}]The group\textquotesingle{}s descriptor is not loaded, thus the diplayed name will appear as \char`\"{}(null)\char`\"{}\end{DoxyRefDesc}
 \mbox{\Hypertarget{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}\label{thread__synch_8h_a6f4b8c5c4cd71b55b693b19477192042}} 
 \index{thread\_synch.h@{thread\_synch.h}!openGroup@{openGroup}}
 \index{openGroup@{openGroup}!thread\_synch.h@{thread\_synch.h}}
@@ -575,6 +650,8 @@ Read a message from a given group.
 \begin{DoxyRetVals}{Return values}
 {\em N\+O\+\_\+\+M\+S\+G\+\_\+\+P\+R\+E\+S\+E\+NT} & if there is no message available \\
 \hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
+\hline
 {\em negative} & number on error \\
 \hline
 {\em 0} & on success\\
@@ -600,9 +677,11 @@ Revoke all the delayed messaged on a given group and deliver it.
 \end{DoxyParams}
 
 \begin{DoxyRetVals}{Return values}
-{\em -\/1} & on error \\
+{\em Negative} & number on error \\
 \hline
 {\em The} & number of revoked messages on success ($>$= 0) \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
 \hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}\label{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}} 
@@ -628,6 +707,8 @@ Set the delay value for a given group.
 \hline
 {\em 0} & on success \\
 \hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
+\hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}\label{thread__synch_8h_aba1f7570253ade80a90308b3974d3e12}} 
 \index{thread\_synch.h@{thread\_synch.h}!setGarbageCollectorRatio@{setGarbageCollectorRatio}}
@@ -649,6 +730,8 @@ Set the garbage collector ratio value for a given group.
 
 \begin{DoxyRetVals}{Return values}
 {\em -\/1} & on error \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
 \hline
 {\em 0} & on success \\
 \hline
@@ -676,6 +759,8 @@ Set the maximum message size value for a given group.
 \hline
 {\em 0} & on success \\
 \hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
+\hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}\label{thread__synch_8h_a49b2ad5effe07c0325a8534a4f3364a4}} 
 \index{thread\_synch.h@{thread\_synch.h}!setMaxStorageSize@{setMaxStorageSize}}
@@ -700,6 +785,8 @@ Set the maximum storage size value for a given group.
 \hline
 {\em 0} & on success \\
 \hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
+\hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}\label{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}} 
 \index{thread\_synch.h@{thread\_synch.h}!sleepOnBarrier@{sleepOnBarrier}}
@@ -718,9 +805,11 @@ Put the process which call this function on sleep.
 \end{DoxyParams}
 
 \begin{DoxyRetVals}{Return values}
-{\em -\/1} & on error \\
+{\em Negative} & number on error \\
 \hline
 {\em 0} & on success \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
 \hline
 \end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_a465fac52d66ee286f7ed13318bf0f30c}\label{thread__synch_8h_a465fac52d66ee286f7ed13318bf0f30c}} 
@@ -747,5 +836,7 @@ Write a message in a given group.
 {\em negative} & number on error \\
 \hline
 {\em The} & number of written bytes on successs \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group is closed \\
 \hline
 \end{DoxyRetVals}

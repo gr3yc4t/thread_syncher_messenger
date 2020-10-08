@@ -21,6 +21,7 @@ typedef struct{
     long max_storage_size;
     long garbage_collector_ratio;
     bool strict_mode;
+    bool include_struct_size;
 } configuration;
 
 
@@ -117,6 +118,10 @@ static int handler(void* user, const char* section, const char* name, const char
         if(openGroup(curr_group) < 0)
             return -1;
         revokeDelay(curr_group);
+    } else if (MATCH("message", "flush")) {
+        if(openGroup(curr_group) < 0)
+            return -1;
+        flushDelayedMsg(curr_group);
     } else if (MATCH("synch", "sleep")) {
         if(openGroup(curr_group) < 0)
             return -1;
@@ -146,6 +151,11 @@ static int handler(void* user, const char* section, const char* name, const char
         
         pconfig->garbage_collector_ratio = atol(value);
         setGarbageCollectorRatio(curr_group, pconfig->garbage_collector_ratio);
+    } else if (MATCH("config", "include_structure_size")) {
+        if(openGroup(curr_group) < 0)
+            return -1;        
+        pconfig->include_struct_size = atoi(value);
+        includeStructureSize(curr_group, pconfig->max_storage_size);
     } else if (MATCH("config", "read_test")) {
         if(openGroup(curr_group) < 0)
             return -1;

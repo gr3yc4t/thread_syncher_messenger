@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['mainexit_172',['mainExit',['../d2/dac/main__device_8h.html#a48d8e84c8660710553f0beddd8b95b6a',1,'main_device.c']]],
-  ['maininit_173',['mainInit',['../d2/dac/main__device_8h.html#af4771bd0b385dc4e2cd6fa443e899735',1,'main_device.c']]]
+  ['loadgroupfromdescriptor_175',['loadGroupFromDescriptor',['../d5/d20/thread__synch_8h.html#a0c92afb57aeb28ee3ab2f4b3d944346d',1,'thread_synch.c']]],
+  ['loadgroupfromid_176',['loadGroupFromID',['../d5/d20/thread__synch_8h.html#a785bcde5f08439e91a2c6828bbf5d83d',1,'thread_synch.c']]]
 ];

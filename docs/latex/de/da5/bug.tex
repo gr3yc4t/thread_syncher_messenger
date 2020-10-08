@@ -1,7 +1,10 @@
 
 \begin{DoxyRefList}
-\item[Global \mbox{\hyperlink{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}{load\+Group\+From\+ID}} (const int group\+\_\+id)]\label{bug__bug000003}%
+\item[Global \mbox{\hyperlink{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}{get\+Current\+Storage\+Size}} (thread\+\_\+group\+\_\+t $\ast$group)]\label{bug__bug000003}%
 \Hypertarget{bug__bug000003}%
+Sometimes this function will return the incorrect value \char`\"{}0\char`\"{}, when this happens a subsequent call of the function will return the correct value 
+\item[Global \mbox{\hyperlink{thread__synch_8h_a785bcde5f08439e91a2c6828bbf5d83d}{load\+Group\+From\+ID}} (const int group\+\_\+id)]\label{bug__bug000004}%
+\Hypertarget{bug__bug000004}%
 The group\textquotesingle{}s descriptor is not loaded, thus the diplayed name will appear as \char`\"{}(null)\char`\"{} 
 \item[Global \mbox{\hyperlink{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}{read\+Message}} (msg\+\_\+t $\ast$dest\+\_\+buffer, msg\+\_\+manager\+\_\+t $\ast$manager)]\label{bug__bug000002}%
 \Hypertarget{bug__bug000002}%

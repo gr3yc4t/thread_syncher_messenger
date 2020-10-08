@@ -115,30 +115,30 @@ $(function() {
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#define DEVICE_NAME_SIZE    64</span></div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#define DEFAULT_MSG_SIZE 256</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#define DEFAULT_STORAGE_SIZE 256</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#define DEFAULT_STORAGE_SIZE 1024</span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">//IOCTLS</span></div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#define IOCTL_GET_GROUP_DESC _IOR(&#39;Q&#39;, 1, group_t*)</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#define IOCTL_SET_STRICT_MODE _IOW(&#39;Q&#39;, 101, bool)</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#define IOCTL_CHANGE_OWNER _IOW(&#39;Q&#39;, 102, uid_t)</span></div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor">#ifndef DISABLE_DELAYED_MSG</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">    #define IOCTL_SET_SEND_DELAY _IOW(&#39;Y&#39;, 0, long)</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">    #define IOCTL_REVOKE_DELAYED_MESSAGES _IO(&#39;Y&#39;, 1)</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#ifndef DISABLE_THREAD_BARRIER</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">    #define IOCTL_SLEEP_ON_BARRIER _IO(&#39;Z&#39;, 0)</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">    #define IOCTL_AWAKE_BARRIER _IO(&#39;Z&#39;, 1)</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#define IOCTL_SET_STRICT_MODE _IOW(&#39;Q&#39;, 101, bool)</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">#define IOCTL_CHANGE_OWNER _IOW(&#39;Q&#39;, 102, uid_t)</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#ifndef DISABLE_DELAYED_MSG</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">    #define IOCTL_SET_SEND_DELAY _IOW(&#39;Y&#39;, 0, long)</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor">    #define IOCTL_REVOKE_DELAYED_MESSAGES _IO(&#39;Y&#39;, 1)</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">#ifndef DISABLE_THREAD_BARRIER</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">    #define IOCTL_SLEEP_ON_BARRIER _IO(&#39;Z&#39;, 0)</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">    #define IOCTL_AWAKE_BARRIER _IO(&#39;Z&#39;, 1)</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
@@ -153,37 +153,38 @@ $(function() {
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keyword">static</span> <span class="keywordtype">long</span> <span class="keywordtype">int</span> groupIoctl(<span class="keyword">struct</span> file *filep, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> ioctl_num, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> ioctl_param);</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> flushGroupMessage(<span class="keyword">struct</span> file *filep, fl_owner_t <span class="keywordtype">id</span>);</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a1f1985c8c457af192ae651beb0f2e17d">initParticipants</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#af83ff2ff50fd5597cb8e810f5e7588c4">installGroupClass</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>file_operations group_operation = {</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    .owner = THIS_MODULE,</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    .open = <a class="code" href="../../d5/d20/thread__synch_8h.html#a6f4b8c5c4cd71b55b693b19477192042">openGroup</a>,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    .read = readGroupMessage,</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    .write = writeGroupMessage,</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    .release = releaseGroup,</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    .flush = flushGroupMessage,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    .unlocked_ioctl = groupIoctl</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;};</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a1f1985c8c457af192ae651beb0f2e17d">initParticipants</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#af83ff2ff50fd5597cb8e810f5e7588c4">installGroupClass</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keyword">static</span> <span class="keyword">struct </span>file_operations group_operation = {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    .owner = THIS_MODULE,</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    .open = <a class="code" href="../../d5/d20/thread__synch_8h.html#a6f4b8c5c4cd71b55b693b19477192042">openGroup</a>,</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    .read = readGroupMessage,</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    .write = writeGroupMessage,</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    .release = releaseGroup,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    .flush = flushGroupMessage,</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    .unlocked_ioctl = groupIoctl</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;};</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keyword">extern</span> <span class="keyword">struct </span>class *group_device_class;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a49eacb577d4216746f5a76ce9c60445c">registerGroupDevice</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, <span class="keyword">const</span> <span class="keyword">struct</span> device* parent);</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">unregisterGroupDevice</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, <span class="keywordtype">bool</span> flag);</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a6c41c36721034445a9dd68c598e94480">copy_group_t_from_user</a>(__user <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> *user_group, <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> *kern_group);</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif //GRP_MAN_H</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">extern</span> <span class="keyword">struct </span>class *group_device_class;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a9d29d1ee1f4639e493f77384aeb81b8d">registerGroupDevice</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, <span class="keyword">struct</span> device* parent);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">unregisterGroupDevice</a>(<a class="code" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, <span class="keywordtype">bool</span> flag);</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d4/dbe/group__manager_8h.html#a6c41c36721034445a9dd68c598e94480">copy_group_t_from_user</a>(__user <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> *user_group, <a class="code" href="../../d2/dc2/structgroup__t.html">group_t</a> *kern_group);</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="preprocessor">#endif //GRP_MAN_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="agroup__manager_8h_html_a7a4a1f2ed5563df3defd7477a8f70168"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">unregisterGroupDevice</a></div><div class="ttdeci">void unregisterGroupDevice(group_data *grp_data, bool flag)</div><div class="ttdoc">unregister a group device</div><div class="ttdef"><b>Definition:</b> group_manager.c:366</div></div>
-<div class="ttc" id="athread__synch_8h_html_a6f4b8c5c4cd71b55b693b19477192042"><div class="ttname"><a href="../../d5/d20/thread__synch_8h.html#a6f4b8c5c4cd71b55b693b19477192042">openGroup</a></div><div class="ttdeci">int openGroup(thread_group_t *group)</div><div class="ttdoc">Open a group, the thread PID is added to group's active members.</div><div class="ttdef"><b>Definition:</b> thread_synch.c:367</div></div>
+<div class="ttc" id="agroup__manager_8h_html_a7a4a1f2ed5563df3defd7477a8f70168"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">unregisterGroupDevice</a></div><div class="ttdeci">void unregisterGroupDevice(group_data *grp_data, bool flag)</div><div class="ttdoc">unregister a group device</div><div class="ttdef"><b>Definition:</b> group_manager.c:363</div></div>
+<div class="ttc" id="athread__synch_8h_html_a6f4b8c5c4cd71b55b693b19477192042"><div class="ttname"><a href="../../d5/d20/thread__synch_8h.html#a6f4b8c5c4cd71b55b693b19477192042">openGroup</a></div><div class="ttdeci">int openGroup(thread_group_t *group)</div><div class="ttdoc">Open a group, the thread PID is added to group's active members.</div><div class="ttdef"><b>Definition:</b> thread_synch.c:393</div></div>
 <div class="ttc" id="agroup__manager_8h_html_a1f1985c8c457af192ae651beb0f2e17d"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a1f1985c8c457af192ae651beb0f2e17d">initParticipants</a></div><div class="ttdeci">void initParticipants(group_data *grp_data)</div><div class="ttdoc">Initialize group_data participants' structures.</div><div class="ttdef"><b>Definition:</b> group_manager.c:220</div></div>
-<div class="ttc" id="agroup__manager_8h_html_a6c41c36721034445a9dd68c598e94480"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a6c41c36721034445a9dd68c598e94480">copy_group_t_from_user</a></div><div class="ttdeci">int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group)</div><div class="ttdoc">Copy a 'group_t' structure to kernel space.</div><div class="ttdef"><b>Definition:</b> group_manager.c:872</div></div>
-<div class="ttc" id="astructgroup__data_html"><div class="ttname"><a href="../../d2/d86/structgroup__data.html">group_data</a></div><div class="ttdoc">Group device data structure.</div><div class="ttdef"><b>Definition:</b> types.h:204</div></div>
+<div class="ttc" id="agroup__manager_8h_html_a6c41c36721034445a9dd68c598e94480"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a6c41c36721034445a9dd68c598e94480">copy_group_t_from_user</a></div><div class="ttdeci">int copy_group_t_from_user(__user group_t *user_group, group_t *kern_group)</div><div class="ttdoc">Copy a 'group_t' structure to kernel space.</div><div class="ttdef"><b>Definition:</b> group_manager.c:877</div></div>
+<div class="ttc" id="astructgroup__data_html"><div class="ttname"><a href="../../d2/d86/structgroup__data.html">group_data</a></div><div class="ttdoc">Group device data structure.</div><div class="ttdef"><b>Definition:</b> types.h:207</div></div>
+<div class="ttc" id="agroup__manager_8h_html_a9d29d1ee1f4639e493f77384aeb81b8d"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a9d29d1ee1f4639e493f77384aeb81b8d">registerGroupDevice</a></div><div class="ttdeci">int registerGroupDevice(group_data *grp_data, struct device *parent)</div><div class="ttdoc">register a group device</div><div class="ttdef"><b>Definition:</b> group_manager.c:272</div></div>
 <div class="ttc" id="amessage_8h_html"><div class="ttname"><a href="../../d2/d0d/message_8h.html">message.h</a></div><div class="ttdoc">Handles all procedures releated to messages of a group device.</div></div>
-<div class="ttc" id="agroup__manager_8h_html_a49eacb577d4216746f5a76ce9c60445c"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#a49eacb577d4216746f5a76ce9c60445c">registerGroupDevice</a></div><div class="ttdeci">int registerGroupDevice(group_data *grp_data, const struct device *parent)</div><div class="ttdoc">register a group device</div><div class="ttdef"><b>Definition:</b> group_manager.c:272</div></div>
 <div class="ttc" id="agroup__manager_8h_html_af83ff2ff50fd5597cb8e810f5e7588c4"><div class="ttname"><a href="../../d4/dbe/group__manager_8h.html#af83ff2ff50fd5597cb8e810f5e7588c4">installGroupClass</a></div><div class="ttdeci">int installGroupClass(void)</div><div class="ttdoc">Install the global 'group_device_class'.</div><div class="ttdef"><b>Definition:</b> group_manager.c:19</div></div>
-<div class="ttc" id="astructgroup__t_html"><div class="ttname"><a href="../../d2/dc2/structgroup__t.html">group_t</a></div><div class="ttdoc">System-wide descriptor of a group.</div><div class="ttdef"><b>Definition:</b> types.h:138</div></div>
+<div class="ttc" id="astructgroup__t_html"><div class="ttname"><a href="../../d2/dc2/structgroup__t.html">group_t</a></div><div class="ttdoc">System-wide descriptor of a group.</div><div class="ttdef"><b>Definition:</b> types.h:139</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

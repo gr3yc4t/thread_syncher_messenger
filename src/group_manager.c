@@ -127,8 +127,8 @@ bool isOwner(group_data *grp_data){
     down_read(&grp_data->owner_lock);
 
             current_owner = grp_data->owner;
-            printk(KERN_DEBUG "Current owner: %d", current_owner);
-            printk(KERN_DEBUG "Current user: %d", current_uid().val);
+            pr_debug("Current owner: %d", current_owner);
+            pr_debug("Current user: %d", current_uid().val);
             if(current_uid().val == current_owner){
                     ret = true;
             }else{
@@ -269,11 +269,10 @@ int removeParticipant(struct list_head *participants, pid_t _pid){
  *  @retval ALLOC_ERR If some memory allocation fails
  *  @retval DEV_CREATION_ERR If the char device creation fails
  */
-int registerGroupDevice(group_data *grp_data, const struct device* parent){
+int registerGroupDevice(group_data *grp_data, struct device* parent){
 
     int err;
     char device_name[DEVICE_NAME_SIZE];    //Device name buffer
-    int name_len;
     int ret = 0;    //Return value
 
 
@@ -308,7 +307,7 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
     initParticipants(grp_data);   
 
     //Initialize Message Manager  
-    grp_data->msg_manager = createMessageManager(DEFAULT_MSG_SIZE, DEFAULT_STORAGE_SIZE, &grp_data->garbage_collector);
+    grp_data->msg_manager = createMessageManager(DEFAULT_STORAGE_SIZE, DEFAULT_MSG_SIZE, &grp_data->garbage_collector);
     
     if(!grp_data->msg_manager){
         ret = ALLOC_ERR;
@@ -350,8 +349,6 @@ int registerGroupDevice(group_data *grp_data, const struct device* parent){
         device_destroy(group_device_class, grp_data->deviceID);
     cleanup_device:
         //class_destroy(group_device_class);
-    cleanup_class:
-        //kfree(grp_data->descriptor.group_name);
     cleanup_region:
         unregister_chrdev_region(grp_data->deviceID, 1);
         return ret;
@@ -414,7 +411,7 @@ static int openGroup(struct inode *inode, struct file *file){
 
     file->private_data = grp_data;
 
-    printk(KERN_DEBUG "Group %d opened", grp_data->group_id);
+    pr_debug("Group %d opened", grp_data->group_id);
 
 
     if(grp_data->flags.initialized == 0){
@@ -533,6 +530,13 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 
     pr_info("A message was available!!");
+    pr_debug("Message content: %s", (char*)message.buffer);
+    
+    if(!user_buffer){
+        pr_err("\nInvaid user buffer provided, exiting...");
+        return -1;
+    }
+
 
     //If the user-space application request more byte than available, return only available bytes
     if(message.size < _size){
@@ -543,7 +547,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 
     //Parse the message
-    if(copy_msg_to_user(&message, (int8_t*)user_buffer, available_size) == -EFAULT){
+    if(copy_msg_to_user(&message, user_buffer, available_size) == -EFAULT){
         printk(KERN_ERR "Unable to copy the message to user-space");
         return MEMORY_ERROR;
     }
@@ -573,6 +577,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
 static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, size_t _size, loff_t *f_pos){
     group_data *grp_data;
+    msg_t* msgTemp;
     int ret;
     bool garbageCollectorRetry = false;
 
@@ -585,7 +590,7 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
     }
 
 
-    msg_t* msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
+    msgTemp = (msg_t*)kmalloc(sizeof(msg_t), GFP_KERNEL);
 
     if(!msgTemp)
         return 0;
@@ -874,7 +879,7 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 		char *group_name_tmp;
 
 		if(!access_ok(user_group, sizeof(group_t))){
-			printk(KERN_DEBUG "Unable to read user-space memory");
+			pr_debug("Unable to read user-space memory");
 			return MEM_ACCESS_ERR;
 		}
 
@@ -886,7 +891,7 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 
 
 		if(!access_ok(kern_group->group_name, sizeof(char)*kern_group->name_len)){
-			printk(KERN_DEBUG "Unable to read user-space group's name memory");
+			pr_debug("Unable to read user-space group's name memory");
 			return MEM_ACCESS_ERR;
 		}
 
@@ -929,12 +934,12 @@ __must_check int copy_group_t_to_user(__user group_t *user_group, group_t *kern_
 
         //Check user-space memory access
 		if(!access_ok(user_group, sizeof(group_t))){
-			printk(KERN_DEBUG "Unable to write user-space memory");
+			pr_debug("Unable to write user-space memory");
 			return MEM_ACCESS_ERR;
 		}
 
 
-		if(ret = copy_to_user(user_group->group_name, kern_group->group_name, sizeof(char)*kern_group->name_len)){	//Fetch the group_t structure from userspace
+		if( (ret = copy_to_user(user_group->group_name, kern_group->group_name, sizeof(char)*kern_group->name_len)) > 0){	//Fetch the group_t structure from userspace
 			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}

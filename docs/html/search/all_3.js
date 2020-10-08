@@ -8,8 +8,8 @@ var searchData=
   ['config_5flock_14',['config_lock',['../d3/d75/structt__message__manager.html#ab0c034d1eb2b2c19b6e47ecd4cd4c1b5',1,'t_message_manager']]],
   ['configuration_15',['configuration',['../d8/d3f/structconfiguration.html',1,'']]],
   ['copy_5fgroup_5ft_5ffrom_5fuser_16',['copy_group_t_from_user',['../d4/dbe/group__manager_8h.html#a6c41c36721034445a9dd68c598e94480',1,'group_manager.c']]],
-  ['copy_5fmsg_5ffrom_5fuser_17',['copy_msg_from_user',['../d2/d0d/message_8h.html#a96f6cac0e44546c1adb5e9cfe5751d7b',1,'message.c']]],
-  ['copy_5fmsg_5fto_5fuser_18',['copy_msg_to_user',['../d2/d0d/message_8h.html#ab6d9c803d56dffb71a6f8979d5aeeaa0',1,'message.c']]],
+  ['copy_5fmsg_5ffrom_5fuser_17',['copy_msg_from_user',['../d2/d0d/message_8h.html#ad117d4757e857e3f53219e970bd4e9ba',1,'message.c']]],
+  ['copy_5fmsg_5fto_5fuser_18',['copy_msg_to_user',['../d2/d0d/message_8h.html#a70ecba8a2f8f11a1e058030e522e9d3a',1,'message.c']]],
   ['createmessagemanager_19',['createMessageManager',['../d2/d0d/message_8h.html#ae4d4d5142721632ab642b71b7bbdc440',1,'message.c']]],
   ['curr_5fstorage_5fsize_20',['curr_storage_size',['../d3/d75/structt__message__manager.html#aab76b5de5a8ae0e98e4303dfab867aa0',1,'t_message_manager']]]
 ];
