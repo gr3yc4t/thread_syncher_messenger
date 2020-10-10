@@ -228,8 +228,9 @@ inline void initParticipants(group_data *grp_data){
  * @param [in] participants  Pointer to the list_head of participants
  * @param [in] _pid The element to remove
  * 
- * @return 0 on success EMPTY_LIST if the list is empty, NODE_NOT_FOUND if the 
- *      element is not present on the list 
+ * @retval 0 on success 
+ * @retval EMPTY_LIST if the list is empty
+ * @retval NODE_NOT_FOUND if the element is not present on the list 
  * 
  * @note This functions is not thread-safe, and should be procected with a lock
  *      on the list
@@ -240,10 +241,8 @@ int removeParticipant(struct list_head *participants, pid_t _pid){
     struct list_head *temp;
     group_members_t *entry;
 
-
-    if(list_empty(participants)){
+    if(list_empty(participants))
         return EMPTY_LIST;
-    }
 
     list_for_each_safe(cursor, temp, participants){    //TODO: check if the unsafe version is enough
 
@@ -456,10 +455,10 @@ static int releaseGroup(struct inode *inode, struct file *file){
 
     grp_data =  (group_data*)file->private_data;
 
-    printk(KERN_INFO " - Group %d released by %d - ", grp_data->group_id, current->pid);
+    pr_debug(" - Group %d released by %d - ", grp_data->group_id, current->pid);
 
     if(grp_data->flags.initialized == 0){
-        printk(KERN_ERR "Device still not initialized or deallocated, close and reopen the file descriptor");
+        printk(KERN_WARNING "Device still not initialized or deallocated, close and reopen the file descriptor");
         return -1;
     }
 
@@ -468,11 +467,11 @@ static int releaseGroup(struct inode *inode, struct file *file){
     up_write(&grp_data->member_lock);
 
     if(ret == EMPTY_LIST){
-        printk(KERN_ERR "Releasig group, strange error: EMPTY_LIST");
+        printk(KERN_WARNING "Releasig group, active members list already empty!");
         return 0;
     }
     if(ret == NODE_NOT_FOUND){
-        printk(KERN_ERR "Releasig group, strange error: NODE_NOT_FOUND");
+        pr_debug("Releasig group, PID not found inside active members list");
         return 0;
     }
 
@@ -487,7 +486,6 @@ static int releaseGroup(struct inode *inode, struct file *file){
     }
 
     return 0;
-
 }
 
 /**
@@ -521,7 +519,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
     ret = readMessage(&message, grp_data->msg_manager);
     if(ret == 1){
-        pr_info("No message available");
+        pr_debug("No message available");
         return NO_MSG_PRESENT;
     }else if(ret == -1){    //Critical Error
         printk(KERN_WARNING "Critical error while processing the message");
@@ -529,7 +527,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
     }
 
 
-    pr_info("A message was available!!");
+    pr_debug("A message was available!!");
     pr_debug("Message content: %s", (char*)message.buffer);
     
     if(!user_buffer){
@@ -548,7 +546,7 @@ static ssize_t readGroupMessage(struct file *file, char __user *user_buffer, siz
 
     //Parse the message
     if(copy_msg_to_user(&message, user_buffer, available_size) == -EFAULT){
-        printk(KERN_ERR "Unable to copy the message to user-space");
+        pr_err("Unable to copy the message to user-space");
         return MEMORY_ERROR;
     }
 
@@ -601,7 +599,8 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
     msgTemp->author = current->pid;
     msgTemp->size = _size;
 
-    garbage_collector_retry:      //If no space is left, call the garbage collector and retry
+    //If no space is left, call the garbage collector and retry
+    garbage_collector_retry:      
 
     #ifndef DISABLE_DELAYED_MSG
 
@@ -628,7 +627,7 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 
 
     if(ret < 0){
-        pr_err(KERN_ERR "Unable to write the message");
+        pr_debug("Unable to write the message: %d", ret);
         return -1;
     }
 
@@ -658,7 +657,7 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
 
 
     if(grp_data->flags.initialized == 0){
-        printk(KERN_ERR "Device still not initialized or deallocated, close and reopen the file descriptor");
+        pr_err("Device still not initialized or deallocated, close and reopen the file descriptor");
         return -1;
     }
 
@@ -668,10 +667,9 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
     if(atomic_long_read(&manager->message_delay) == 0)
         return 0;
 
-    pr_info("flush: deliver all delayed messages");
     ret = cancelDelay(manager);
+    pr_debug("flush: %d elements flushed from the delayed queue", ret);
 
-    pr_info("flush: %d elements flushed from the delayed queue", ret);
     return ret;
 }
 
@@ -885,7 +883,7 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 
 		//Copy parameter from user space
 		if( (ret = copy_from_user(kern_group, user_group, sizeof(group_t))) > 0){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
@@ -902,10 +900,9 @@ __must_check int copy_group_t_from_user(__user group_t *user_group, group_t *ker
 			return ALLOC_ERR;
 
 		if( (ret = copy_from_user(group_name_tmp, kern_group->group_name, sizeof(char)*kern_group->name_len)) < 0){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
-			
+			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			kfree(group_name_tmp);
-			
+
 			return USER_COPY_ERR;
 		}
 		//Switch pointers
@@ -940,14 +937,14 @@ __must_check int copy_group_t_to_user(__user group_t *user_group, group_t *kern_
 
 
 		if( (ret = copy_to_user(user_group->group_name, kern_group->group_name, sizeof(char)*kern_group->name_len)) > 0){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
 
 
 		//Copy parameter from user space
 		if( (ret = put_user(kern_group->name_len, &user_group->name_len)) > 0){	//Fetch the group_t structure from userspace
-			printk(KERN_ERR "'group_t' structure cannot be copied from userspace; %d copied", ret);
+			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
         }
 
