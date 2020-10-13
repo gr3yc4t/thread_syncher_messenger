@@ -79,7 +79,7 @@ Kernel Implementation</h1>
 <h2><a class="anchor" id="msg_kern"></a>
 Message Subsystem</h2>
 <p><br  />
- When a thread calls “readMessage()”, the kernel driver will traverse the FIFO queue present inside the message manager structure while holding the ‘queue_lock’ in read mode. Then, for each message inside the queue, the current PID is searched inside the message’s recipient list through the function ‘wasDelivered()’: if the PID does not appear in the list the message is copied through the user-space (<a class="el" href="../../d2/d0d/message_8h.html#ab6d9c803d56dffb71a6f8979d5aeeaa0" title="copy a msg_t structure from kernel-space to user-space">copy_msg_to_user()</a>) and the current PID is added to the message’s recipients list (setDelivered()) . Note that the lock on the FIFO queue is holded in read mode because removing messages will be a Garbage Collector’s task.</p>
+ When a thread calls “readMessage()”, the kernel driver will traverse the FIFO queue present inside the message manager structure while holding the ‘queue_lock’ in read mode. Then, for each message inside the queue, the current PID is searched inside the message’s recipient list through the function ‘wasDelivered()’: if the PID does not appear in the list the message is copied through the user-space (<a class="el" href="../../d2/d0d/message_8h.html#a70ecba8a2f8f11a1e058030e522e9d3a" title="copy a msg_t structure from kernel-space to user-space">copy_msg_to_user()</a>) and the current PID is added to the message’s recipients list (setDelivered()) . Note that the lock on the FIFO queue is holded in read mode because removing messages will be a Garbage Collector’s task.</p>
 <h2><a class="anchor" id="garbage_coll_kern"></a>
 Garbage Collector</h2>
 <p><br  />

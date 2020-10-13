@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/poll.h>
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,12 +64,13 @@
 #define TS_OPEN_ERR     -51
 #define UNAUTHORIZED    -52
 #define PERMISSION_ERR  -53
-
+#define GROUP_CLOSED    -54
 
 
 
 #define BUFF_SIZE 512
-
+#define POLL_TIMEOUT 5
+#define PARAM_NUMBER 3
 /**
  * @brief ioctls 
  */
@@ -77,6 +80,8 @@
 
 #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
 #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+#define IOCTL_CANCEL_DELAY _IO('Y', 2)
+
 
 #define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
 #define IOCTL_AWAKE_BARRIER _IO('Z', 1)
@@ -133,6 +138,8 @@ typedef struct T_THREAD_GROUP {
     char *group_path;       /**< Path to the group file inside /dev directory*/
     size_t path_len;        /**< Length of the group path */
 
+    //struct pollfd param_watcher[PARAM_NUMBER];
+
 }  thread_group_t;
 
 
@@ -154,6 +161,7 @@ int writeMessage(const void *buffer, size_t len, thread_group_t *group);
 
 int setDelay(const long _delay, thread_group_t *group);
 int revokeDelay(thread_group_t *group);
+int cancelDelay(thread_group_t *group);
 
 int sleepOnBarrier(thread_group_t *group);
 int awakeBarrier(thread_group_t *group);
@@ -165,12 +173,15 @@ unsigned long getMaxMessageSize(thread_group_t *group);
 int setMaxMessageSize(thread_group_t *group, unsigned long val);
 int setMaxStorageSize(thread_group_t *group, unsigned long val);
 int setGarbageCollectorRatio(thread_group_t *group, unsigned long val);
-
+int includeStructureSize(thread_group_t *group, const bool value);
 
 int enableStrictMode(thread_group_t *group);
 int disableStrictMode(thread_group_t *group);
 int changeOwner(thread_group_t *group, const uid_t new_owner);
 int becomeOwner(thread_group_t *group);
+
+
+
 
 
 

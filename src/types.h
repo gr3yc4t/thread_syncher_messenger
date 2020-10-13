@@ -99,6 +99,7 @@ struct t_message_deliver{
         struct kobj_attribute attr_current_owner;
         struct kobj_attribute attr_garbage_collector_enabled;
         struct kobj_attribute attr_garbage_collector_ratio;
+        struct kobj_attribute attr_include_struct_size;
     }group_sysfs_t;
 
 #endif
@@ -173,6 +174,8 @@ typedef struct group_flags_t{
     unsigned int strict_mode:1; 
 
     unsigned int garbage_collector_disabled:1;  /**< 1 if the garbage collector is disabled, zero otherwise*/
+
+    unsigned int gc_include_struct:1;           /**< 1 if the structure related to a message should be included in the size count */
 
 } __attribute__((packed)) g_flags_t;
 

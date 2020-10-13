@@ -76,10 +76,16 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+M\+S\+G\+\_\+\+S\+I\+ZE}~256
 \item 
 \mbox{\Hypertarget{group__manager_8h_a004e6f8b967a0e16f2cf040912d37830}\label{group__manager_8h_a004e6f8b967a0e16f2cf040912d37830}} 
-\#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}~256
+\#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}~1024
 \item 
 \mbox{\Hypertarget{group__manager_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}\label{group__manager_8h_a7eabf7d3f87fe6d52748a22ea0c3124b}} 
 \#define {\bfseries I\+O\+C\+T\+L\+\_\+\+G\+E\+T\+\_\+\+G\+R\+O\+U\+P\+\_\+\+D\+E\+SC}~\+\_\+\+I\+OR(\textquotesingle{}Q\textquotesingle{}, 1, \mbox{\hyperlink{structgroup__t}{group\+\_\+t}}$\ast$)
+\item 
+\mbox{\Hypertarget{group__manager_8h_a85cb8d431a3111bffd162110819524e2}\label{group__manager_8h_a85cb8d431a3111bffd162110819524e2}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+T\+R\+I\+C\+T\+\_\+\+M\+O\+DE}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 101, bool)
+\item 
+\mbox{\Hypertarget{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}\label{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+O\+W\+N\+ER}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 102, uid\+\_\+t)
 \item 
 \mbox{\Hypertarget{group__manager_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}\label{group__manager_8h_a3c6a3beaf1f5c8c62a941127c0b6ae1a}} 
 \#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+E\+N\+D\+\_\+\+D\+E\+L\+AY}~\+\_\+\+I\+OW(\textquotesingle{}Y\textquotesingle{}, 0, long)
@@ -93,12 +99,6 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \mbox{\Hypertarget{group__manager_8h_ac00821bdb3f7a772f468bbc723166349}\label{group__manager_8h_ac00821bdb3f7a772f468bbc723166349}} 
 \#define {\bfseries I\+O\+C\+T\+L\+\_\+\+A\+W\+A\+K\+E\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 1)
 \item 
-\mbox{\Hypertarget{group__manager_8h_a85cb8d431a3111bffd162110819524e2}\label{group__manager_8h_a85cb8d431a3111bffd162110819524e2}} 
-\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+E\+T\+\_\+\+S\+T\+R\+I\+C\+T\+\_\+\+M\+O\+DE}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 101, bool)
-\item 
-\mbox{\Hypertarget{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}\label{group__manager_8h_aba57ba06508bd505a07b1f1044db6f40}} 
-\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+O\+W\+N\+ER}~\+\_\+\+I\+OW(\textquotesingle{}Q\textquotesingle{}, 102, uid\+\_\+t)
-\item 
 \mbox{\Hypertarget{group__manager_8h_ac684c8879cadfe446a9413a6bdc487a9}\label{group__manager_8h_ac684c8879cadfe446a9413a6bdc487a9}} 
 \#define {\bfseries G\+R\+O\+U\+P\+\_\+\+C\+L\+A\+S\+S\+\_\+\+N\+A\+ME}~\char`\"{}group\+\_\+synch\char`\"{}
 \end{DoxyCompactItemize}
@@ -109,7 +109,7 @@ void \mbox{\hyperlink{group__manager_8h_a1f1985c8c457af192ae651beb0f2e17d}{init\
 \begin{DoxyCompactList}\small\item\em Initialize \mbox{\hyperlink{structgroup__data}{group\+\_\+data}} participants\textquotesingle{} structures. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{group__manager_8h_af83ff2ff50fd5597cb8e810f5e7588c4}{install\+Group\+Class}} (void)
 \begin{DoxyCompactList}\small\item\em Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingle{}. \end{DoxyCompactList}\item 
-int \mbox{\hyperlink{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}{register\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, const struct device $\ast$parent)
+int \mbox{\hyperlink{group__manager_8h_a9d29d1ee1f4639e493f77384aeb81b8d}{register\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, struct device $\ast$parent)
 \begin{DoxyCompactList}\small\item\em register a group device \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{group__manager_8h_a7a4a1f2ed5563df3defd7477a8f70168}{unregister\+Group\+Device}} (\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$grp\+\_\+data, bool flag)
 \begin{DoxyCompactList}\small\item\em unregister a group device \end{DoxyCompactList}\item 
@@ -194,11 +194,11 @@ Install the global \textquotesingle{}group\+\_\+device\+\_\+class\textquotesingl
 {\em C\+L\+A\+S\+S\+\_\+\+E\+X\+I\+S\+TS} & If the class already exists \\
 \hline
 \end{DoxyRetVals}
-\mbox{\Hypertarget{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}\label{group__manager_8h_a49eacb577d4216746f5a76ce9c60445c}} 
+\mbox{\Hypertarget{group__manager_8h_a9d29d1ee1f4639e493f77384aeb81b8d}\label{group__manager_8h_a9d29d1ee1f4639e493f77384aeb81b8d}} 
 \index{group\_manager.h@{group\_manager.h}!registerGroupDevice@{registerGroupDevice}}
 \index{registerGroupDevice@{registerGroupDevice}!group\_manager.h@{group\_manager.h}}
 \doxysubsubsection{\texorpdfstring{registerGroupDevice()}{registerGroupDevice()}}
-{\footnotesize\ttfamily int register\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{const struct device $\ast$}]{parent }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily int register\+Group\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structgroup__data}{group\+\_\+data}} $\ast$}]{grp\+\_\+data,  }\item[{struct device $\ast$}]{parent }\end{DoxyParamCaption})}
 
 
 

@@ -83,6 +83,9 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \item 
 \mbox{\Hypertarget{message_8h_aaf11ece5e944f4f83bc4847970442ad1}\label{message_8h_aaf11ece5e944f4f83bc4847970442ad1}} 
 \#define {\bfseries C\+H\+D\+E\+V\+\_\+\+A\+L\+L\+O\+C\+\_\+\+E\+RR}~-\/22
+\item 
+\mbox{\Hypertarget{message_8h_aa547f54a7e6b394f9130110aab1faa6b}\label{message_8h_aa547f54a7e6b394f9130110aab1faa6b}} 
+\#define {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+G\+C\+\_\+\+R\+A\+T\+IO}~3
 \end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
@@ -93,9 +96,9 @@ int \mbox{\hyperlink{message_8h_a1ba93a9118165a7e11a1b0865f78da85}{write\+Messag
 \begin{DoxyCompactList}\small\item\em write message on a group queue \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{message_8h_af0eb4f46db2a45d736b02c2ac731fdba}{read\+Message}} (msg\+\_\+t $\ast$dest\+\_\+buffer, msg\+\_\+manager\+\_\+t $\ast$manager)
 \begin{DoxyCompactList}\small\item\em Read a message from the corresponding queue. \end{DoxyCompactList}\item 
-int \mbox{\hyperlink{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}{copy\+\_\+msg\+\_\+from\+\_\+user}} (msg\+\_\+t $\ast$kmsg, const int8\+\_\+t $\ast$umsg, const ssize\+\_\+t \+\_\+size)
+int \mbox{\hyperlink{message_8h_ad117d4757e857e3f53219e970bd4e9ba}{copy\+\_\+msg\+\_\+from\+\_\+user}} (msg\+\_\+t $\ast$kmsg, const char $\ast$umsg, const ssize\+\_\+t \+\_\+size)
 \begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from user-\/space to kernel-\/space \end{DoxyCompactList}\item 
-int \mbox{\hyperlink{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}{copy\+\_\+msg\+\_\+to\+\_\+user}} (const msg\+\_\+t $\ast$kmsg, \+\_\+\+\_\+user int8\+\_\+t $\ast$ubuffer, const ssize\+\_\+t \+\_\+size)
+int \mbox{\hyperlink{message_8h_a70ecba8a2f8f11a1e058030e522e9d3a}{copy\+\_\+msg\+\_\+to\+\_\+user}} (const msg\+\_\+t $\ast$kmsg, \+\_\+\+\_\+user char $\ast$ubuffer, const ssize\+\_\+t \+\_\+size)
 \begin{DoxyCompactList}\small\item\em copy a msg\+\_\+t structure from kernel-\/space to user-\/space \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{message_8h_aba1d8514abde9dfb52f2fb006fd5dbf1}{queue\+Garbage\+Collector}} (struct work\+\_\+struct $\ast$work)
 \begin{DoxyCompactList}\small\item\em Remove a message from the queue when it was completely delivered. \end{DoxyCompactList}\item 
@@ -138,11 +141,11 @@ The number of messages which delay was cancelled
 \begin{DoxyNote}{Note}
 At the moment the function locks the delayed queue, set all timers to zero and unlock the queue. This means that while the function loops through the queue, timer\textquotesingle{}s callback will wait since the queue is locked. 
 \end{DoxyNote}
-\mbox{\Hypertarget{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}\label{message_8h_a96f6cac0e44546c1adb5e9cfe5751d7b}} 
+\mbox{\Hypertarget{message_8h_ad117d4757e857e3f53219e970bd4e9ba}\label{message_8h_ad117d4757e857e3f53219e970bd4e9ba}} 
 \index{message.h@{message.h}!copy\_msg\_from\_user@{copy\_msg\_from\_user}}
 \index{copy\_msg\_from\_user@{copy\_msg\_from\_user}!message.h@{message.h}}
 \doxysubsubsection{\texorpdfstring{copy\_msg\_from\_user()}{copy\_msg\_from\_user()}}
-{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{kmsg,  }\item[{const int8\+\_\+t $\ast$}]{umsg,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+from\+\_\+user (\begin{DoxyParamCaption}\item[{msg\+\_\+t $\ast$}]{kmsg,  }\item[{const char $\ast$}]{umsg,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
 
 
 
@@ -167,11 +170,11 @@ copy a msg\+\_\+t structure from user-\/space to kernel-\/space
 \begin{DoxyNote}{Note}
 The kmsg structure must be allocated 
 \end{DoxyNote}
-\mbox{\Hypertarget{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}\label{message_8h_ab6d9c803d56dffb71a6f8979d5aeeaa0}} 
+\mbox{\Hypertarget{message_8h_a70ecba8a2f8f11a1e058030e522e9d3a}\label{message_8h_a70ecba8a2f8f11a1e058030e522e9d3a}} 
 \index{message.h@{message.h}!copy\_msg\_to\_user@{copy\_msg\_to\_user}}
 \index{copy\_msg\_to\_user@{copy\_msg\_to\_user}!message.h@{message.h}}
 \doxysubsubsection{\texorpdfstring{copy\_msg\_to\_user()}{copy\_msg\_to\_user()}}
-{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+to\+\_\+user (\begin{DoxyParamCaption}\item[{const msg\+\_\+t $\ast$}]{kmsg,  }\item[{\+\_\+\+\_\+user int8\+\_\+t $\ast$}]{ubuffer,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily int copy\+\_\+msg\+\_\+to\+\_\+user (\begin{DoxyParamCaption}\item[{const msg\+\_\+t $\ast$}]{kmsg,  }\item[{\+\_\+\+\_\+user char $\ast$}]{ubuffer,  }\item[{const ssize\+\_\+t}]{\+\_\+size }\end{DoxyParamCaption})}
 
 
 

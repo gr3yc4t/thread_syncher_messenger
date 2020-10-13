@@ -42,13 +42,19 @@
 
 
 
+#define DEFAULT_GC_RATIO 3
+
+
+
+
+
 msg_manager_t *createMessageManager(const u_int _max_storage_size, const u_int _max_message_size, garbage_collector_t *garbageCollector);
 
 int writeMessage(msg_t *message, msg_manager_t *manager);
 int readMessage(msg_t *dest_buffer, msg_manager_t *manager);
 
-int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size);
-int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _size);
+int copy_msg_from_user(msg_t *kmsg, const char *umsg, const ssize_t _size);
+int copy_msg_to_user(const msg_t *kmsg, __user char *ubuffer, const ssize_t _size);
 
 void queueGarbageCollector(struct work_struct *work);
 

@@ -36,7 +36,7 @@ int group_index = 0;
 extern int loadConfig(char *config_path, thread_synch_t *main_synch);
 
 void pause_char(){
-    printf("\n\nWaiting...\n");
+    //printf("\n\nWaiting...\n");
     char temp = getchar();
 }
 
@@ -64,113 +64,6 @@ void t_nanosleep(long _nanoseconds){
 }
 
 
-int flushMessages(const char *group_path){
-
-    FILE *fd;
-
-    fd = fopen(group_path, "rw"); 
-
-    if(fd == NULL){
-        printf("Error while opening the main_device file\n");
-        return -1;
-    }
-
-
-    int ret = fflush(fd);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-
-    fclose(fd);
-}
-
-void concurrentRead(void *args){
-    const char *default_message = "TH-NUM-%lu\0";   
-    char buffer[BUFF_SIZE];   
-    size_t len;
-    pthread_t id = pthread_self();
-
-    printf("\n[R] Thread N. %ld\n", id);
-
-    int *fd;
-    fd = open((char*)args, O_RDONLY); 
-
-    if(fd < 0){
-        printf("[T-%ld] Error while opening the group file\n", id);
-        return -1;
-    }
-
-
-    //Random Sleep 1
-    long sleep_time1 = rand()%10000;
-    usleep(sleep_time1);
-
-
-    int ret = read(fd, &buffer, sizeof(char)*len);
-
-    if(!ret){
-        switch (ret){
-        case NO_MSG_PRESENT:
-            printf("[T-%ld/R] No msg. present\n", id);
-            break;
-        case MSG_SIZE_ERROR:
-            printf("[T-%ld/R] Message too large for current limits\n", id);
-            break;        
-        default:
-            printf("[T-%ld/R] Unknow error\n", id);
-            break;
-        }
-    }
-
-    //Random Sleep 2
-    long sleep_time2 = rand()%10000;
-    usleep(sleep_time2);
-
-    close(fd);
-
-}
-
-void concurrentWrite(void *args){
-
-    const char *default_message = "TH-NUM-%lu\0";
-    pthread_t id = pthread_self();
-    char buffer[BUFF_SIZE];
-    size_t len;
-
-    printf("\n[w] Thread N. %ld\n", id);
-
-    snprintf(buffer, BUFF_SIZE, default_message, id);
-    len = strnlen(buffer, BUFF_SIZE);
-
-
-    int *fd;
-    fd = open((char*)args, O_WRONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    printf("\nLen = %d\n", len);
-
-    int ret = write(fd, &buffer, sizeof(char)*len);
-
-    printf("Totel element written: %ld", ret);
-
-
-    //Random Sleep
-    long sleep_time = rand()%10000;
-    usleep(sleep_time);
-
-
-    close(fd);
-
-    return;
-
-}
-
-
-
 int showLoadedGroups(){
     int i;
 
@@ -187,7 +80,17 @@ int showLoadedGroups(){
         }
 
     }
+}
 
+
+int closeLoadedGroups(){
+    int i;
+    for(i=0; i<MAX_GROUPS; i++){
+        if(groups[i] == NULL)   
+            continue;
+        else
+            close(groups[i]->file_descriptor);
+    }
 }
 
 
@@ -228,13 +131,9 @@ int groupSubMenu(thread_group_t group){
     do{
         printf(ANSI_COLOR_YELLOW "\n[Group %d Management]\n" ANSI_COLOR_RESET, group.group_id);
 
-        printf("Current storage size: %lu\n", getCurrentStorageSize(&group));
-        printf("Max storage size: %lu\n", getMaxStorageSize(&group));
-        printf("Max message size: %lu\n", getMaxMessageSize(&group));
-
         printf("Select Options:\n\t1 - Read\n\t2 - Write\n\t3 - Set Delay\n\t"
             "4 - Revoke Delay\n\t5 - Flush\n\t6 - Sleep on Barrier\n\t7 - Awake barrier"
-            "\n -Message Param\n\t81 - Set max message size\n\t"
+            "\n -Message Param\n\t80 - Display Parameters\n\t81 - Set max message size\n\t"
             "82 - Set max storage size\n\t83 - Set Garbage Collector ratio\n\t"
             "91 - (Dis)Enable strict mode\n\t92 - Change Owner\n\t"
             "99 - Exit\n:");
@@ -248,14 +147,18 @@ int groupSubMenu(thread_group_t group){
             case 1:     //Read
 
                 printf("\nSize to read: ");
-                scanf("%ud", &buff_size);
+                scanf(" %lu", &buff_size);
 
-                buffer = (char*)malloc(sizeof(char)*buff_size);
+                buffer = (char*)malloc( sizeof(char)*buff_size);
+                if(!buffer){
+                    printf(ANSI_COLOR_RED "\n[X] Memory allocation problem" ANSI_COLOR_RESET);
+                    break;
+                }
 
                 ret = readMessage(buffer, buff_size, &group);
 
                 if(ret < 0){
-                    printf(ANSI_COLOR_RED "\n[X] Error while reading the message\n" ANSI_COLOR_RESET);
+                    printf(ANSI_COLOR_RED "\n[X] Error while reading the message: %d\n" ANSI_COLOR_RESET, ret);
                 }else if(ret == 1){
                     printf(ANSI_COLOR_YELLOW "\nNo message present\n" ANSI_COLOR_RESET);
                 }else{
@@ -316,11 +219,12 @@ int groupSubMenu(thread_group_t group){
                 break;
             case 5: //Flush
                 
-                printf("\nUnimplemented");
-
+                //printf("\nUnimplemented");
+                if(cancelDelay(&group) < 0)
+                    printf(ANSI_COLOR_RED "\n[X] Error while flushing the messages" ANSI_COLOR_RESET);
+                
                 break;
             case 6: //Sleep on barrier
-                printf("\nThread is going to sleep...");
                 if(sleepOnBarrier(&group) < 0){
                     printf(ANSI_COLOR_RED "\n[X] Error while sleeping" ANSI_COLOR_RESET);
                     break;
@@ -334,19 +238,34 @@ int groupSubMenu(thread_group_t group){
                 }
                 printf("\nBarrier Awaked!");
                 break;
+            case 80: //Display Parameters
+
+                storage_size = getCurrentStorageSize(&group);
+
+                //See 'getCurrentStorageSize' bug
+                if(storage_size == 0L){
+                    storage_size = getCurrentStorageSize(&group);
+                }
+                    
+
+                printf("Current storage size: %lu\n", storage_size);
+                printf("Max storage size: %lu\n", getMaxStorageSize(&group));
+                printf("Max message size: %lu\n", getMaxMessageSize(&group));
+                pause_char();
+                break;
             case 81:
                 printf("\nMax size value: ");
-                scanf(" %lu ", &param_value);
+                scanf("%lu", &param_value);
                 ret = setMaxMessageSize(&group, param_value);
                 break;
             case 82:
                 printf("\nMax storage value: ");
-                scanf(" %lu ", &param_value);
+                scanf("%lu", &param_value);
                 ret = setMaxStorageSize(&group, param_value);   
                 break;
             case 83:    //Set Garbage collector ratio
                 printf("\nGarbage collector ratio: ");
-                scanf(" %lu ", &param_value);
+                scanf("%lu", &param_value);
                 ret = setGarbageCollectorRatio(&group, param_value);
                 break;  
             case 91:    //Enable/Disable strict mode
@@ -359,7 +278,7 @@ int groupSubMenu(thread_group_t group){
                 else if (choice == 2)
                     ret = disableStrictMode(&group);
                 else 
-                    ret = -1;
+                    ret = 0;
 
                 if(ret == UNAUTHORIZED)
                     printf(ANSI_COLOR_RED "\n[X] UNAUTHORIZED\n" ANSI_COLOR_RESET);
@@ -507,6 +426,10 @@ int interactiveSession(){
 
         
     }while(exit_flag == 0);
+
+
+
+    closeLoadedGroups();
 
 
 }

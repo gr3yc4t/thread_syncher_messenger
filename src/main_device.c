@@ -75,7 +75,7 @@ void mainExit(void){
 		
 			#ifndef DISABLE_SYSFS
 				if(cursor->flags.sysfs_loaded == 1){
-					printk(KERN_DEBUG "Releasing sysfs for group %d", id_cursor);
+					pr_debug("Releasing sysfs for group %d", id_cursor);
 					releaseSysFs(&cursor->group_sysfs);
 				}
 			#endif
@@ -85,7 +85,7 @@ void mainExit(void){
 
 	//Deallocate the IDR
 	idr_destroy(&main_device_data.group_map);
-	printk(KERN_DEBUG "IDR destroyed");
+	pr_debug("IDR destroyed");
 
 
 
@@ -248,7 +248,7 @@ static int sRegisterMainDev(void){
 		if(PTR_ERR(main_class) == -EEXIST){
 			printk(KERN_WARNING "Class 'main_sync' already exists");
 		}else{
-			printk(KERN_ERR "Canno create class 'main_sync', error %d", PTR_ERR(main_class));
+			printk(KERN_ERR "Canno create class 'main_sync', error %ld", PTR_ERR(main_class));
 			goto cleanup_region;
 		}
 	}
@@ -295,14 +295,14 @@ static void sUnregisterMainDev(void){
 	cdev_del(&main_device_data.cdev);
 	/* destroy device node */
 	device_destroy(main_class, main_device_data.dev);
-	printk(KERN_DEBUG "Main device destroryed");
+	pr_debug("Main device destroyed");
 
 	/* destroy device class */
 	class_destroy(main_class);
-	printk(KERN_DEBUG "Main class destroryed");
+	pr_debug("Main class destroryed");
 
 	unregister_chrdev_region(main_device_data.dev, 1);
-	printk(KERN_DEBUG "Char device region deallocated");
+	pr_debug("Char device region deallocated");
 }
 
 
@@ -324,7 +324,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 	switch (ioctl_num){
 	case IOCTL_INSTALL_GROUP:
 
-		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp)){
+		if(copy_group_t_from_user((group_t*)ioctl_param, &group_tmp) < 0){
 			pr_err("'group_t' structure cannot be copied from userspace; %d copied", ret);
 			return USER_COPY_ERR;
 		}
@@ -356,7 +356,7 @@ static long int mainDeviceIoctl(struct file *file, unsigned int ioctl_num, unsig
 			return USER_COPY_ERR;
 		}
 
-		pr_debug("Group name: %s\nLen: %d", group_tmp.group_name, group_tmp.name_len);
+		pr_debug("Group name: %s\nLen: %ld", group_tmp.group_name, group_tmp.name_len);
 
 		ret = getGroupID(group_tmp);
 
@@ -408,18 +408,15 @@ __must_check int installGroup(const group_t new_group_descriptor){
 	pr_debug("Group descriptor: [%s]", new_group->descriptor.group_name);
 
 
-
+	//Allocate ID
+	pr_debug("Allocating IDR");
 	down(&main_device_data.sem);
-
-		//Allocate ID
-		printk(KERN_DEBUG "Allocating IDR");
 		new_group->group_id  = idr_alloc(&main_device_data.group_map, new_group, GRP_MIN_ID, GRP_MAX_ID, GFP_KERNEL);
-		printk(KERN_DEBUG "Allocated IDR number %d", new_group->group_id);
-
 	up(&main_device_data.sem);
+	pr_debug("Allocated IDR number %d", new_group->group_id);
 
 	if(new_group->group_id  < 0){
-		printk(KERN_ERR "Unable to allocate ID for the new group");
+		pr_err("Unable to allocate ID for the new group");
 		ret = IDR_ERR;
 		goto cleanup;
 	}
@@ -467,14 +464,19 @@ __must_check int installGroup(const group_t new_group_descriptor){
  * 
  */
 __must_check int getGroupID(const group_t new_group){
-
 	group_data *curr_group;
 	int id_cursor;
+
+	if(new_group.group_name == NULL)
+		return -1;
 
 	down(&main_device_data.sem);
 		idr_for_each_entry(&main_device_data.group_map, curr_group, id_cursor){
 			
 			pr_debug("Comparing [%s] with [%s]", curr_group->descriptor.group_name, new_group.group_name);
+
+			if(curr_group->descriptor.group_name == NULL)
+				goto cleanup;
 
 			if(strncmp(curr_group->descriptor.group_name, new_group.group_name, DEVICE_NAME_SIZE) == 0){
 
@@ -484,6 +486,8 @@ __must_check int getGroupID(const group_t new_group){
 				return id_cursor;
 			}
 		}
+
+	cleanup:
 	up(&main_device_data.sem);
 	return -1;
 }

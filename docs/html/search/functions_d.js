@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['setdelay_182',['setDelay',['../d5/d20/thread__synch_8h.html#a40e17edd747a94c9c1a9c97c014e03d9',1,'thread_synch.c']]],
-  ['setgarbagecollectorratio_183',['setGarbageCollectorRatio',['../d5/d20/thread__synch_8h.html#aba1f7570253ade80a90308b3974d3e12',1,'thread_synch.c']]],
-  ['setmaxmessagesize_184',['setMaxMessageSize',['../d5/d20/thread__synch_8h.html#a34cb66021b147dbcac0d1e1c3da2c3ba',1,'thread_synch.c']]],
-  ['setmaxstoragesize_185',['setMaxStorageSize',['../d5/d20/thread__synch_8h.html#a49b2ad5effe07c0325a8534a4f3364a4',1,'thread_synch.c']]],
-  ['sleeponbarrier_186',['sleepOnBarrier',['../d5/d20/thread__synch_8h.html#a30aa9ea940e7e4a48ddc23000ad0abe9',1,'thread_synch.c']]]
+  ['readmessage_182',['readMessage',['../d2/d0d/message_8h.html#af0eb4f46db2a45d736b02c2ac731fdba',1,'readMessage(msg_t *dest_buffer, msg_manager_t *manager):&#160;message.c'],['../d5/d20/thread__synch_8h.html#ad9d852d16a5745a7e0e608632d5d38dc',1,'readMessage(void *buffer, size_t len, thread_group_t *group):&#160;thread_synch.c']]],
+  ['registergroupdevice_183',['registerGroupDevice',['../d4/dbe/group__manager_8h.html#a9d29d1ee1f4639e493f77384aeb81b8d',1,'group_manager.c']]],
+  ['releasesysfs_184',['releaseSysFs',['../d4/dca/sysfs_8h.html#a3710b2f2cf5b902a7c394beb22211dc4',1,'sysfs.c']]],
+  ['revokedelay_185',['revokeDelay',['../d5/d20/thread__synch_8h.html#a2ec2da5085c32cbab0f0025c62d6a402',1,'thread_synch.c']]],
+  ['revokedelayedmessage_186',['revokeDelayedMessage',['../d2/d0d/message_8h.html#a0205d35a68e74d35bab2858e077865ae',1,'message.c']]]
 ];

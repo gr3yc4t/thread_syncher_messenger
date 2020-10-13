@@ -12,12 +12,12 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager);
  */
 void debugMsg(msg_t msg){
 
-    printk(KERN_DEBUG "MESSAGE DATA");
-    printk(KERN_DEBUG "Message type size %ld", msg.size);
-    printk(KERN_DEBUG "Message author pid %d", msg.author);
+    pr_debug("MESSAGE DATA");
+    pr_debug("Message type size %ld", msg.size);
+   pr_debug("Message author pid %d", msg.author);
 
     if(msg.size == sizeof(char) && msg.buffer != NULL){
-        printk(KERN_DEBUG "Message string %s", (char*)msg.buffer);
+        pr_debug("Message string %s", (char*)msg.buffer);
     }
 
 }
@@ -76,10 +76,6 @@ void delayedMessageCallback(struct timer_list *timer){
         return;
     }
 
-    //Deallocate structures
-    if(del_timer(timer)){
-        pr_debug("Strange behaviour: timer callback called but timer not elasped...");
-    }
 
     pr_debug("delayedMessage: trying to acquire lock");
     down(&delayed_msg->manager->delayed_lock);
@@ -88,6 +84,13 @@ void delayedMessageCallback(struct timer_list *timer){
         kfree(delayed_msg);
     up(&delayed_msg->manager->delayed_lock);
     pr_info("delayedMessageCallback: unlocking delayed list after deleting entries");
+
+
+
+    //Deallocate structures
+    if(!del_timer(timer))
+        pr_err("Strange behaviour: timer callback called but timer not elasped...");
+    
 
 
     return;
@@ -105,6 +108,7 @@ void delayedMessageCallback(struct timer_list *timer){
  */
 int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_delayed_deliver *newMessageDeliver;
+    long delay;
 
     if(!message || !manager){
         pr_err("%s: NULL pointers", __FUNCTION__);
@@ -114,7 +118,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     pr_debug("queueDelayedMessage: Checking size limits...");
 
     if(!isValidSizeLimits(message, manager)){
-        printk(KERN_ERR "Message size is invalid");
+        pr_err("Message size is invalid");
         return -1;
     }
 
@@ -126,7 +130,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     newMessageDeliver->manager = manager;
 
 
-    long delay = atomic_long_read(&manager->message_delay);
+    delay = atomic_long_read(&manager->message_delay);
 
     pr_debug("queueDelayedMessage: Delay value %ld", delay);
 
@@ -135,7 +139,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     //Add to the msg_manager message queue
     down(&manager->delayed_lock);
         //Queue Critical Section
-        list_add(&newMessageDeliver->delayed_list, &manager->delayed_queue);
+        list_add_rcu(&newMessageDeliver->delayed_list, &manager->delayed_queue);
     up(&manager->delayed_lock);
 
     //Set delay and start the timer
@@ -144,7 +148,6 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     pr_debug("queueDelayedMessage: Timer started");
 
     return 0;    
-
 }
 
 
@@ -158,12 +161,11 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
  * @return The number of delayed messages which revoked 
  */
 int revokeDelayedMessage(msg_manager_t *manager){
-
-    pr_debug("Revoking delayed messages...");
-
     struct list_head *cursor, *temp;
     struct t_message_delayed_deliver *msgDeliver;
     int count = 0;
+
+    pr_debug("Revoking delayed messages...");
 
     down(&manager->delayed_lock);
 
@@ -179,9 +181,10 @@ int revokeDelayedMessage(msg_manager_t *manager){
             }
 
             list_del_init(cursor);
-
             count++;
         }
+
+        synchronize_rcu();
 
     up(&manager->delayed_lock);
 
@@ -201,12 +204,11 @@ int revokeDelayedMessage(msg_manager_t *manager){
  *      timer's callback will wait since the queue is locked.
  */
 int cancelDelay(msg_manager_t *manager){
-
-    pr_debug("cancelDelay: Cancelling delay on messages...");
-
     struct list_head *cursor, *temp;
     struct t_message_delayed_deliver *msgDeliver;
     int count = 0;
+
+    pr_debug("cancelDelay: Cancelling delay on messages...");
 
     down(&manager->delayed_lock);
 
@@ -235,6 +237,30 @@ int cancelDelay(msg_manager_t *manager){
 
 #endif
 
+/**
+ * @brief Check if the structure's size should be included when computing message size
+ * 
+ * Message structure includes the 't_message_deliver' and 'group_members_t' 
+ * 
+ * @retval true if the relative flag is set
+ * @retval false if the relative flag is off
+ */
+bool isStructSizeIncluded(msg_manager_t *manager){
+    group_data *grp_data;
+
+    grp_data = container_of(&manager, group_data, msg_manager);
+
+    if(!grp_data)
+        return false;
+
+    pr_debug("Include struct flag value: %d", grp_data->flags.gc_include_struct);
+
+    if(grp_data->flags.gc_include_struct == 1)
+        return true;
+    return false;
+}
+
+
 
 /**
  * @brief Check if the delivery of msg will exceed max sizes
@@ -245,6 +271,7 @@ int cancelDelay(msg_manager_t *manager){
  * @note This function is thread-safe
  */
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
+        msg_manager_t *my_manager;
         u_long max_msg_size;
         u_long max_storage_size;
         u_long curr_storage_size;
@@ -253,23 +280,29 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
 
         if(!msg || !manager)
             return false;
-        
 
 
         msg_size = (u_long)msg->size;
 
-        down_read(&manager->config_lock);
-            max_msg_size = manager->max_message_size;
-            max_storage_size = manager->max_storage_size;
-            curr_storage_size = manager->curr_storage_size;
-        up_read(&manager->config_lock);
+        rcu_read_lock();
+            my_manager = rcu_dereference(manager);
+
+            max_msg_size = my_manager->max_message_size;
+            max_storage_size = my_manager->max_storage_size;
+            curr_storage_size = my_manager->curr_storage_size;
+        rcu_read_unlock();
 
         if(msg_size > max_msg_size)
             return false;
 
         //Include both the uppper structure 't_message_deliver' and its recipients
         //  list that will contain the sender
-        structure_size = sizeof(struct t_message_deliver) + sizeof(group_members_t);
+        if(isStructSizeIncluded(manager))
+            structure_size = sizeof(struct t_message_deliver) + sizeof(group_members_t);
+        else
+            structure_size = 0;
+        
+        pr_debug("Total new size: %lu", curr_storage_size + msg_size + structure_size);
 
         if(curr_storage_size + msg_size + structure_size > max_storage_size)
             return false;
@@ -293,7 +326,7 @@ void copy_current_participants(struct list_head *dest, struct list_head *source)
 
         src_elem = list_entry(cursor, group_members_t, list);
 
-        printk(KERN_INFO "Message participant: %d", src_elem->pid);
+        pr_debug("Message participant: %d", src_elem->pid);
 
         if(!src_elem)
             return;
@@ -311,7 +344,7 @@ void copy_current_participants(struct list_head *dest, struct list_head *source)
     }
 
 
-    printk(KERN_DEBUG "Copied %d participants as message recipient", count);
+    pr_debug("Copied %d participants as message recipient", count);
 
 }
 
@@ -510,20 +543,25 @@ bool isDeliveryCompleted(const struct list_head *recipients, const struct list_h
  *  @todo Check thread-safety of the function 
  *  @note   The umsg structure must be allocated
  */
-__must_check int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, const ssize_t _size){
+__must_check int copy_msg_to_user(const msg_t *kmsg, __user char *ubuffer, const ssize_t _size){
 
-    if(kmsg == NULL || ubuffer == NULL){
-        printk(KERN_DEBUG "copy_msg_to_user: NULL pointer provided");
+    if(kmsg == NULL){
+        pr_debug("copy_msg_to_user: kernel message NULL pointer provided");
+        return -EFAULT;
+    }
+
+    if(ubuffer == NULL){
+        pr_debug("copy_msg_to_user: user buffer NULL pointer provided");
         return -EFAULT;
     }
 
     if(!access_ok(ubuffer, _size)){
-        printk(KERN_DEBUG "copy_msg_to_user: user-space memory access is invalid");
+        pr_debug("copy_msg_to_user: user-space memory access is invalid");
         return -EFAULT;
     }
 
     if(copy_to_user(ubuffer, kmsg->buffer, _size)){
-        printk(KERN_DEBUG "copy_msg_to_user: Unable to copy msg_t structure to user");
+        pr_debug("copy_msg_to_user: Unable to copy msg_t structure to user");
         return -EFAULT;
     }
 
@@ -542,7 +580,7 @@ __must_check int copy_msg_to_user(const msg_t *kmsg, __user int8_t *ubuffer, con
  *  @todo Check thread-safety of the function
  *  @note The kmsg structure must be allocated
  */
-__must_check int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize_t _size){
+__must_check int copy_msg_from_user(msg_t *kmsg, const char *umsg, const ssize_t _size){
     
     void *kbuffer;
 
@@ -551,7 +589,7 @@ __must_check int copy_msg_from_user(msg_t *kmsg, const int8_t *umsg, const ssize
 
 
     if(!access_ok(umsg, _size)){
-        printk(KERN_DEBUG "copy_msg_from_user: user-space memory access is invalid");
+        pr_debug("copy_msg_from_user: user-space memory access is invalid");
         return -EFAULT;        
     }
 
@@ -599,7 +637,7 @@ __must_check msg_manager_t *createMessageManager(const u_int _max_storage_size, 
     init_rwsem(&manager->config_lock);
 
     INIT_WORK(&garbage_collector->work, queueGarbageCollector);
-    atomic_set(&garbage_collector->ratio, 2);
+    atomic_set(&garbage_collector->ratio, DEFAULT_GC_RATIO);
 
     #ifndef DISABLE_DELAYED_MSG
         sema_init( &manager->delayed_lock, 1);
@@ -630,6 +668,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     struct t_message_deliver *newMessageDeliver;
     group_members_t *sender;
     int ret = 0;
+    u_long message_size;
 
     if(!isValidSizeLimits(message, manager)){
         pr_err("Message size is invalid");
@@ -663,18 +702,20 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
 
     //Add to the msg_manager message queue
     down_write(&manager->queue_lock);
-    printk(KERN_DEBUG "writeMessage: queue_lock acquired");
         //Queue Critical Section
         list_add_tail(&newMessageDeliver->fifo_list, &manager->queue);
     up_write(&manager->queue_lock);
-    printk(KERN_DEBUG "writeMessage: queue_lock released");
+    pr_debug("writeMessage: queue_lock released");
 
 
     //Update storage parameters
-    u_long message_size;
 
     message_size = message->size;
-    message_size += sizeof(struct t_message_deliver);
+
+    if(isStructSizeIncluded(manager))
+        message_size += sizeof(struct t_message_deliver);
+
+    pr_debug("Message Size: %lu", message_size);
 
     down_write(&manager->config_lock);
         manager->curr_storage_size += message_size;
@@ -704,7 +745,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
 
     down_read(&manager->queue_lock);
-    printk(KERN_DEBUG "readMessage: queue_lock acquired");
+    pr_debug("readMessage: queue_lock acquired");
 
         //Read queue critical section
         list_for_each(cursor, &manager->queue){
@@ -726,11 +767,11 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                  * @bug: when 'revoke delay' functionality is called, messages trigger
                  *  this if and will not be delivered
                  */
-                printk(KERN_DEBUG "Message sent from the reader, skipping...");
-                printk(KERN_DEBUG "Sender PID: %d", pid);
-                printk(KERN_DEBUG "Message Content %s", msg_deliver->message.buffer);
+                pr_debug("Message sent from the reader, skipping...");
+                pr_debug("Sender PID: %d", pid);
+                pr_debug("Message Content %s", (char*)msg_deliver->message.buffer);
             }else if(!wasDelivered(&msg_deliver->recipient, pid)){
-                printk(KERN_INFO "Message found for PID: %d", (int)pid);
+                pr_info("Message found for PID: %d", (int)pid);
                 //Copy the message to the destination buffer
                 memcpy(dest_buffer, &msg_deliver->message, sizeof(msg_t));
 
@@ -741,14 +782,16 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
                 
                 up_read(&manager->queue_lock);
-                printk(KERN_DEBUG "readMessage: queue_lock released");
+                pr_debug("readMessage: queue_lock released");
 
 
                 //Update the current storage size with the recipient's entry in the list
+                if(isStructSizeIncluded(manager)){
+                    down_write(&manager->config_lock);
+                        manager->curr_storage_size += sizeof(group_members_t);
+                    up_write(&manager->config_lock);
+                }
 
-                down_write(&manager->config_lock);
-                    manager->curr_storage_size += sizeof(group_members_t);
-                up_write(&manager->config_lock);
 
                 return 0;
             }
@@ -757,15 +800,15 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
         }
 
     up_read(&manager->queue_lock);
-    printk(KERN_DEBUG "readMessage: queue_lock released");
+    pr_debug("readMessage: queue_lock released");
 
-    printk(KERN_INFO "No message present for PID: %d", pid);
+    pr_info("No message present for PID: %d", pid);
     return 1;
 
 
     cleanup:
         up_read(&manager->queue_lock);
-        printk(KERN_ERR "readMessage: 'list_entry' returned a NULL pointer");
+        pr_err("readMessage: 'list_entry' returned a NULL pointer");
         return -1;
 }
 
@@ -776,7 +819,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
 
 /**
  * @brief Remove a message from the queue when it was completely delivered
- * @param [in] work The work struct contained inside "msg_manager_t"
+ * @param[in] work The work struct contained inside "msg_manager_t"
  * 
  * @return nothing
  * 
@@ -789,15 +832,21 @@ void queueGarbageCollector(struct work_struct *work){
     group_data *grp_data;
     garbage_collector_t *garbage_collector;
     msg_manager_t *manager;
+    
+    struct list_head *current_member;
+    struct list_head *cursor;
+    struct list_head *temp;
+    
     unsigned int deleted_entries;
     unsigned int deleted_recipients;
+    int del_recipients;
 
     u_long deleted_deliver_size;
     u_long total_recipients_size;
     u_long total_msg_size;
     u_long total_deleted_size;
 
-    int del_recipients;
+
 
 
     garbage_collector = container_of(work, garbage_collector_t, work);
@@ -809,7 +858,7 @@ void queueGarbageCollector(struct work_struct *work){
         return;
 
 
-    printk(KERN_DEBUG "Garbage Collector starting...");
+    pr_debug("Garbage Collector starting...");
 
     deleted_entries = 0;
     deleted_recipients = 0;
@@ -820,13 +869,10 @@ void queueGarbageCollector(struct work_struct *work){
 
     down_read(&grp_data->member_lock);
 
-        struct list_head *current_member = &grp_data->active_members;
-
-        struct list_head *cursor;
-        struct list_head *temp;
+        current_member = &grp_data->active_members;
 
         if(!down_write_trylock(&grp_data->msg_manager->queue_lock)){
-            printk(KERN_DEBUG "Garbage Collector: Unable to acquire queue lock, skipping...");
+            pr_debug("Garbage Collector: Unable to acquire queue lock, skipping...");
             up_read(&grp_data->member_lock);
             return;
         }
@@ -840,7 +886,7 @@ void queueGarbageCollector(struct work_struct *work){
                 //Recipient critical section
 
                     if(isDeliveryCompleted(&entry->recipient, current_member)){
-                        printk(KERN_DEBUG "Garbage Collector: deleting entry from queue");
+                        pr_debug("Garbage Collector: deleting entry from queue");
 
                         kfree(entry->message.buffer);  //Message Buffer
                         total_msg_size += entry->message.size;
@@ -865,9 +911,10 @@ void queueGarbageCollector(struct work_struct *work){
 
     //Update storage parameters
     manager = grp_data->msg_manager;
-    deleted_deliver_size = deleted_entries * sizeof(struct t_message_deliver);
-    total_recipients_size = deleted_recipients * sizeof(group_members_t);
-
+    if(isStructSizeIncluded(manager)){
+        deleted_deliver_size = deleted_entries * sizeof(struct t_message_deliver);
+        total_recipients_size = deleted_recipients * sizeof(group_members_t);
+    }
 
     total_deleted_size = total_msg_size + deleted_deliver_size + total_recipients_size;
 

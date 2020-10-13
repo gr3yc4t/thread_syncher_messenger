@@ -181,11 +181,17 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_MSG_SIZE</b>&#160;&#160;&#160;256</td></tr>
 <tr class="separator:afbd9f3f1670b081aac1d8c6d8269ddbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a004e6f8b967a0e16f2cf040912d37830"><td class="memItemLeft" align="right" valign="top"><a id="a004e6f8b967a0e16f2cf040912d37830"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_STORAGE_SIZE</b>&#160;&#160;&#160;256</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_STORAGE_SIZE</b>&#160;&#160;&#160;1024</td></tr>
 <tr class="separator:a004e6f8b967a0e16f2cf040912d37830"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eabf7d3f87fe6d52748a22ea0c3124b"><td class="memItemLeft" align="right" valign="top"><a id="a7eabf7d3f87fe6d52748a22ea0c3124b"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_GET_GROUP_DESC</b>&#160;&#160;&#160;_IOR('Q', 1, <a class="el" href="../../d2/dc2/structgroup__t.html">group_t</a>*)</td></tr>
 <tr class="separator:a7eabf7d3f87fe6d52748a22ea0c3124b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85cb8d431a3111bffd162110819524e2"><td class="memItemLeft" align="right" valign="top"><a id="a85cb8d431a3111bffd162110819524e2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_SET_STRICT_MODE</b>&#160;&#160;&#160;_IOW('Q', 101, bool)</td></tr>
+<tr class="separator:a85cb8d431a3111bffd162110819524e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba57ba06508bd505a07b1f1044db6f40"><td class="memItemLeft" align="right" valign="top"><a id="aba57ba06508bd505a07b1f1044db6f40"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_CHANGE_OWNER</b>&#160;&#160;&#160;_IOW('Q', 102, uid_t)</td></tr>
+<tr class="separator:aba57ba06508bd505a07b1f1044db6f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c6a3beaf1f5c8c62a941127c0b6ae1a"><td class="memItemLeft" align="right" valign="top"><a id="a3c6a3beaf1f5c8c62a941127c0b6ae1a"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_SET_SEND_DELAY</b>&#160;&#160;&#160;_IOW('Y', 0, long)</td></tr>
 <tr class="separator:a3c6a3beaf1f5c8c62a941127c0b6ae1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -198,12 +204,6 @@ Macros</h2></td></tr>
 <tr class="memitem:ac00821bdb3f7a772f468bbc723166349"><td class="memItemLeft" align="right" valign="top"><a id="ac00821bdb3f7a772f468bbc723166349"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_AWAKE_BARRIER</b>&#160;&#160;&#160;_IO('Z', 1)</td></tr>
 <tr class="separator:ac00821bdb3f7a772f468bbc723166349"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85cb8d431a3111bffd162110819524e2"><td class="memItemLeft" align="right" valign="top"><a id="a85cb8d431a3111bffd162110819524e2"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_SET_STRICT_MODE</b>&#160;&#160;&#160;_IOW('Q', 101, bool)</td></tr>
-<tr class="separator:a85cb8d431a3111bffd162110819524e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba57ba06508bd505a07b1f1044db6f40"><td class="memItemLeft" align="right" valign="top"><a id="aba57ba06508bd505a07b1f1044db6f40"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_CHANGE_OWNER</b>&#160;&#160;&#160;_IOW('Q', 102, uid_t)</td></tr>
-<tr class="separator:aba57ba06508bd505a07b1f1044db6f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac684c8879cadfe446a9413a6bdc487a9"><td class="memItemLeft" align="right" valign="top"><a id="ac684c8879cadfe446a9413a6bdc487a9"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>GROUP_CLASS_NAME</b>&#160;&#160;&#160;&quot;group_synch&quot;</td></tr>
 <tr class="separator:ac684c8879cadfe446a9413a6bdc487a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -216,9 +216,9 @@ Functions</h2></td></tr>
 <tr class="memitem:af83ff2ff50fd5597cb8e810f5e7588c4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbe/group__manager_8h.html#af83ff2ff50fd5597cb8e810f5e7588c4">installGroupClass</a> (void)</td></tr>
 <tr class="memdesc:af83ff2ff50fd5597cb8e810f5e7588c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install the global 'group_device_class'.  <a href="../../d4/dbe/group__manager_8h.html#af83ff2ff50fd5597cb8e810f5e7588c4">More...</a><br /></td></tr>
 <tr class="separator:af83ff2ff50fd5597cb8e810f5e7588c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49eacb577d4216746f5a76ce9c60445c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbe/group__manager_8h.html#a49eacb577d4216746f5a76ce9c60445c">registerGroupDevice</a> (<a class="el" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, const struct device *parent)</td></tr>
-<tr class="memdesc:a49eacb577d4216746f5a76ce9c60445c"><td class="mdescLeft">&#160;</td><td class="mdescRight">register a group device  <a href="../../d4/dbe/group__manager_8h.html#a49eacb577d4216746f5a76ce9c60445c">More...</a><br /></td></tr>
-<tr class="separator:a49eacb577d4216746f5a76ce9c60445c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d29d1ee1f4639e493f77384aeb81b8d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbe/group__manager_8h.html#a9d29d1ee1f4639e493f77384aeb81b8d">registerGroupDevice</a> (<a class="el" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, struct device *parent)</td></tr>
+<tr class="memdesc:a9d29d1ee1f4639e493f77384aeb81b8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">register a group device  <a href="../../d4/dbe/group__manager_8h.html#a9d29d1ee1f4639e493f77384aeb81b8d">More...</a><br /></td></tr>
+<tr class="separator:a9d29d1ee1f4639e493f77384aeb81b8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a4a1f2ed5563df3defd7477a8f70168"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">unregisterGroupDevice</a> (<a class="el" href="../../d2/d86/structgroup__data.html">group_data</a> *grp_data, bool flag)</td></tr>
 <tr class="memdesc:a7a4a1f2ed5563df3defd7477a8f70168"><td class="mdescLeft">&#160;</td><td class="mdescRight">unregister a group device  <a href="../../d4/dbe/group__manager_8h.html#a7a4a1f2ed5563df3defd7477a8f70168">More...</a><br /></td></tr>
 <tr class="separator:a7a4a1f2ed5563df3defd7477a8f70168"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -343,8 +343,8 @@ struct class *&#160;</td><td class="memItemRight" valign="bottom"><b>group_devic
 
 </div>
 </div>
-<a id="a49eacb577d4216746f5a76ce9c60445c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49eacb577d4216746f5a76ce9c60445c">&#9670;&nbsp;</a></span>registerGroupDevice()</h2>
+<a id="a9d29d1ee1f4639e493f77384aeb81b8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d29d1ee1f4639e493f77384aeb81b8d">&#9670;&nbsp;</a></span>registerGroupDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -358,7 +358,7 @@ struct class *&#160;</td><td class="memItemRight" valign="bottom"><b>group_devic
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const struct device *&#160;</td>
+          <td class="paramtype">struct device *&#160;</td>
           <td class="paramname"><em>parent</em>&#160;</td>
         </tr>
         <tr>

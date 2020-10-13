@@ -19,6 +19,17 @@ static int _installGroup(group_t *new_group, thread_synch_t *main_synch){
     return group_id;
 }
 
+static int _cancelDelay(int group_fd){
+    int ret;
+
+    ret = ioctl(group_fd, IOCTL_CANCEL_DELAY);
+
+    if(ret < 0)
+        return -1;
+    
+    return ret;
+}
+
 static int _getParamPath(const int group_id, const char *param_name, char *dest_buffer, size_t dest_size){
     char param_path[BUFF_SIZE];
     int ret;
@@ -249,14 +260,40 @@ static int _setGarbCollRatio(const int group_id, const unsigned long _val){
 
     char buff[BUFF_SIZE];
 
-    if(sprintf(buff, "%ld", _val) < 0){
+    if(sprintf(buff, "%lu", _val) < 0){
         printf("[X] Error while converting the paramtere value");
         return -1;
     }
-
     ret = write(fd, buff, sizeof(char)*strnlen(buff, BUFF_SIZE));
 
     return ret;
+}
+
+static int _setStructSizeFlag(const int group_id, const bool _val){
+    int fd;
+    int ret;
+    char param_path[BUFF_SIZE];
+
+    if(_getParamPath(group_id, "include_struct_size", param_path, BUFF_SIZE) < 0)
+        return -1;
+
+    fd = open(param_path, O_WRONLY); 
+
+    if(fd < 0){
+        printf("[X] Error while opening the group file\n");
+        return -1;
+    }
+
+
+    char buff[BUFF_SIZE];
+
+    if(sprintf(buff, "%d", (int)_val) < 0){
+        printf("[X] Error while converting the paramtere value");
+        return -1;
+    }
+    ret = write(fd, buff, sizeof(char)*strnlen(buff, BUFF_SIZE));
+
+    return ret;    
 }
 
 static int _getGroupID(group_t *descriptor, thread_synch_t *main_synch){
@@ -477,6 +514,7 @@ thread_group_t* installGroup(const group_t group_descriptor, thread_synch_t *mai
  * @param[in]  group A pointer to the group's structure where the msg is readed
  * 
  * @retval NO_MSG_PRESENT if there is no message available
+ * @retval GROUP_CLOSED if the provided group is closed
  * @retval negative number on error
  * @retval 0 on success
  * 
@@ -487,7 +525,10 @@ int readMessage(void *buffer, size_t len, thread_group_t *group){
 
     int ret;
 
-    if(group == NULL || group->file_descriptor == -1)
+    if(group->file_descriptor == -1)
+        return GROUP_CLOSED;
+
+    if(!buffer)
         return -1;
 
 
@@ -510,6 +551,7 @@ int readMessage(void *buffer, size_t len, thread_group_t *group){
  * 
  * @retval negative number on error
  * @retval The number of written bytes on successs 
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  */
 int writeMessage(const void *buffer, size_t len, thread_group_t *group){
@@ -517,8 +559,7 @@ int writeMessage(const void *buffer, size_t len, thread_group_t *group){
     int ret;
     
     if(group == NULL || group->file_descriptor == -1){
-        printf("[X] Group not opened\n");
-        return -1;
+        return GROUP_CLOSED;
     }
 
     ret = write(group->file_descriptor, buffer, sizeof(u_int8_t)*len);
@@ -533,12 +574,13 @@ int writeMessage(const void *buffer, size_t len, thread_group_t *group){
  * 
  * @retval -1 on error
  * @retval 0 on success
+ * @retval GROUP_CLOSED if the provided group is closed
  */
 int setDelay(const long _delay, thread_group_t *group){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
     
     ret = ioctl(group->file_descriptor, IOCTL_SET_SEND_DELAY, _delay);
 
@@ -550,14 +592,15 @@ int setDelay(const long _delay, thread_group_t *group){
  * 
  * @param[in] *group A pointer to an initialized group structure
  * 
- * @retval -1 on error
+ * @retval Negative number on error
  * @retval The number of revoked messages on success (>= 0)
+ * @retval GROUP_CLOSED if the provided group is closed
  */
 int revokeDelay(thread_group_t *group){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
     
     ret = ioctl(group->file_descriptor, IOCTL_REVOKE_DELAYED_MESSAGES);
 
@@ -569,14 +612,15 @@ int revokeDelay(thread_group_t *group){
  * 
  * @param[in] *group T A pointer to an initialized group structure
  * 
- * @retval -1 on error
+ * @retval Negative number on error
  * @retval 0 on success
+ * @retval GROUP_CLOSED if the provided group is closed
  */
 int sleepOnBarrier(thread_group_t *group){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     ret = ioctl(group->file_descriptor, IOCTL_SLEEP_ON_BARRIER);
 
@@ -590,12 +634,13 @@ int sleepOnBarrier(thread_group_t *group){
  * 
  * @retval -1 on error
  * @retval 0 on success
+ * @retval GROUP_CLOSED if the provided group is closed
  */
 int awakeBarrier(thread_group_t *group){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     ret = ioctl(group->file_descriptor, IOCTL_AWAKE_BARRIER);
 
@@ -655,6 +700,9 @@ unsigned long getMaxStorageSize(thread_group_t *group){
  * 
  * @param[in] *group T A pointer to an initialized group structure
  * 
+ * @bug Sometimes this function will return the incorrect value "0", when this
+ *          happens a subsequent call of the function will return the correct value
+ * 
  * @retval The value of the parameter
  * @retval 0 on error
  * 
@@ -676,24 +724,6 @@ unsigned long getCurrentStorageSize(thread_group_t *group){
 
 
 
-int readGroupInfo(thread_synch_t *main_syncher){
-    int ret;
-    char buffer[512];
-
-
-    if(main_syncher->initialized != 1)
-        return -1;
-
-
-    lseek(main_syncher->main_file_descriptor, 1L, SEEK_CUR);
-    
-    ret = read(main_syncher->main_file_descriptor, buffer, 512);
-
-    if(ret < 0)
-        return -1;
-
-    return 0;
-}
 
 /**
  * @brief Set the maximum message size value for a given group
@@ -703,13 +733,14 @@ int readGroupInfo(thread_synch_t *main_syncher){
  * 
  * @retval -1 on error
  * @retval 0 on success
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  */
 int setMaxMessageSize(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     if(_setMaxMsgSize(group->group_id, val) < 0)
         return -1;
@@ -724,13 +755,14 @@ int setMaxMessageSize(thread_group_t *group, const unsigned long val){
  * 
  * @retval -1 on error
  * @retval 0 on success
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  */
 int setMaxStorageSize(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     if(_setMaxStorageSize(group->group_id, val) < 0)
         return -1;
@@ -744,6 +776,7 @@ int setMaxStorageSize(thread_group_t *group, const unsigned long val){
  * @param[in] val The new value of the parameter
  * 
  * @retval -1 on error
+ * @retval GROUP_CLOSED if the provided group is closed
  * @retval 0 on success
  * 
  */
@@ -751,7 +784,7 @@ int setGarbageCollectorRatio(thread_group_t *group, const unsigned long val){
     int ret;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     if(_setGarbCollRatio(group->group_id, val) < 0)
         return -1;
@@ -767,7 +800,7 @@ int setGarbageCollectorRatio(thread_group_t *group, const unsigned long val){
  * 
  * @retval 0 on success
  * @retval UNAUTHORIZED if the current user is not authorized to change the param
- * @retval Negative number on error
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  * @note If strict mode is disabled, any threads can enable it through this function. 
  *       If strict mode is enabled, only the owner can disable it
@@ -776,7 +809,7 @@ int enableStrictMode(thread_group_t *group){
     int ret = 0;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     
     ret = _setStrictMode(group->file_descriptor, 1);
@@ -793,7 +826,7 @@ int enableStrictMode(thread_group_t *group){
  * 
  * @retval 0 on success
  * @retval UNAUTHORIZED if the current user is not authorized to change the param
- * @retval Negative number on error
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  * @note If strict mode is enabled, only the owner can disable it
  */
@@ -801,7 +834,7 @@ int disableStrictMode(thread_group_t *group){
     int ret = 0;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     
     ret = _setStrictMode(group->file_descriptor, 0);
@@ -812,13 +845,41 @@ int disableStrictMode(thread_group_t *group){
     return 0;
 }
 
+
+/**
+ * @brief Set a flag to count also supporting structure size in storage calculation
+ * @param[in] *group A pointer to an initialized group structure
+ * @param[in] value The value the flag will be set to
+ * 
+ * @retval 0 on success
+ * @retval UNAUTHORIZED if the current user is not authorized to change the param
+ * @retval GROUP_CLOSED if the provided group is closed
+ * 
+ * @note If strict mode is enabled, only the owner can disable it
+ */
+int includeStructureSize(thread_group_t *group, const bool value){
+    int ret = 0;
+
+    if(group->file_descriptor == -1)
+        return GROUP_CLOSED;
+
+    ret = _setStructSizeFlag(group->file_descriptor, value);
+
+    if(ret < 0)
+        return UNAUTHORIZED;
+    
+    return 0;    
+}
+
+
+
 /**
  * @brief Change the owner of a group
  * @param[in] *group A pointer to an initialized group structure
  * 
  * @retval 0 on success
  * @retval UNAUTHORIZED if the current user is not authorized to change the param
- * @retval Negative number on error
+ * @retval GROUP_CLOSED if the provided group is closed
  * 
  * @note If strict mode is enabled, only the current owner can set a new owner
  * @note If strict mode is enabled, any thread could change the group's owner
@@ -827,7 +888,7 @@ int changeOwner(thread_group_t *group, const uid_t new_owner){
     int ret = 0;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
     ret = _changeGroupOwner(group->file_descriptor, new_owner);
 
@@ -966,21 +1027,69 @@ thread_group_t* loadGroupFromID(const int group_id){
     group->group_id = group_id;
     group->descriptor.group_name = NULL;
     group->descriptor.name_len = 0;
-    group->group_path = group_path;
     group->path_len = strnlen(group_path, BUFF_SIZE);
+
+    group->group_path = (char*)malloc(sizeof(char)*group->path_len);
+    strncpy(group->group_path, group_path, group->path_len);
 
     return group;
 }
 
 
 
-/*
-int flushDelayedMsg(thread_group_t *group){
+/**
+ * @brief Deliver immediately all delayed messages
+ * 
+ * When a group's device file is flushed (closed and opened) the driver
+ * will cancel the delay on all messages present on the delay queue
+ * 
+ * @param[in] *group A pointer to a group's structure
+ * 
+ * @retval 0 on success (Legacy Version)
+ * @retval The number of messages in which delay has been removed (Normal version)
+ * @retval GROUP_CLOSED if the provided group structure is closed
+ * @retval negative number on error (the number represent the 'errno' value)
+ */
+
+int cancelDelay(thread_group_t *group){
     int ret;
+    int fd;
 
     if(group->file_descriptor == -1)
-        return -1;
+        return GROUP_CLOSED;
 
-    ret = fflush()    
 
-}*/
+    #ifdef LEGACY_FLUSH
+        close(group->file_descriptor);
+        group->file_descriptor = -1;
+        
+        printf("\nPath: %s\n", group->group_path);
+
+        fd = open(group->group_path, O_RDWR);
+
+        if(fd < 0){
+            group->file_descriptor = -1;
+            printf("\nError number: %d", errno);
+            return -errno;
+        }
+        
+        group->file_descriptor = fd;
+
+        return 0
+    #else
+
+        if( (ret = _cancelDelay(group->file_descriptor)) < 0){
+            printf("[X] Unable to cancel delay on messages");
+            return -1;
+        }
+
+        return ret;
+
+    #endif
+}
+
+
+
+
+
+

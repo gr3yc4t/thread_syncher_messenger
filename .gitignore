@@ -131,3 +131,5 @@ tool/perf.data.old
 *.data
 
 warns.txt
+
+tool/tool_afl
