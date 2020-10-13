@@ -19,6 +19,17 @@ static int _installGroup(group_t *new_group, thread_synch_t *main_synch){
     return group_id;
 }
 
+static int _cancelDelay(int group_fd){
+    int ret;
+
+    ret = ioctl(group_fd, IOCTL_CANCEL_DELAY);
+
+    if(ret < 0)
+        return -1;
+    
+    return ret;
+}
+
 static int _getParamPath(const int group_id, const char *param_name, char *dest_buffer, size_t dest_size){
     char param_path[BUFF_SIZE];
     int ret;
@@ -1034,31 +1045,51 @@ thread_group_t* loadGroupFromID(const int group_id){
  * 
  * @param[in] *group A pointer to a group's structure
  * 
- * @retval 0 on success
+ * @retval 0 on success (Legacy Version)
+ * @retval The number of messages in which delay has been removed (Normal version)
  * @retval GROUP_CLOSED if the provided group structure is closed
  * @retval negative number on error (the number represent the 'errno' value)
  */
-int flushDelayedMsg(thread_group_t *group){
+
+int cancelDelay(thread_group_t *group){
     int ret;
     int fd;
 
     if(group->file_descriptor == -1)
         return GROUP_CLOSED;
 
-    close(group->file_descriptor);
-    group->file_descriptor = -1;
-    
-    printf("\nPath: %s\n", group->group_path);
 
-    fd = open(group->group_path, O_RDWR);
-
-    if(fd < 0){
+    #ifdef LEGACY_FLUSH
+        close(group->file_descriptor);
         group->file_descriptor = -1;
-        printf("\nError number: %d", errno);
-        return -errno;
-    }
-    
-    group->file_descriptor = fd;
+        
+        printf("\nPath: %s\n", group->group_path);
 
-    return 0;
+        fd = open(group->group_path, O_RDWR);
+
+        if(fd < 0){
+            group->file_descriptor = -1;
+            printf("\nError number: %d", errno);
+            return -errno;
+        }
+        
+        group->file_descriptor = fd;
+
+        return 0
+    #else
+
+        if( (ret = _cancelDelay(group->file_descriptor)) < 0){
+            printf("[X] Unable to cancel delay on messages");
+            return -1;
+        }
+
+        return ret;
+
+    #endif
 }
+
+
+
+
+
+

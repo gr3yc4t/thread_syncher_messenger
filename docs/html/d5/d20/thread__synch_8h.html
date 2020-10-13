@@ -207,6 +207,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a1ffc87b680fc1e5a0d4e1ab7dfb9b223"><td class="memItemLeft" align="right" valign="top"><a id="a1ffc87b680fc1e5a0d4e1ab7dfb9b223"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_REVOKE_DELAYED_MESSAGES</b>&#160;&#160;&#160;_IO('Y', 1)</td></tr>
 <tr class="separator:a1ffc87b680fc1e5a0d4e1ab7dfb9b223"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf820efa44595e151e6294d3a093c503"><td class="memItemLeft" align="right" valign="top"><a id="abf820efa44595e151e6294d3a093c503"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_CANCEL_DELAY</b>&#160;&#160;&#160;_IO('Y', 2)</td></tr>
+<tr class="separator:abf820efa44595e151e6294d3a093c503"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09a94889fa4b29893b5b4dfcaa347c93"><td class="memItemLeft" align="right" valign="top"><a id="a09a94889fa4b29893b5b4dfcaa347c93"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>IOCTL_SLEEP_ON_BARRIER</b>&#160;&#160;&#160;_IO('Z', 0)</td></tr>
 <tr class="separator:a09a94889fa4b29893b5b4dfcaa347c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -252,9 +255,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>readGroupInfo</b> (thr
 <tr class="memitem:a2ec2da5085c32cbab0f0025c62d6a402"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a2ec2da5085c32cbab0f0025c62d6a402">revokeDelay</a> (thread_group_t *group)</td></tr>
 <tr class="memdesc:a2ec2da5085c32cbab0f0025c62d6a402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revoke all the delayed messaged on a given group and deliver it.  <a href="../../d5/d20/thread__synch_8h.html#a2ec2da5085c32cbab0f0025c62d6a402">More...</a><br /></td></tr>
 <tr class="separator:a2ec2da5085c32cbab0f0025c62d6a402"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7eb98503afc6d9f48abd20944fe65b01"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a7eb98503afc6d9f48abd20944fe65b01">flushDelayedMsg</a> (thread_group_t *group)</td></tr>
-<tr class="memdesc:a7eb98503afc6d9f48abd20944fe65b01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deliver immediately all delayed messages.  <a href="../../d5/d20/thread__synch_8h.html#a7eb98503afc6d9f48abd20944fe65b01">More...</a><br /></td></tr>
-<tr class="separator:a7eb98503afc6d9f48abd20944fe65b01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3777c476b5aa7d3c2f915cbfc97a94f9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a3777c476b5aa7d3c2f915cbfc97a94f9">cancelDelay</a> (thread_group_t *group)</td></tr>
+<tr class="memdesc:a3777c476b5aa7d3c2f915cbfc97a94f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deliver immediately all delayed messages.  <a href="../../d5/d20/thread__synch_8h.html#a3777c476b5aa7d3c2f915cbfc97a94f9">More...</a><br /></td></tr>
+<tr class="separator:a3777c476b5aa7d3c2f915cbfc97a94f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d20/thread__synch_8h.html#a30aa9ea940e7e4a48ddc23000ad0abe9">sleepOnBarrier</a> (thread_group_t *group)</td></tr>
 <tr class="memdesc:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put the process which call this function on sleep.  <a href="../../d5/d20/thread__synch_8h.html#a30aa9ea940e7e4a48ddc23000ad0abe9">More...</a><br /></td></tr>
 <tr class="separator:a30aa9ea940e7e4a48ddc23000ad0abe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -485,6 +488,42 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
 
 </div>
 </div>
+<a id="a3777c476b5aa7d3c2f915cbfc97a94f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3777c476b5aa7d3c2f915cbfc97a94f9">&#9670;&nbsp;</a></span>cancelDelay()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int cancelDelay </td>
+          <td>(</td>
+          <td class="paramtype">thread_group_t *&#160;</td>
+          <td class="paramname"><em>group</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deliver immediately all delayed messages. </p>
+<p>When a group's device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">*group</td><td>A pointer to a group's structure</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">0</td><td>on success (Legacy Version) </td></tr>
+    <tr><td class="paramname">The</td><td>number of messages in which delay has been removed (Normal version) </td></tr>
+    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group structure is closed </td></tr>
+    <tr><td class="paramname">negative</td><td>number on error (the number represent the 'errno' value) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a8738d08f53957d4861f5201abb6ca146"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8738d08f53957d4861f5201abb6ca146">&#9670;&nbsp;</a></span>changeOwner()</h2>
 
@@ -599,41 +638,6 @@ If strict mode is enabled, any thread could change the group's owner </dd></dl>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>If strict mode is disabled, any threads can enable it through this function. If strict mode is enabled, only the owner can disable it </dd></dl>
-
-</div>
-</div>
-<a id="a7eb98503afc6d9f48abd20944fe65b01"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7eb98503afc6d9f48abd20944fe65b01">&#9670;&nbsp;</a></span>flushDelayedMsg()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int flushDelayedMsg </td>
-          <td>(</td>
-          <td class="paramtype">thread_group_t *&#160;</td>
-          <td class="paramname"><em>group</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Deliver immediately all delayed messages. </p>
-<p>When a group's device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">*group</td><td>A pointer to a group's structure</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">0</td><td>on success </td></tr>
-    <tr><td class="paramname">GROUP_CLOSED</td><td>if the provided group structure is closed </td></tr>
-    <tr><td class="paramname">negative</td><td>number on error (the number represent the 'errno' value) </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

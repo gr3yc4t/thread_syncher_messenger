@@ -10,13 +10,14 @@
 *
 *   For user-level library documentaion see \ref user_lib "this" page.<br>
 *   For kernel-level code documentation see \ref kernel_docs "this" page.<br>
+*   For benchmarking file options see \ref benchmarking "this" page.<br>
 *
 *   \section msg_subsystem Message Subsytem
 *   Messages in a group are delivered to readers in FIFO order. Threads can subscribe to a group’s messages and when they do they become an “active member” of that group.<br>
-*   When a thread reads a message, the module adds its PID to the message’s list of recipients. Later, the garbage collector will traverse the messages FIFO queue and compare the set of message’s recipients with the set of active members: if recipients are a subset of active members, the message is removed and memory is freed.
+*   When a thread reads a message, the module adds its PID to the message’s list of recipients. Later, the garbage collector will traverse the messages FIFO queue and compare the set of message’s recipients with the set of active members: if active members are a subset of a message’s recipients, the message is removed and memory is freed.    
 *
 *   \section sec_features Security Features
-*   Each group has a field that describes its owner: an owner is represented by an UID that corresponds to the user that installed the group. By default any threads can edit the group’s parameters both through the “parameter config system” and by interacting with the group's facilities. To prevent this, it is possible to set the <b>“strict mode”</b> flag of a group: when this flag is active, only the current owner of a group can modify its internal parameters.
+*   Each group has a field that describes its owner: an owner is represented by an UID that corresponds to the user that installed the group. By default any threads can edit the group’s parameters both through the “sysfs parameter config system” and by interacting with the group's facilities (via ioctl). To prevent this, it is possible to set the “strict mode” flag of a group: when this flag is active, only the current owner of a group can modify its internal parameters.
 *
 *
 */
