@@ -5,7 +5,7 @@
 #include <unistd.h> //For sleep()/nanosleep()/getppid()
 
 
-#include "thread_synch.h"
+#include "../lib/thread_synch.h"
 
 
 

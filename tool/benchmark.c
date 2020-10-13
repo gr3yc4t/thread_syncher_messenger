@@ -4,8 +4,8 @@
 #include <pthread.h>
 
 
-#include "thread_synch.h"
-#include "inih/ini.h"
+#include "../lib/thread_synch.h"
+#include "lib/ini.h"
 
 thread_synch_t *main_syncher;
 thread_group_t *curr_group = NULL;
