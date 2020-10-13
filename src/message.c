@@ -14,7 +14,7 @@ void debugMsg(msg_t msg){
 
     pr_debug("MESSAGE DATA");
     pr_debug("Message type size %ld", msg.size);
-   pr_debug("Message author pid %d", msg.author);
+    pr_debug("Message author pid %d", msg.author);
 
     if(msg.size == sizeof(char) && msg.buffer != NULL){
         pr_debug("Message string %s", (char*)msg.buffer);
@@ -118,7 +118,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     pr_debug("queueDelayedMessage: Checking size limits...");
 
     if(!isValidSizeLimits(message, manager)){
-        pr_err("Message size is invalid");
+        pr_debug("Message size is invalid");
         return -1;
     }
 
@@ -671,7 +671,7 @@ int writeMessage(msg_t *message, msg_manager_t *manager){
     u_long message_size;
 
     if(!isValidSizeLimits(message, manager)){
-        pr_err("Message size is invalid");
+        pr_debug("Message size is invalid");
         return STORAGE_SIZE_ERR;
     }
 
@@ -771,7 +771,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
                 pr_debug("Sender PID: %d", pid);
                 pr_debug("Message Content %s", (char*)msg_deliver->message.buffer);
             }else if(!wasDelivered(&msg_deliver->recipient, pid)){
-                pr_info("Message found for PID: %d", (int)pid);
+                pr_debug("Message found for PID: %d", (int)pid);
                 //Copy the message to the destination buffer
                 memcpy(dest_buffer, &msg_deliver->message, sizeof(msg_t));
 
@@ -802,7 +802,7 @@ int readMessage(msg_t *dest_buffer, msg_manager_t *manager){
     up_read(&manager->queue_lock);
     pr_debug("readMessage: queue_lock released");
 
-    pr_info("No message present for PID: %d", pid);
+    pr_debug("No message present for PID: %d", pid);
     return 1;
 
 

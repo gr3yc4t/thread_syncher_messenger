@@ -12,7 +12,7 @@ CFLAGS_main.o := -DDEBUG
 CFLAGS_sysfs.o := -DDEBUG
 
 all:
-	make CFLAGS="-fanalyzer -Wextra -g3 -fno-omit-frame-pointer -DDEBUG" -C $(KDIR) M=$(shell pwd) modules 
+	make CFLAGS="-fanalyzer -Wextra -g3 -fno-omit-frame-pointer" -C $(KDIR) M=$(shell pwd) modules 
 release:
 	make CFLAGS="-O3" -C $(KDIR) M=$(shell pwd) modules
 clean:
