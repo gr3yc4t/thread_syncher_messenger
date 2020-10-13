@@ -6,13 +6,13 @@
 *   - \ref T_THREAD_SYNCH "thread_synch_t": handles request to the main synch device file
 *   - \ref T_THREAD_GROUP "thread_group_t": handles request to a group device file
 *
-*   First of all, an application has to initialize a thread_synch_t structure via initThreadSyncher() in order to interact with the module’s functionalities. At some point the user-level app would interact with a module’s group by obtaining a thread_group_t structure, and this can be done in three ways:
+*   First of all, an application has to initialize a \ref T_THREAD_SYNCH "thread_synch_t" structure via initThreadSyncher() in order to interact with the module’s functionalities. At some point the user-level app execution the module’s group can be accessed by obtaining a \ref T_THREAD_GROUP "thread_group_t" structure, and this can be done in three ways:
 *   - installGroup(): Installs a group given a group descriptor (group_t)
 *   - loadGroupFromDescriptor(): loads a thread_group_t structure relative to the group identified by the provided ‘group_t’ descriptor.
 *   - loadGroupFromID(): loads a thread_group_t structure relative to the group identified by the provided ID.
 *
-*   Each one  of these functions return a pointer to an initialized \ref T_THREAD_GROUP "thread_group_t" structure (or NULL in case of error) and, with the exception of the last one, they need athread_synch_t structure as parameter.
-*   To correctly use the module subsystems, applications have to open groups to become active members of them via the function openGroup(). In case the library's functions are called with a closed \ref T_THREAD_GROUP "thread_group_t" structure as a parameter they will return -1.
+*   Each one of these functions return a pointer to an initialized thread_group_t structure (or NULL in case of error) and, with the exception of the last one, they need a thread_synch_t structure as parameter.
+*   To correctly use the module subsystems, user-level applications have to open groups in order to become active members of them via the function openGroup(). In case the library's functions are called with a closed thread_group_t structure as a parameter they will return the error value “GROUP_CLOSED”.
 *
 *   \section msg_subsystem_user Message Subsystem 
 *   The following functions allows to read/write a message on an existing group (specified via the thread_group_t parameter):

@@ -1,0 +1,44 @@
+The user-\/level tool can be also used for benchmarking purpose, in fact it is possible to pass an I\+NI files that contains commands to the tool. The list of the available commands and sections can be found below. ~\newline
+
+
+
+\begin{DoxyItemize}
+\item Section\+: group
+\begin{DoxyEnumerate}
+\item {\bfseries{install}}=group\+\_\+name\+: install a new group with \char`\"{}group\+\_\+name\char`\"{} as descriptor
+\item {\bfseries{load\+Descriptor}}=group\+\_\+name\+: load an existing group with \char`\"{}group\+\_\+name\char`\"{} descriptor
+\item {\bfseries{load\+ID}}=ID\+: load an existing group with id equal to ID
+\end{DoxyEnumerate}
+\item Section\+: message
+\begin{DoxyEnumerate}
+\item {\bfseries{write}}=message\+: write the message \char`\"{}message\char`\"{} into the previously loaded group
+\item {\bfseries{read}}=size\+\_\+to\+\_\+read\+: read \char`\"{}size\+\_\+to\+\_\+read\char`\"{} bytes from a previously loaded group
+\item {\bfseries{delay}}=value\+: set the delay of the currently loaded group to \char`\"{}value\char`\"{}
+\item {\bfseries{revoke\+\_\+delay}}=1\+: revoke all the delayed message of the current group
+\item {\bfseries{flush}}=1\+: insert all the delayed message into the F\+I\+FO queue
+\end{DoxyEnumerate}
+\item Section\+: synch
+\begin{DoxyEnumerate}
+\item {\bfseries{sleep}}=1\+: put the current process on sleep
+\item {\bfseries{awake}}=1\+: awake all the process of a group which was previously put on sleep
+\end{DoxyEnumerate}
+\item Section\+: config
+\begin{DoxyEnumerate}
+\item {\bfseries{max\+\_\+message\+\_\+size}}=value\+: set the \textquotesingle{}max\+\_\+message\+\_\+size\textquotesingle{} param to \char`\"{}value\char`\"{}
+\item {\bfseries{max\+\_\+storage\+\_\+size}}=value\+: set the \textquotesingle{}max\+\_\+storage\+\_\+size\textquotesingle{} param to \char`\"{}value\char`\"{}
+\item {\bfseries{garbage\+\_\+collector\+\_\+ratio}}=value\+: set the \textquotesingle{}garbage\+\_\+collector\+\_\+ratio\textquotesingle{} param to \char`\"{}value\char`\"{}
+\item {\bfseries{include\+\_\+structure\+\_\+size}}=value\+: set the \textquotesingle{}include\+\_\+structure\+\_\+size\textquotesingle{} param to \char`\"{}value\char`\"{} (0 or 1)
+\item {\bfseries{read\+\_\+test}}=1\+: read sequentially all the group\textquotesingle{}s parameters from sysfs (useful for performance checks)
+\end{DoxyEnumerate}
+\item Section\+: security
+\begin{DoxyEnumerate}
+\item {\bfseries{strict\+\_\+mode}}=value\+: set the strict mode flag to \char`\"{}value\char`\"{} (0 or 1)
+\item {\bfseries{change\+\_\+owner}}=P\+ID\+: change the current group\textquotesingle{}s owner to \char`\"{}\+P\+I\+D\char`\"{}
+\end{DoxyEnumerate}
+\item Section\+: testing
+\begin{DoxyEnumerate}
+\item {\bfseries{fork}}=value\+: fork the current process in order to generate up to \char`\"{}value\char`\"{} childs. Very useful to test concurrency access.
+\end{DoxyEnumerate}
+\end{DoxyItemize}
+
+See the \char`\"{}config.\+ini\char`\"{} file inside the tool directory for an example. 
