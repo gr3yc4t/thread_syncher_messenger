@@ -121,7 +121,7 @@ static int handler(void* user, const char* section, const char* name, const char
     } else if (MATCH("message", "flush")) {
         if(openGroup(curr_group) < 0)
             return -1;
-        flushDelayedMsg(curr_group);
+        cancelDelay(curr_group);
     } else if (MATCH("synch", "sleep")) {
         if(openGroup(curr_group) < 0)
             return -1;

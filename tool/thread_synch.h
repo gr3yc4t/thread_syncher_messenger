@@ -80,6 +80,8 @@
 
 #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
 #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+#define IOCTL_CANCEL_DELAY _IO('Y', 2)
+
 
 #define IOCTL_SLEEP_ON_BARRIER _IO('Z', 0)
 #define IOCTL_AWAKE_BARRIER _IO('Z', 1)
@@ -159,7 +161,7 @@ int writeMessage(const void *buffer, size_t len, thread_group_t *group);
 
 int setDelay(const long _delay, thread_group_t *group);
 int revokeDelay(thread_group_t *group);
-int flushDelayedMsg(thread_group_t *group);
+int cancelDelay(thread_group_t *group);
 
 int sleepOnBarrier(thread_group_t *group);
 int awakeBarrier(thread_group_t *group);
