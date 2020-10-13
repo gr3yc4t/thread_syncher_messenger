@@ -64,113 +64,6 @@ void t_nanosleep(long _nanoseconds){
 }
 
 
-int flushMessages(const char *group_path){
-
-    FILE *fd;
-
-    fd = fopen(group_path, "rw"); 
-
-    if(fd == NULL){
-        printf("Error while opening the main_device file\n");
-        return -1;
-    }
-
-
-    int ret = fflush(fd);
-
-    printf("\n\nReturn code : %d\n\n", ret);
-
-
-    fclose(fd);
-}
-
-void concurrentRead(void *args){
-    const char *default_message = "TH-NUM-%lu\0";   
-    char buffer[BUFF_SIZE];   
-    size_t len;
-    pthread_t id = pthread_self();
-
-    printf("\n[R] Thread N. %ld\n", id);
-
-    int *fd;
-    fd = open((char*)args, O_RDONLY); 
-
-    if(fd < 0){
-        printf("[T-%ld] Error while opening the group file\n", id);
-        return -1;
-    }
-
-
-    //Random Sleep 1
-    long sleep_time1 = rand()%10000;
-    usleep(sleep_time1);
-
-
-    int ret = read(fd, &buffer, sizeof(char)*len);
-
-    if(!ret){
-        switch (ret){
-        case NO_MSG_PRESENT:
-            printf("[T-%ld/R] No msg. present\n", id);
-            break;
-        case MSG_SIZE_ERROR:
-            printf("[T-%ld/R] Message too large for current limits\n", id);
-            break;        
-        default:
-            printf("[T-%ld/R] Unknow error\n", id);
-            break;
-        }
-    }
-
-    //Random Sleep 2
-    long sleep_time2 = rand()%10000;
-    usleep(sleep_time2);
-
-    close(fd);
-
-}
-
-void concurrentWrite(void *args){
-
-    const char *default_message = "TH-NUM-%lu\0";
-    pthread_t id = pthread_self();
-    char buffer[BUFF_SIZE];
-    size_t len;
-
-    printf("\n[w] Thread N. %ld\n", id);
-
-    snprintf(buffer, BUFF_SIZE, default_message, id);
-    len = strnlen(buffer, BUFF_SIZE);
-
-
-    int *fd;
-    fd = open((char*)args, O_WRONLY); 
-
-    if(fd < 0){
-        printf("Error while opening the group file\n");
-        return -1;
-    }
-
-    printf("\nLen = %d\n", len);
-
-    int ret = write(fd, &buffer, sizeof(char)*len);
-
-    printf("Totel element written: %ld", ret);
-
-
-    //Random Sleep
-    long sleep_time = rand()%10000;
-    usleep(sleep_time);
-
-
-    close(fd);
-
-    return;
-
-}
-
-
-
 int showLoadedGroups(){
     int i;
 
@@ -327,7 +220,7 @@ int groupSubMenu(thread_group_t group){
             case 5: //Flush
                 
                 //printf("\nUnimplemented");
-                if(flushDelayedMsg(&group) < 0)
+                if(cancelDelay(&group) < 0)
                     printf(ANSI_COLOR_RED "\n[X] Error while flushing the messages" ANSI_COLOR_RESET);
                 
                 break;

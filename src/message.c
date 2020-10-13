@@ -76,10 +76,6 @@ void delayedMessageCallback(struct timer_list *timer){
         return;
     }
 
-    //Deallocate structures
-    if(del_timer(timer)){
-        pr_debug("Strange behaviour: timer callback called but timer not elasped...");
-    }
 
     pr_debug("delayedMessage: trying to acquire lock");
     down(&delayed_msg->manager->delayed_lock);
@@ -88,6 +84,13 @@ void delayedMessageCallback(struct timer_list *timer){
         kfree(delayed_msg);
     up(&delayed_msg->manager->delayed_lock);
     pr_info("delayedMessageCallback: unlocking delayed list after deleting entries");
+
+
+
+    //Deallocate structures
+    if(!del_timer(timer))
+        pr_err("Strange behaviour: timer callback called but timer not elasped...");
+    
 
 
     return;
@@ -136,7 +139,7 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     //Add to the msg_manager message queue
     down(&manager->delayed_lock);
         //Queue Critical Section
-        list_add(&newMessageDeliver->delayed_list, &manager->delayed_queue);
+        list_add_rcu(&newMessageDeliver->delayed_list, &manager->delayed_queue);
     up(&manager->delayed_lock);
 
     //Set delay and start the timer
@@ -145,7 +148,6 @@ int queueDelayedMessage(msg_t *message, msg_manager_t *manager){
     pr_debug("queueDelayedMessage: Timer started");
 
     return 0;    
-
 }
 
 
@@ -179,9 +181,10 @@ int revokeDelayedMessage(msg_manager_t *manager){
             }
 
             list_del_init(cursor);
-
             count++;
         }
+
+        synchronize_rcu();
 
     up(&manager->delayed_lock);
 
@@ -268,6 +271,7 @@ bool isStructSizeIncluded(msg_manager_t *manager){
  * @note This function is thread-safe
  */
 bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
+        msg_manager_t *my_manager;
         u_long max_msg_size;
         u_long max_storage_size;
         u_long curr_storage_size;
@@ -280,11 +284,13 @@ bool isValidSizeLimits(msg_t *msg, msg_manager_t *manager){
 
         msg_size = (u_long)msg->size;
 
-        down_read(&manager->config_lock);
-            max_msg_size = manager->max_message_size;
-            max_storage_size = manager->max_storage_size;
-            curr_storage_size = manager->curr_storage_size;
-        up_read(&manager->config_lock);
+        rcu_read_lock();
+            my_manager = rcu_dereference(manager);
+
+            max_msg_size = my_manager->max_message_size;
+            max_storage_size = my_manager->max_storage_size;
+            curr_storage_size = my_manager->curr_storage_size;
+        rcu_read_unlock();
 
         if(msg_size > max_msg_size)
             return false;

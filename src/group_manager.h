@@ -61,6 +61,7 @@
 
     #define IOCTL_SET_SEND_DELAY _IOW('Y', 0, long)
     #define IOCTL_REVOKE_DELAYED_MESSAGES _IO('Y', 1)
+    #define IOCTL_CANCEL_DELAY _IO('Y', 2)
 
 #endif
 

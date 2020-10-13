@@ -652,7 +652,7 @@ static ssize_t writeGroupMessage(struct file *filep, const char __user *buf, siz
 static int flushGroupMessage(struct file *filep, fl_owner_t id){
     group_data *grp_data;
     msg_manager_t *manager;
-    int ret;
+    int ret = 0;
 
     grp_data = (group_data*) filep->private_data;
 
@@ -662,14 +662,19 @@ static int flushGroupMessage(struct file *filep, fl_owner_t id){
         return -1;
     }
 
-
-    manager = grp_data->msg_manager;
+    #ifdef LEGACY_FLUSH
+    rcu_read_lock();
+    manager = rcu_dereference(grp_data->msg_manager);
 
     if(atomic_long_read(&manager->message_delay) == 0)
         return 0;
 
     pr_info("flush: deliver all delayed messages");
     ret = cancelDelay(manager);
+
+    rcu_read_unlock();
+
+    #endif
 
     pr_info("flush: %d elements flushed from the delayed queue", ret);
     return ret;
@@ -783,7 +788,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
                 atomic_long_set(&grp_data->msg_manager->message_delay, delay);
 
-                printk(KERN_INFO "Message Delay: delay set to: %ld", delay);
+                pr_info("Message Delay: delay set to: %ld", delay);
                 ret = 0;
                 break;
             case IOCTL_REVOKE_DELAYED_MESSAGES:
@@ -792,7 +797,16 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
 
                 ret = revokeDelayedMessage(grp_data->msg_manager);
 
-                printk(KERN_INFO "Revoke Message: %d messages revoked from queue", ret);
+                pr_info("Revoke Message: %d messages revoked from queue", ret);
+
+                break;
+            case IOCTL_CANCEL_DELAY:
+
+                grp_data = (group_data*) filep->private_data;
+
+                ret = cancelDelay(grp_data->msg_manager);
+
+                pr_info("Cancelled delay of %d messages", ret);
 
                 break;
         #endif
@@ -834,8 +848,7 @@ long int groupIoctl(struct file *filep, unsigned int ioctl_num, unsigned long io
                 ret = -1;
             }else
                 ret = 0;
-            
-
+        
             break;
         
         case IOCTL_CHANGE_OWNER:
