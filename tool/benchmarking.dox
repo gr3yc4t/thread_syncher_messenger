@@ -1,0 +1,36 @@
+/*!
+*   \page benchmarking Benchmarking
+*
+*   The user-level tool can be also used for benchmarking purpose, in fact it is possible to pass an INI files that contains commands to the tool.
+*   The list of the available commands and sections can be found below.   
+*   
+*   - Section: group
+*       -# <b>install</b>=group_name: install a new group with "group_name" as descriptor
+*       -# <b>loadDescriptor</b>=group_name: load an existing group with "group_name" descriptor
+*       -# <b>loadID</b>=ID: load an existing group with id equal to ID
+*   - Section: message
+*       -# <b>write</b>=message: write the message "message" into the previously loaded group
+*       -# <b>read</b>=size_to_read: read "size_to_read" bytes from a previously loaded group
+*       -# <b>delay</b>=value: set the delay of the currently loaded group to "value"
+*       -# <b>revoke_delay</b>=1: revoke all the delayed message of the current group
+*       -# <b>flush</b>=1: insert all the delayed message into the FIFO queue
+*   - Section: synch
+*       -# <b>sleep</b>=1: put the current process on sleep
+*       -# <b>awake</b>=1: awake all the process of a group which was previously put on sleep
+*   - Section: config
+*       -# <b>max_message_size</b>=value: set the 'max_message_size' param to "value"
+*       -# <b>max_storage_size</b>=value: set the 'max_storage_size' param to "value"
+*       -# <b>garbage_collector_ratio</b>=value: set the 'garbage_collector_ratio' param to "value"
+*       -# <b>include_structure_size</b>=value: set the 'include_structure_size' param to "value" (0 or 1)
+*       -# <b>read_test</b>=1: read sequentially all the group's parameters from sysfs (useful for performance checks)
+*   - Section: security
+*       -# <b>strict_mode</b>=value: set the strict mode flag to "value" (0 or 1)
+*       -# <b>change_owner</b>=PID: change the current group's owner to "PID"
+*   - Section: testing
+*       -# <b>fork</b>=value: fork the current process in order to generate up to "value" childs. Very useful to test concurrency access.
+*
+*
+* See the "config.ini" file inside the tool directory for an example.
+*/  
+
+

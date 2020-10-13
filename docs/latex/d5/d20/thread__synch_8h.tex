@@ -116,6 +116,9 @@ struct \mbox{\hyperlink{structT__THREAD__GROUP}{T\+\_\+\+T\+H\+R\+E\+A\+D\+\_\+\
 \mbox{\Hypertarget{thread__synch_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}\label{thread__synch_8h_a1ffc87b680fc1e5a0d4e1ab7dfb9b223}} 
 \#define {\bfseries I\+O\+C\+T\+L\+\_\+\+R\+E\+V\+O\+K\+E\+\_\+\+D\+E\+L\+A\+Y\+E\+D\+\_\+\+M\+E\+S\+S\+A\+G\+ES}~\+\_\+\+IO(\textquotesingle{}Y\textquotesingle{}, 1)
 \item 
+\mbox{\Hypertarget{thread__synch_8h_abf820efa44595e151e6294d3a093c503}\label{thread__synch_8h_abf820efa44595e151e6294d3a093c503}} 
+\#define {\bfseries I\+O\+C\+T\+L\+\_\+\+C\+A\+N\+C\+E\+L\+\_\+\+D\+E\+L\+AY}~\+\_\+\+IO(\textquotesingle{}Y\textquotesingle{}, 2)
+\item 
 \mbox{\Hypertarget{thread__synch_8h_a09a94889fa4b29893b5b4dfcaa347c93}\label{thread__synch_8h_a09a94889fa4b29893b5b4dfcaa347c93}} 
 \#define {\bfseries I\+O\+C\+T\+L\+\_\+\+S\+L\+E\+E\+P\+\_\+\+O\+N\+\_\+\+B\+A\+R\+R\+I\+ER}~\+\_\+\+IO(\textquotesingle{}Z\textquotesingle{}, 0)
 \item 
@@ -154,7 +157,7 @@ int \mbox{\hyperlink{thread__synch_8h_a40e17edd747a94c9c1a9c97c014e03d9}{set\+De
 \begin{DoxyCompactList}\small\item\em Set the delay value for a given group. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_a2ec2da5085c32cbab0f0025c62d6a402}{revoke\+Delay}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Revoke all the delayed messaged on a given group and deliver it. \end{DoxyCompactList}\item 
-int \mbox{\hyperlink{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}{flush\+Delayed\+Msg}} (thread\+\_\+group\+\_\+t $\ast$group)
+int \mbox{\hyperlink{thread__synch_8h_a3777c476b5aa7d3c2f915cbfc97a94f9}{cancel\+Delay}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Deliver immediately all delayed messages. \end{DoxyCompactList}\item 
 int \mbox{\hyperlink{thread__synch_8h_a30aa9ea940e7e4a48ddc23000ad0abe9}{sleep\+On\+Barrier}} (thread\+\_\+group\+\_\+t $\ast$group)
 \begin{DoxyCompactList}\small\item\em Put the process which call this function on sleep. \end{DoxyCompactList}\item 
@@ -296,6 +299,34 @@ If strict mode is enabled, only the current owner can set a new owner
 
 If strict mode is enabled, any thread could change the group\textquotesingle{}s owner 
 \end{DoxyNote}
+\mbox{\Hypertarget{thread__synch_8h_a3777c476b5aa7d3c2f915cbfc97a94f9}\label{thread__synch_8h_a3777c476b5aa7d3c2f915cbfc97a94f9}} 
+\index{thread\_synch.h@{thread\_synch.h}!cancelDelay@{cancelDelay}}
+\index{cancelDelay@{cancelDelay}!thread\_synch.h@{thread\_synch.h}}
+\doxysubsubsection{\texorpdfstring{cancelDelay()}{cancelDelay()}}
+{\footnotesize\ttfamily int cancel\+Delay (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
+
+
+
+Deliver immediately all delayed messages. 
+
+When a group\textquotesingle{}s device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to a group\textquotesingle{}s structure\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em 0} & on success (Legacy Version) \\
+\hline
+{\em The} & number of messages in which delay has been removed (Normal version) \\
+\hline
+{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group structure is closed \\
+\hline
+{\em negative} & number on error (the number represent the \textquotesingle{}errno\textquotesingle{} value) \\
+\hline
+\end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}\label{thread__synch_8h_a8738d08f53957d4861f5201abb6ca146}} 
 \index{thread\_synch.h@{thread\_synch.h}!changeOwner@{changeOwner}}
 \index{changeOwner@{changeOwner}!thread\_synch.h@{thread\_synch.h}}
@@ -379,32 +410,6 @@ Enable strict mode on a group.
 \begin{DoxyNote}{Note}
 If strict mode is disabled, any threads can enable it through this function. If strict mode is enabled, only the owner can disable it 
 \end{DoxyNote}
-\mbox{\Hypertarget{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}\label{thread__synch_8h_a7eb98503afc6d9f48abd20944fe65b01}} 
-\index{thread\_synch.h@{thread\_synch.h}!flushDelayedMsg@{flushDelayedMsg}}
-\index{flushDelayedMsg@{flushDelayedMsg}!thread\_synch.h@{thread\_synch.h}}
-\doxysubsubsection{\texorpdfstring{flushDelayedMsg()}{flushDelayedMsg()}}
-{\footnotesize\ttfamily int flush\+Delayed\+Msg (\begin{DoxyParamCaption}\item[{thread\+\_\+group\+\_\+t $\ast$}]{group }\end{DoxyParamCaption})}
-
-
-
-Deliver immediately all delayed messages. 
-
-When a group\textquotesingle{}s device file is flushed (closed and opened) the driver will cancel the delay on all messages present on the delay queue
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em $\ast$group} & A pointer to a group\textquotesingle{}s structure\\
-\hline
-\end{DoxyParams}
-
-\begin{DoxyRetVals}{Return values}
-{\em 0} & on success \\
-\hline
-{\em G\+R\+O\+U\+P\+\_\+\+C\+L\+O\+S\+ED} & if the provided group structure is closed \\
-\hline
-{\em negative} & number on error (the number represent the \textquotesingle{}errno\textquotesingle{} value) \\
-\hline
-\end{DoxyRetVals}
 \mbox{\Hypertarget{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}\label{thread__synch_8h_af047c2dd764df71c248cb161f1d1cec4}} 
 \index{thread\_synch.h@{thread\_synch.h}!getCurrentStorageSize@{getCurrentStorageSize}}
 \index{getCurrentStorageSize@{getCurrentStorageSize}!thread\_synch.h@{thread\_synch.h}}
