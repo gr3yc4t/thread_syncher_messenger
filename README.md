@@ -2,6 +2,8 @@
 ## Introduction
 The following module allows threads from different group to synchronize and exchage messages between each others. The project was developed for the *"Advanced Operating System and Virtualization"* course held at Sapienza University. The complete specifications can be found [here](project_specification.md).
 
+The complete **documentation** written in Doxygen can be found [here](https://gr3yc4t.github.io/thread_syncher_messenger/html/index.html)
+
 ## Installation
 To use the module correctly, the following `udev` rule should be installed on the system by creating a file inside `/etc/udev/rules.d/` (e.g. `99-thread-synch.rules`) with the following content:
 ```
